@@ -1,6 +1,8 @@
 require('dotenv').config();
 const express=require('express'),path=require('path'),bcrypt=require('bcryptjs'),session=require('express-session'),{Pool}=require('pg');
 const app=express(),pool=new Pool({connectionString:process.env.DATABASE_URL,ssl:false});
+// Render runs behind a reverse proxy. Trust it so secure session cookies are set correctly.
+app.set('trust proxy',1);
 app.use(express.json());app.use(session({secret:process.env.SESSION_SECRET||'dev-change-this',resave:false,saveUninitialized:false,cookie:{httpOnly:true,sameSite:'lax',secure:process.env.NODE_ENV==='production',maxAge:604800000}}));app.use(express.static(path.join(__dirname,'public')));
 const pub=r=>({id:r.id,name:r.name,email:r.email,xp:r.xp,streak:r.streak||1,completed:r.completed||[]});
 async function init(){
