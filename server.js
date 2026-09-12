@@ -46,4 +46,13 @@ app.get('/api/certificate',auth,async(req,res)=>{try{let completed=Array.isArray
 app.post('/api/certificate',auth,async(req,res)=>{try{let completed=Array.isArray(req.user.completed)?req.user.completed:[],completedZones=Array.from({length:12},(_,i)=>completed.includes('lesson-'+i)).filter(Boolean).length;if(completedZones<12)return res.status(403).json({error:`Complete all 12 learning zones first. You have completed ${completedZones}/12.`});let existing=await pool.query('SELECT certificate_issued_at,certificate_code FROM users WHERE id=$1',[req.user.id]);if(existing.rows[0].certificate_issued_at)return res.json({issuedAt:existing.rows[0].certificate_issued_at,code:existing.rows[0].certificate_code});let code='CQ-'+Math.random().toString(36).slice(2,8).toUpperCase()+'-'+Math.random().toString(36).slice(2,6).toUpperCase(),r=await pool.query('UPDATE users SET certificate_issued_at=NOW(),certificate_code=$1 WHERE id=$2 RETURNING certificate_issued_at,certificate_code',[code,req.user.id]);res.json({issuedAt:r.rows[0].certificate_issued_at,code:r.rows[0].certificate_code})}catch(e){res.status(500).json({error:'Could not issue certificate.'})}});
 app.get('/api/leaderboard',async(req,res)=>{let r=await pool.query('SELECT id,name,xp FROM users ORDER BY xp DESC,created_at ASC LIMIT 20');res.json({students:r.rows})});
 app.get('*',(req,res)=>res.sendFile(path.join(__dirname,'public','index.html')));
-init().then(()=>app.listen(process.env.PORT||3000,()=>console.log('CYBER//QUEST online'))).catch(e=>{console.error(e);process.exit(1)});
+const PORT = process.env.PORT || 10000;
+
+init().then(() => {
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`CYBER//QUEST online on 0.0.0.0:${PORT}`);
+  });
+}).catch(e => {
+  console.error(e);
+  process.exit(1);
+});
