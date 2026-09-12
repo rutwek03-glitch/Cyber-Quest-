@@ -136,3 +136,12 @@ footer{margin-left:238px;padding:28px 34px;border-top:1px solid #18272f;color:#5
 .incidentTimeline{display:grid;gap:8px}.incidentTimeline div{display:grid;grid-template-columns:65px 1fr;gap:12px;padding:11px;border-left:2px solid currentColor;background:rgba(255,255,255,.025);font-size:11px}.incidentTimeline b{font-family:monospace}.incidentTimeline span{opacity:.8}
 .socContainment{margin-top:14px;padding:15px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}.socContainment h3{margin:4px 0 12px}.containChoices{display:grid;gap:8px}.containChoices .choice{min-height:42px}
 @media(max-width:680px){.logTable div{grid-template-columns:1fr;gap:4px}.socMetric{align-items:flex-start;flex-direction:column}.socMetric b{text-align:left}}
+
+
+/* Phase 2.4 // Ransomware Response */
+.ransomwareLabCard{border-color:rgba(220,100,110,.24);background:linear-gradient(145deg,rgba(170,60,75,.08),rgba(255,255,255,.02))}
+.ransomwareLabCard .labLaunch{background:rgba(255,255,255,.07)}
+.ransomBanner{display:grid;grid-template-columns:1fr 160px 190px;gap:10px;margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(120deg,rgba(220,80,90,.08),rgba(255,255,255,.025))}
+.ransomBanner h3{margin:5px 0 0;font-family:Orbitron,sans-serif;letter-spacing:.8px}.ransomStat{display:flex;flex-direction:column;justify-content:center;padding-left:14px;border-left:1px solid var(--line)}.ransomStat b{font:800 12px Orbitron,sans-serif}.ransomStat span{font-size:8px;letter-spacing:1px;opacity:.55;margin-top:5px}
+.ransomNext{margin-top:14px;padding:15px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}.ransomNext h3{margin:4px 0 12px}.ransomNextChoices{display:grid;gap:8px}.ransomNextChoices .choice{min-height:42px}
+@media(max-width:680px){.ransomBanner{grid-template-columns:1fr 1fr}.ransomBanner>div:first-child{grid-column:1/-1}.ransomStat{padding-left:0;border-left:0}}

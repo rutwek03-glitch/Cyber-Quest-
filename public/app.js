@@ -133,6 +133,7 @@ let phishingEvidence=new Set();
 let phishingDecision=null;
 
 function advancedLab(type){
+  if(type==='ransomware') return openRansomwareLab();
   if(type!=='phishing') return;
   activeAdvancedLab=type;
   phishingEvidence=new Set();
@@ -218,11 +219,128 @@ async function completeAdvancedPhishing(){
   render();
 }
 
+
+// ============================================================
+// PHASE 2.4 // RANSOMWARE RESPONSE LAB
+// Safe, fictional defensive incident-response training.
+// ============================================================
+let ransomwareEvidence=new Set();
+let ransomwareStage=0;
+
+function openRansomwareLab(){
+  ransomwareEvidence=new Set();
+  ransomwareStage=0;
+  const c=$('modalBody');
+  c.innerHTML=`
+    <div class="labModalHead">
+      <div><span class="kicker">PHASE 2 // ADVANCED LAB 03</span><h2>RANSOMWARE RESPONSE</h2>
+      <p class="simIntro">A finance workstation shows signs of rapid file encryption. You are the incident responder. Review the evidence, contain the host, preserve evidence, then plan safe recovery.</p></div>
+      <div class="caseBadge">CASE RW-3141<br><small>ACTIVE</small></div>
+    </div>
+    <div class="labProgress"><span id="ransomLabProgress" style="width:12%"></span></div>
+    <div class="ransomBanner"><div><span class="kicker">CRITICAL INCIDENT</span><h3>ENCRYPTION ACTIVITY DETECTED</h3></div><div class="ransomStat"><b>1,842</b><span>FILES AFFECTED</span></div><div class="ransomStat"><b>FINANCE-PC-07</b><span>HOST</span></div></div>
+    <div class="investigationGrid">
+      <aside class="evidencePanel">
+        <div class="panelTitle"><span>CASE FILE</span><b>6 EVIDENCE ITEMS</b></div>
+        <button class="evidenceItem active" onclick="ransomEvidenceView('alert',this)"><b>01</b><span>ALERT</span><i>›</i></button>
+        <button class="evidenceItem" onclick="ransomEvidenceView('endpoint',this)"><b>02</b><span>ENDPOINT</span><i>›</i></button>
+        <button class="evidenceItem" onclick="ransomEvidenceView('process',this)"><b>03</b><span>PROCESS</span><i>›</i></button>
+        <button class="evidenceItem" onclick="ransomEvidenceView('files',this)"><b>04</b><span>FILES</span><i>›</i></button>
+        <button class="evidenceItem" onclick="ransomEvidenceView('network',this)"><b>05</b><span>NETWORK</span><i>›</i></button>
+        <button class="evidenceItem" onclick="ransomEvidenceView('timeline',this)"><b>06</b><span>TIMELINE</span><i>›</i></button>
+      </aside>
+      <div class="evidenceWorkspace">
+        <div id="ransomEvidenceView" class="evidenceView"></div>
+        <div class="evidenceCounter"><span id="ransomEvidenceCount">0/6 evidence items reviewed</span><span id="ransomLabHint">Review the full incident before taking action.</span></div>
+      </div>
+    </div>
+    <div class="labDecisionBlock">
+      <div><span class="kicker">RESPONSE STEP 01</span><h3>What is the safest first action?</h3></div>
+      <div class="labDecisionChoices ransomChoices">
+        <button class="choice" onclick="ransomDecision('isolate',this)">ISOLATE THE AFFECTED HOST</button>
+        <button class="choice" onclick="ransomDecision('reboot',this)">REBOOT THE HOST IMMEDIATELY</button>
+        <button class="choice" onclick="ransomDecision('pay',this)">PAY THE RANSOM FIRST</button>
+      </div>
+      <div id="ransomFeedback"></div>
+    </div>`;
+  $('modal').style.display='grid';
+  ransomEvidenceView('alert',document.querySelector('.evidenceItem'));
+}
+
+const ransomwareEvidenceData={
+ alert:{title:'SIEM ALERT',type:'DETECTION',html:`<div class="socEvidenceCard"><div class="socMetric critical"><span>SEVERITY</span><b>CRITICAL</b></div><div class="socMetric"><span>RULE</span><b>Mass file modification + suspicious process + outbound connection</b></div><div class="socMetric"><span>HOST</span><b>FINANCE-PC-07</b></div><div class="socMetric"><span>ALERT TIME</span><b>10:42:17 UTC</b></div></div>`,clue:'The alert combines rapid file changes with suspicious execution on one endpoint.'},
+ endpoint:{title:'ENDPOINT TELEMETRY',type:'HOST',html:`<div class="socEvidenceCard"><div class="socMetric"><span>USER</span><b>finance.employee</b></div><div class="socMetric"><span>HOST</span><b>FINANCE-PC-07</b></div><div class="socMetric"><span>AGENT</span><b>ONLINE • REPORTING</b></div><div class="redFlag">⚠ The host is still connected. Containment should limit spread while keeping evidence available.</div></div>`,clue:'The affected workstation is still online, creating an opportunity for containment.'},
+ process:{title:'PROCESS TREE',type:'EXECUTION',html:`<div class="processTree"><div>explorer.exe</div><span>↓</span><div>invoice-viewer.exe <small>untrusted source</small></div><span>↓</span><div class="dangerProcess">encryptor.exe <small>rapid file operations</small></div></div>`,clue:'An unfamiliar process is performing rapid encryption-like file operations.'},
+ files:{title:'FILE ACTIVITY',type:'IMPACT',html:`<div class="forensicCard"><div><span>FILES MODIFIED</span><b>1,842</b></div><div><span>EXTENSION PATTERN</span><b>.locked-demo</b></div><div><span>SHARED DRIVE</span><b>NO EVIDENCE OF ACCESS</b></div><div class="redFlag">⚠ The simulation uses a harmless fictional extension. No real files are modified by CYBER//QUEST.</div></div>`,clue:'The impact is concentrated on the endpoint and uses a fictional training artifact.'},
+ network:{title:'NETWORK TELEMETRY',type:'CONNECTION',html:`<div class="networkEvidence"><div class="routeRow"><span>HOST</span><b>FINANCE-PC-07</b></div><div class="routeRow"><span>DESTINATION</span><b>198.51.100.44:443</b></div><div class="routeRow"><span>STATUS</span><b class="warningText">NEW EXTERNAL DESTINATION</b></div><div class="routeRow"><span>BEHAVIOR</span><b>SHORT BURSTS AFTER EXECUTION</b></div><p>198.51.100.0/24 is reserved for documentation and is used here only as a fictional training destination.</p></div>`,clue:'A new outbound destination appears after the suspicious process starts.'},
+ timeline:{title:'INCIDENT TIMELINE',type:'CORRELATION',html:`<div class="incidentTimeline"><div><b>10:39</b><span>Employee opens an unexpected invoice attachment</span></div><div><b>10:41</b><span>Untrusted process launches from user context</span></div><div><b>10:42</b><span>Rapid file modifications begin</span></div><div><b>10:42</b><span>SIEM alert + new outbound connection</span></div></div>`,clue:'Execution, file impact and network activity align in one short incident window.'}
+};
+
+function ransomEvidenceView(key,button){
+  const d=ransomwareEvidenceData[key];
+  if(!d)return;
+  ransomwareEvidence.add(key);
+  document.querySelectorAll('.evidenceItem').forEach(x=>x.classList.remove('active'));
+  if(button)button.classList.add('active');
+  $('ransomEvidenceView').innerHTML=`<div class="evidenceViewHead"><span class="kicker">${d.type}</span><h3>${d.title}</h3></div>${d.html}<div class="analystNote">ANALYST CLUE <span>✓ ${d.clue}</span></div>`;
+  $('ransomEvidenceCount').textContent=`${ransomwareEvidence.size}/6 evidence items reviewed`;
+  $('ransomLabProgress').style.width=(12+(ransomwareEvidence.size/6)*43)+'%';
+  $('ransomLabHint').textContent=ransomwareEvidence.size===6?'Evidence correlated. Choose the safest containment action.':'Review the remaining evidence before deciding.';
+}
+
+function ransomDecision(choice,b){
+  document.querySelectorAll('.ransomChoices .choice').forEach(x=>x.disabled=true);
+  if(ransomwareEvidence.size!==6){
+    b.classList.add('wrong');
+    $('ransomFeedback').innerHTML=`<div class="feedback wrongFeedback">⚠ Containment is premature. Review all six evidence items first.</div>`;
+    setTimeout(()=>document.querySelectorAll('.ransomChoices .choice').forEach(x=>x.disabled=false),650);
+    return;
+  }
+  if(choice==='isolate'){
+    b.classList.add('correct');
+    ransomwareStage=1;
+    $('ransomLabProgress').style.width='72%';
+    $('ransomFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Correct. Isolate the affected host to limit spread while preserving evidence.</div>
+      <div class="ransomNext"><span class="kicker">RESPONSE STEP 02</span><h3>What should happen before recovery?</h3>
+      <div class="ransomNextChoices"><button class="choice" onclick="ransomRecovery('preserve',this)">PRESERVE EVIDENCE + VERIFY BACKUPS</button><button class="choice" onclick="ransomRecovery('restore',this)">RESTORE IMMEDIATELY WITHOUT INVESTIGATION</button><button class="choice" onclick="ransomRecovery('reconnect',this)">RECONNECT THE HOST TO TEST IT</button></div><div id="ransomRecoveryFeedback"></div></div>`;
+  }else{
+    b.classList.add('wrong');
+    $('ransomFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ That action can destroy evidence or increase impact. Contain the affected endpoint first.</div>`;
+    setTimeout(()=>document.querySelectorAll('.ransomChoices .choice').forEach(x=>x.disabled=false),650);
+  }
+}
+
+async function ransomRecovery(choice,b){
+  document.querySelectorAll('.ransomNextChoices .choice').forEach(x=>x.disabled=true);
+  if(choice==='preserve'){
+    b.classList.add('correct');
+    ransomwareStage=2;
+    $('ransomLabProgress').style.width='100%';
+    $('ransomRecoveryFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Strong response. Preserve evidence, verify recovery sources, and only restore after the incident is understood.</div>`;
+    setTimeout(()=>completeRansomwareLab(),650);
+  }else{
+    b.classList.add('wrong');
+    $('ransomRecoveryFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ Recovery should follow containment and evidence preservation. Avoid reconnecting or restoring blindly.</div>`;
+    setTimeout(()=>document.querySelectorAll('.ransomNextChoices .choice').forEach(x=>x.disabled=false),650);
+  }
+}
+
+async function completeRansomwareLab(){
+  const score=Math.min(1000,760+ransomwareEvidence.size*40);
+  $('ransomLabProgress').style.width='100%';
+  $('ransomFeedback').insertAdjacentHTML('beforeend',`<div class="labResult"><div class="resultIcon">✓</div><div><span class="kicker">INCIDENT CONTAINED</span><h3>RANSOMWARE RESPONSE COMPLETE</h3><p>You correlated ${ransomwareEvidence.size}/6 evidence items, isolated the affected host and chose evidence-preserving recovery.</p><b>RESPONSE SCORE ${score}/1000</b></div><div class="resultXP">+150 XP</div></div>`);
+  await gain(150,'advanced-ransomware-response');
+  $('ransomLabHint').textContent='Case complete • XP saved to your academy progress.';
+  render();
+}
+
+
 // ============================================================
 // PHASE 2.3 // SOC INCIDENT RESPONSE LAB
 // Safe, fictional defensive training scenario.
 // ============================================================
 let socEvidence=new Set();
+
 function openSocLab(){
   socEvidence=new Set();
   socDecision=null;
