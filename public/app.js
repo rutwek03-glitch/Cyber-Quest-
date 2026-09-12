@@ -217,3 +217,119 @@ async function completeAdvancedPhishing(){
   $('phishLabHint').textContent='Case complete • XP saved to your academy progress.';
   render();
 }
+
+// ============================================================
+// PHASE 2.3 // SOC INCIDENT RESPONSE LAB
+// Safe, fictional defensive training scenario.
+// ============================================================
+let socEvidence=new Set();
+function openSocLab(){
+  socEvidence=new Set();
+  socDecision=null;
+  const c=$('modalBody');
+  c.innerHTML=`
+    <div class="labModalHead">
+      <div><span class="kicker">PHASE 2 // ADVANCED LAB 02</span><h2>SOC INCIDENT RESPONSE</h2>
+      <p class="simIntro">A workstation has triggered a high-confidence alert. You are the Tier-1 analyst. Correlate the evidence, identify the incident, then choose the safest containment sequence.</p></div>
+      <div class="caseBadge">CASE SOC-2077<br><small>ACTIVE</small></div>
+    </div>
+    <div class="labProgress"><span id="socLabProgress" style="width:15%"></span></div>
+    <div class="investigationGrid">
+      <aside class="evidencePanel">
+        <div class="panelTitle"><span>CASE FILE</span><b>6 EVIDENCE ITEMS</b></div>
+        <button class="evidenceItem active" onclick="socLabEvidence('alert',this)"><b>01</b><span>SIEM ALERT</span><i>›</i></button>
+        <button class="evidenceItem" onclick="socLabEvidence('endpoint',this)"><b>02</b><span>ENDPOINT</span><i>›</i></button>
+        <button class="evidenceItem" onclick="socLabEvidence('auth',this)"><b>03</b><span>AUTH LOG</span><i>›</i></button>
+        <button class="evidenceItem" onclick="socLabEvidence('process',this)"><b>04</b><span>PROCESS</span><i>›</i></button>
+        <button class="evidenceItem" onclick="socLabEvidence('network',this)"><b>05</b><span>NETWORK</span><i>›</i></button>
+        <button class="evidenceItem" onclick="socLabEvidence('timeline',this)"><b>06</b><span>TIMELINE</span><i>›</i></button>
+      </aside>
+      <div class="evidenceWorkspace">
+        <div id="socEvidenceView" class="evidenceView"></div>
+        <div class="evidenceCounter"><span id="socEvidenceCount">0/6 evidence items reviewed</span><span id="socLabHint">Correlate the evidence before containment.</span></div>
+      </div>
+    </div>
+    <div class="labDecisionBlock">
+      <div><span class="kicker">INCIDENT TRIAGE</span><h3>What is the most likely incident?</h3></div>
+      <div class="labDecisionChoices socChoices">
+        <button class="choice" onclick="socLabDecision('benign',this)">BENIGN ADMIN ACTIVITY</button>
+        <button class="choice" onclick="socLabDecision('phishing',this)">PHISHING ONLY</button>
+        <button class="choice" onclick="socLabDecision('compromise',this)">ENDPOINT COMPROMISE</button>
+      </div>
+      <div id="socLabFeedback"></div>
+    </div>`;
+  $('modal').style.display='grid';
+  socLabEvidence('alert',document.querySelector('.evidenceItem'));
+}
+
+const socEvidenceData={
+ alert:{title:'SIEM ALERT',type:'DETECTION',html:`<div class="socEvidenceCard"><div class="socMetric critical"><span>SEVERITY</span><b>CRITICAL</b></div><div class="socMetric"><span>RULE</span><b>Credential access + unusual process + outbound connection</b></div><div class="socMetric"><span>HOST</span><b>STUDENT-LT-042</b></div><div class="socMetric"><span>ALERT TIME</span><b>10:14:22 UTC</b></div></div>`,clue:'Multiple signals fired on the same endpoint within a short window.'},
+ endpoint:{title:'ENDPOINT',type:'HOST TELEMETRY',html:`<div class="socEvidenceCard"><div class="socMetric"><span>USER</span><b>student01</b></div><div class="socMetric"><span>HOST</span><b>STUDENT-LT-042</b></div><div class="socMetric"><span>SECURITY AGENT</span><b>ONLINE • REPORTING</b></div><div class="redFlag">⚠ The alert is tied to a real user workstation, so containment should protect the account and host.</div></div>`,clue:'The affected asset is an active student workstation, not a test server.'},
+ auth:{title:'AUTH LOG',type:'IDENTITY',html:`<div class="logTable"><div><span>10:11:04</span><b>student01</b><em>LOGIN SUCCESS</em></div><div><span>10:12:17</span><b>student01</b><em>PRIVILEGE REQUEST</em></div><div><span>10:13:51</span><b>student01</b><em>NEW SESSION • UNUSUAL</em></div><div><span>10:14:02</span><b>student01</b><em>AUTH FAILURE ×3</em></div></div>`,clue:'The identity shows an unusual session followed by repeated authentication failures.'},
+ process:{title:'PROCESS TREE',type:'ENDPOINT',html:`<div class="processTree"><div>explorer.exe</div><span>↓</span><div>powershell.exe <small>encoded command</small></div><span>↓</span><div class="dangerProcess">rundll32.exe <small>unexpected child</small></div></div>`,clue:'An encoded PowerShell process spawned an unusual child process.'},
+ network:{title:'NETWORK TELEMETRY',type:'CONNECTION',html:`<div class="networkEvidence"><div class="routeRow"><span>HOST</span><b>STUDENT-LT-042</b></div><div class="routeRow"><span>DESTINATION</span><b>203.0.113.77:443</b></div><div class="routeRow"><span>STATUS</span><b class="warningText">NEW EXTERNAL DESTINATION</b></div><div class="routeRow"><span>VOLUME</span><b>PERIODIC OUTBOUND BEACON</b></div><p>203.0.113.0/24 is reserved for documentation and is used here as a fictional training destination.</p></div>`,clue:'The endpoint is making a new periodic outbound connection after the suspicious process activity.'},
+ timeline:{title:'CORRELATED TIMELINE',type:'CORRELATION',html:`<div class="incidentTimeline"><div><b>10:12</b><span>Unusual authentication session</span></div><div><b>10:13</b><span>Encoded PowerShell launches</span></div><div><b>10:14</b><span>Credential failures + SIEM alert</span></div><div><b>10:14</b><span>New outbound beacon observed</span></div></div>`,clue:'Identity, process and network signals align into one incident window.'}
+};
+
+function socLabEvidence(key,button){
+  const d=socEvidenceData[key];
+  if(!d)return;
+  socEvidence.add(key);
+  document.querySelectorAll('.evidenceItem').forEach(x=>x.classList.remove('active'));
+  if(button)button.classList.add('active');
+  $('socEvidenceView').innerHTML=`<div class="evidenceViewHead"><span class="kicker">${d.type}</span><h3>${d.title}</h3></div>${d.html}<div class="analystNote">ANALYST CLUE <span>✓ ${d.clue}</span></div>`;
+  $('socEvidenceCount').textContent=`${socEvidence.size}/6 evidence items reviewed`;
+  $('socLabProgress').style.width=(15+(socEvidence.size/6)*45)+'%';
+  $('socLabHint').textContent=socEvidence.size===6?'Evidence correlated. Choose the incident classification.':'Review the remaining evidence before deciding.';
+}
+
+async function socLabDecision(choice,b){
+  document.querySelectorAll('.socChoices .choice').forEach(x=>x.disabled=true);
+  socDecision=choice;
+  const complete=socEvidence.size===6;
+  const correct=choice==='compromise';
+  if(correct)b.classList.add('correct'); else b.classList.add('wrong');
+  if(!complete){
+    $('socLabFeedback').innerHTML=`<div class="feedback wrongFeedback">⚠ Triage is premature. Review all six evidence items before recording the incident.</div>`;
+  }else if(correct){
+    $('socLabFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Correct. The correlated signals indicate an endpoint compromise requiring containment.</div>
+      <div class="socContainment"><span class="kicker">CONTAINMENT DECISION</span><h3>Choose the safest first response</h3>
+      <div class="containChoices">
+        <button class="choice" onclick="socContainment('isolate',this)">ISOLATE HOST + PRESERVE EVIDENCE</button>
+        <button class="choice" onclick="socContainment('reboot',this)">REBOOT HOST IMMEDIATELY</button>
+        <button class="choice" onclick="socContainment('delete',this)">DELETE SUSPICIOUS FILES FIRST</button>
+      </div><div id="socContainFeedback"></div></div>`;
+  }else{
+    $('socLabFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ Reassess the correlation. The process, identity and network signals point beyond a simple phishing event.</div>`;
+    setTimeout(()=>document.querySelectorAll('.socChoices .choice').forEach(x=>x.disabled=false),650);
+  }
+}
+
+async function socContainment(choice,b){
+  document.querySelectorAll('.containChoices .choice').forEach(x=>x.disabled=true);
+  if(choice==='isolate'){
+    b.classList.add('correct');
+    $('socContainFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Defensible response. Isolate the affected host while preserving evidence for investigation.</div>`;
+    setTimeout(()=>completeSocLab(),650);
+  }else{
+    b.classList.add('wrong');
+    $('socContainFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ Not the safest first action. Preserve evidence and stop further activity before destructive cleanup.</div>`;
+    setTimeout(()=>document.querySelectorAll('.containChoices .choice').forEach(x=>x.disabled=false),650);
+  }
+}
+
+async function completeSocLab(){
+  const score=Math.min(1000,700+socEvidence.size*45);
+  $('socLabProgress').style.width='100%';
+  $('socLabFeedback').innerHTML=`<div class="labResult"><div class="resultIcon">✓</div><div><span class="kicker">INCIDENT CONTAINED</span><h3>SOC CASE CLOSED</h3><p>You correlated ${socEvidence.size}/6 evidence items and selected a defensible containment action.</p><b>RESPONSE SCORE ${score}/1000</b></div><div class="resultXP">+120 XP</div></div>`;
+  await gain(120,'advanced-soc-incident-response');
+  $('socLabHint').textContent='Case complete • XP saved to your academy progress.';
+  render();
+}
+
+// Extend the Phase 2 lab launcher without replacing the existing phishing lab.
+const _originalAdvancedLab=advancedLab;
+advancedLab=function(type){
+  if(type==='soc') return openSocLab();
+  return _originalAdvancedLab(type);
+};

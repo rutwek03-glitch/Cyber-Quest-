@@ -119,3 +119,20 @@ footer{margin-left:238px;padding:28px 34px;border-top:1px solid #18272f;color:#5
 .labResult{display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:14px;padding:14px;border:1px solid var(--line);border-radius:12px;margin-top:10px;background:rgba(255,255,255,.04)}.resultIcon{width:42px;height:42px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;font-size:20px}.labResult h3{margin:3px 0;font-family:Orbitron,sans-serif}.labResult p{margin:3px 0 7px;font-size:11px;opacity:.65}.labResult b{font-size:10px;letter-spacing:1px}.resultXP{font-family:Orbitron,sans-serif;font-weight:800;font-size:14px;white-space:nowrap}
 @media(max-width:1000px){.advancedLabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){.advancedLabs{grid-template-columns:1fr}.investigationGrid{grid-template-columns:1fr}.evidencePanel{display:grid;grid-template-columns:1fr 1fr}.panelTitle{grid-column:1/-1}.evidenceItem{border-right:1px solid var(--line)}.labModalHead{flex-direction:column}.labDecisionChoices{grid-template-columns:1fr}.evidenceCounter{flex-direction:column}.labResult{grid-template-columns:42px 1fr}.resultXP{grid-column:2}}
+
+/* Phase 2.3 // SOC Incident Response */
+.socLabCard{position:relative}
+.socLabCard:after{content:"NEW";position:absolute;right:14px;top:14px;padding:4px 7px;border:1px solid currentColor;border-radius:20px;font:800 8px Orbitron;letter-spacing:1px}
+.socEvidenceCard,.networkEvidence{border:1px solid var(--line);border-radius:12px;padding:14px;background:rgba(0,0,0,.12)}
+.socMetric{display:flex;justify-content:space-between;gap:15px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:11px}
+.socMetric:last-child{border-bottom:0}.socMetric span{opacity:.55;font-size:9px;letter-spacing:1px}.socMetric b{text-align:right}
+.socMetric.critical b{font-family:Orbitron,sans-serif}
+.logTable{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.logTable div{display:grid;grid-template-columns:90px 1fr 150px;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line);font-size:10px}
+.logTable div:last-child{border-bottom:0}.logTable span{opacity:.55;font-family:monospace}.logTable em{font-style:normal;opacity:.7}
+.processTree{display:grid;justify-items:center;gap:7px;padding:12px}.processTree>div{width:min(420px,100%);padding:11px 13px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.03);font:700 11px monospace}
+.processTree span{opacity:.5}.processTree small{display:block;margin-top:4px;color:#e0646b;font:9px Orbitron}.dangerProcess{border-color:#e0646b!important}
+.routeRow{display:flex;justify-content:space-between;gap:15px;padding:10px 0;border-bottom:1px solid var(--line);font-size:11px}.routeRow:last-of-type{border-bottom:0}.routeRow span{opacity:.55;font-size:9px;letter-spacing:1px}.networkEvidence p{font-size:9px;opacity:.5;line-height:1.5;margin:12px 0 0}
+.incidentTimeline{display:grid;gap:8px}.incidentTimeline div{display:grid;grid-template-columns:65px 1fr;gap:12px;padding:11px;border-left:2px solid currentColor;background:rgba(255,255,255,.025);font-size:11px}.incidentTimeline b{font-family:monospace}.incidentTimeline span{opacity:.8}
+.socContainment{margin-top:14px;padding:15px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}.socContainment h3{margin:4px 0 12px}.containChoices{display:grid;gap:8px}.containChoices .choice{min-height:42px}
+@media(max-width:680px){.logTable div{grid-template-columns:1fr;gap:4px}.socMetric{align-items:flex-start;flex-direction:column}.socMetric b{text-align:left}}
