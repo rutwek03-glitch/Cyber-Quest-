@@ -114,3 +114,106 @@ async function issueCertificate(){try{let d=await api('/api/certificate',{method
 function printCertificate(){window.print()}
 function term(){let a=['Authenticating student session...','Identity verified: '+user.email,'Loading security telemetry...','[OK] Access controls','[OK] Learning zones','[OK] Mission queue','[OK] Interactive simulations','STATUS: READY FOR TODAY\'S CHALLENGE'];$('term').innerHTML=a.map((x,i)=>`<div class="line" style="animation-delay:${i*.35}s">> ${x}</div>`).join('')}
 boot();
+
+// ============================================================
+// PHASE 2 // ADVANCED CYBER LAB ENGINE
+// Safe, fictional training scenarios only.
+// ============================================================
+const advancedLabCatalog={
+  phishing:{
+    title:'PHISHING INVESTIGATION',
+    subtitle:'SOC CASE FILE // PH-1042',
+    xp:100,
+    key:'advanced-phishing-investigation',
+    steps:['EVIDENCE','ANALYZE','DECIDE','REPORT']
+  }
+};
+let activeAdvancedLab=null;
+let phishingEvidence=new Set();
+let phishingDecision=null;
+
+function advancedLab(type){
+  if(type!=='phishing') return;
+  activeAdvancedLab=type;
+  phishingEvidence=new Set();
+  phishingDecision=null;
+  const c=$('modalBody');
+  c.innerHTML=`
+    <div class="labModalHead">
+      <div><span class="kicker">PHASE 2 // ADVANCED LAB 01</span><h2>PHISHING INVESTIGATION</h2>
+      <p class="simIntro">A student reported a suspicious account-verification email. You are the analyst. Collect evidence before making your final classification.</p></div>
+      <div class="caseBadge">CASE PH-1042<br><small>OPEN</small></div>
+    </div>
+    <div class="labProgress"><span id="phishLabProgress" style="width:25%"></span></div>
+    <div class="investigationGrid">
+      <aside class="evidencePanel">
+        <div class="panelTitle"><span>CASE FILE</span><b>5 EVIDENCE ITEMS</b></div>
+        <button class="evidenceItem active" onclick="phishLabEvidence('email',this)"><b>01</b><span>EMAIL BODY</span><i>›</i></button>
+        <button class="evidenceItem" onclick="phishLabEvidence('sender',this)"><b>02</b><span>SENDER</span><i>›</i></button>
+        <button class="evidenceItem" onclick="phishLabEvidence('domain',this)"><b>03</b><span>LINK DOMAIN</span><i>›</i></button>
+        <button class="evidenceItem" onclick="phishLabEvidence('header',this)"><b>04</b><span>MESSAGE HEADER</span><i>›</i></button>
+        <button class="evidenceItem" onclick="phishLabEvidence('context',this)"><b>05</b><span>USER CONTEXT</span><i>›</i></button>
+      </aside>
+      <div class="evidenceWorkspace">
+        <div id="phishEvidenceView" class="evidenceView"></div>
+        <div class="evidenceCounter"><span id="phishEvidenceCount">0/5 evidence items reviewed</span><span id="phishLabHint">Review every item before deciding.</span></div>
+      </div>
+    </div>
+    <div class="labDecisionBlock">
+      <div><span class="kicker">FINAL CLASSIFICATION</span><h3>What should the SOC record?</h3></div>
+      <div class="labDecisionChoices">
+        <button class="choice" onclick="phishLabDecision('safe',this)">LEGITIMATE</button>
+        <button class="choice" onclick="phishLabDecision('suspicious',this)">SUSPICIOUS</button>
+        <button class="choice" onclick="phishLabDecision('malicious',this)">MALICIOUS PHISHING</button>
+      </div>
+      <div id="phishLabFeedback"></div>
+    </div>`;
+  $('modal').style.display='grid';
+  phishLabEvidence('email',document.querySelector('.evidenceItem'));
+}
+
+const phishingEvidenceData={
+ email:{title:'EMAIL BODY',type:'MESSAGE',html:`<div class="fakeEmail"><div class="fakeEmailBar"><span>INBOX // REPORTED MESSAGE</span><span class="riskHigh">HIGH RISK</span></div><div class="emailRow"><b>Subject</b><span>URGENT: Verify your student account today</span></div><div class="emailRow"><b>Message</b><span>Your account will be suspended within 30 minutes. Use the verification portal below to restore access.</span></div><div class="fakeLink">VERIFY-STUDENT-ACCOUNT</div><small>Reminder: never use a message link to sign in when the request is unexpected.</small></div>`,clue:'Artificial urgency + unexpected login request.'},
+ sender:{title:'SENDER',type:'IDENTITY',html:`<div class="forensicCard"><div><span>DISPLAY NAME</span><b>University IT Security</b></div><div><span>ACTUAL ADDRESS</span><b>it-security@univer5ity-support.example</b></div><div class="redFlag">⚠ The domain uses a look-alike spelling and is not the university's official domain.</div></div>`,clue:'Sender identity does not match the trusted organization.'},
+ domain:{title:'LINK DOMAIN',type:'URL ANALYSIS',html:`<div class="urlInspect"><span>DESTINATION PREVIEW</span><code>https://login.univer5ity-support.example/verify</code><div class="urlParts"><b>HTTPS</b><b>LOOK-ALIKE DOMAIN</b><b>/verify</b></div><p>The use of HTTPS does not prove a site is trustworthy. The domain itself is the key clue.</p></div>`,clue:'HTTPS can encrypt a connection to a malicious site; the domain remains suspicious.'},
+ header:{title:'MESSAGE HEADER',type:'MAIL TRACE',html:`<div class="headerCard"><div><span>RETURN-PATH</span><b>bounce@mailer.univer5ity-support.example</b></div><div><span>REPLY-TO</span><b>verify-team@univer5ity-support.example</b></div><div><span>AUTH STATUS</span><b class="warningText">DOMAIN MISMATCH</b></div><div class="traceLine"><i></i><span>UNKNOWN SENDER → EXTERNAL MAILER → STUDENT INBOX</span></div></div>`,clue:'The message authentication context does not align with the claimed organization.'},
+ context:{title:'USER CONTEXT',type:'CORRELATION',html:`<div class="contextCard"><div class="contextSignal"><b>USER REPORT</b><span>“I did not request an account change.”</span></div><div class="contextSignal"><b>KNOWN ACTIVITY</b><span>No scheduled maintenance or account action exists for this student.</span></div><div class="contextSignal"><b>RISK</b><span>Credential theft is plausible if the student follows the link.</span></div></div>`,clue:'The request is unexpected and conflicts with known user activity.'}
+};
+
+function phishLabEvidence(key,button){
+  const d=phishingEvidenceData[key];
+  if(!d)return;
+  phishingEvidence.add(key);
+  document.querySelectorAll('.evidenceItem').forEach(x=>x.classList.remove('active'));
+  if(button)button.classList.add('active');
+  $('phishEvidenceView').innerHTML=`<div class="evidenceViewHead"><span class="kicker">${d.type}</span><h3>${d.title}</h3></div>${d.html}<div class="analystNote">ANALYST CLUE <span>✓ ${d.clue}</span></div>`;
+  $('phishEvidenceCount').textContent=`${phishingEvidence.size}/5 evidence items reviewed`;
+  $('phishLabProgress').style.width=(25+(phishingEvidence.size/5)*35)+'%';
+  $('phishLabHint').textContent=phishingEvidence.size===5?'All evidence reviewed. Make your classification.':'Review the remaining evidence before deciding.';
+}
+
+async function phishLabDecision(choice,b){
+  document.querySelectorAll('.labDecisionChoices .choice').forEach(x=>x.disabled=true);
+  phishingDecision=choice;
+  const complete=phishingEvidence.size===5;
+  const correct=choice==='malicious';
+  if(correct)b.classList.add('correct'); else b.classList.add('wrong');
+  if(!complete){
+    $('phishLabFeedback').innerHTML=`<div class="feedback wrongFeedback">⚠ Classification recorded, but your evidence review is incomplete. A strong analyst documents the available evidence first.</div>`;
+  }else if(correct){
+    $('phishLabFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Correct classification. The evidence strongly supports a malicious phishing attempt.</div>`;
+    setTimeout(()=>completeAdvancedPhishing(),650);
+  }else{
+    $('phishLabFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ Reassess the evidence. Look at the sender, look-alike domain, header mismatch and unexpected request.</div>`;
+    setTimeout(()=>document.querySelectorAll('.labDecisionChoices .choice').forEach(x=>x.disabled=false),650);
+  }
+}
+
+async function completeAdvancedPhishing(){
+  const score=Math.min(1000,650+phishingEvidence.size*70);
+  $('phishLabProgress').style.width='100%';
+  $('phishLabFeedback').innerHTML=`<div class="labResult"><div class="resultIcon">✓</div><div><span class="kicker">CASE CLOSED</span><h3>PHISHING CONFIRMED</h3><p>You collected ${phishingEvidence.size}/5 evidence items and reached the correct classification.</p><b>INVESTIGATION SCORE ${score}/1000</b></div><div class="resultXP">+100 XP</div></div>`;
+  await gain(100,'advanced-phishing-investigation');
+  $('phishLabHint').textContent='Case complete • XP saved to your academy progress.';
+  render();
+}
