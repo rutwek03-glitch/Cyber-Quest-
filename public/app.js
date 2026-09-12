@@ -1,8 +1,21 @@
 let user=null,state=null,mode='login',today=new Date().toISOString().slice(0,10);
 const $=id=>document.getElementById(id),go=s=>document.querySelector(s).scrollIntoView({behavior:'smooth'});
+
+// CYBER//QUEST cinematic secure-boot intro
+(function initCyberIntro(){
+  const intro=$('cyberIntro'); if(!intro) return;
+  const bar=$('introProgressBar'), status=$('introStatus'), hint=$('introHint'), log=$('introLog'), enter=$('introEnter'), clock=$('introClock');
+  const lines=['Establishing encrypted channel...','Checking identity services...','Loading Cyber City modules...','Activating threat simulations...','Synchronizing learner progress...','SYSTEM READY ✓'];
+  const started=Date.now(); let finished=false;
+  function tick(){const d=new Date(); clock.textContent=d.toTimeString().slice(0,8); if(!finished) requestAnimationFrame(tick)} tick();
+  function finish(){if(finished)return; finished=true; bar.style.width='100%'; status.textContent='SYSTEM SECURED ✓'; hint.textContent='WELCOME TO THE CYBER//QUEST LEARNING GRID'; enter.classList.add('ready'); intro.classList.add('complete'); setTimeout(()=>{intro.classList.add('gone');intro.setAttribute('aria-hidden','true');},850);}
+  function run(){let i=0; const step=()=>{if(i>=lines.length){setTimeout(finish,450);return} status.textContent=lines[i].toUpperCase(); hint.textContent=['VERIFYING...','AUTH SERVICES ONLINE','BUILDING CYBER CITY','SIMULATIONS ONLINE','PROGRESS DATABASE ONLINE','ALL SYSTEMS NOMINAL'][i]; bar.style.width=((i+1)/lines.length*100)+'%'; const div=document.createElement('div');div.textContent='> '+lines[i];log.appendChild(div);i++;setTimeout(step,520)};step()}
+  enter.onclick=finish; document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!finished)finish()});
+  setTimeout(run,350);
+})();
 async function api(u,o={}){let r=await fetch(u,{headers:{'Content-Type':'application/json'},...o}),d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'Request failed');return d}
 async function boot(){try{let d=await api('/api/me');user=d.user;state=d.progress;show()}catch(e){$('auth').classList.remove('hide')}}
-function show(){$('auth').classList.add('hide');$('app').classList.remove('hide');$('welcome').textContent=user.name.split(' ')[0];$('pname').textContent=user.name;$('pemail').textContent=user.email;$('avatar').textContent=user.name[0].toUpperCase();render();updateXPUI();term()}
+function show(){$('auth').classList.add('hide');$('app').classList.remove('hide');$('welcome').textContent=user.name.split(' ')[0];$('pname').textContent=user.name;$('pemail').textContent=user.email;$('avatar').textContent=user.name[0].toUpperCase();render();term()}
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');mode=b.dataset.mode;$('nameRow').classList.toggle('hide',mode==='login');$('authSubmit').textContent=mode==='login'?'ENTER CYBER//QUEST →':'CREATE CYBER ID →'});
 $('authForm').onsubmit=async e=>{e.preventDefault();try{let body={email:$('email').value,password:$('password').value};if(mode==='register')body.name=$('name').value;let d=await api(mode==='login'?'/api/login':'/api/register',{method:'POST',body:JSON.stringify(body)});user=d.user;state=d.progress;show()}catch(e){alert(e.message)}};
 $('demoBtn').onclick=()=>{$('email').value='student@cyberquest.demo';$('password').value='CyberQuest123';$('authForm').requestSubmit()};
@@ -31,22 +44,7 @@ function render(){let r=['CYBER ROOKIE','SECURITY CADET','THREAT HUNTER','CYBER 
 $('startM').onclick=()=>{$('mchallenge').style.display='block';$('mq').textContent=m[3];$('mc').innerHTML=m[4].map((x,i)=>`<button class="choice" onclick="answerM(${i},this)">${x}</button>`).join('');$('mchallenge').scrollIntoView({behavior:'smooth',block:'center'})};
 async function answerM(i,b){document.querySelectorAll('#mc .choice').forEach(x=>x.disabled=true);if(i===m[5]){b.classList.add('correct');$('mf').innerHTML='<div class="feedback">✓ Mission complete • +50 XP</div>';await gain(50,'mission-'+today)}else{b.classList.add('wrong');$('mf').innerHTML='<div class="feedback">✕ Not the safest move. Look for verification before acting.</div>'}}
 async function answerQuiz(i,b){document.querySelectorAll('#quizChoices .choice').forEach(x=>x.disabled=true);if(i===q[2]){b.classList.add('correct');$('quizF').innerHTML='<div class="feedback">✓ Correct • +20 XP</div>';await gain(20,'quiz-'+today)}else{b.classList.add('wrong');$('quizF').innerHTML='<div class="feedback">✕ Review the concept.</div>'}}
-async function gain(x,key){
-  const d=await api('/api/progress',{method:'POST',body:JSON.stringify({xp:x,key})});
-  state=d.progress; user={...user,...d.progress};
-  updateXPUI();
-  renderProgression(); renderZones(); renderSessions(); renderBadges(); renderBoard(); renderCertificate();
-  return d.progress;
-}
-function updateXPUI(){
-  if(!state)return;
-  const rankNames=['CYBER ROOKIE','SECURITY CADET','THREAT HUNTER','CYBER DEFENDER','SECURITY SPECIALIST','CYBER GUARDIAN'];
-  const rank=rankNames[Math.min(Math.floor(Number(state.xp||0)/200),5)];
-  const xpEl=$('xp'), rankEl=$('rank'), streakEl=$('streak');
-  if(xpEl)xpEl.textContent=Number(state.xp||0);
-  if(rankEl)rankEl.textContent=rank;
-  if(streakEl)streakEl.textContent=Number(state.streak||1);
-}
+async function gain(x,key){let d=await api('/api/progress',{method:'POST',body:JSON.stringify({xp:x,key})});state=d.progress;render()}
 function zoneCompleted(i){return state.completed.includes('lesson-'+i)}
 function zoneUnlocked(i){return i===0||zoneCompleted(i-1)}
 function renderProgression(){let done=lessons.filter((_,i)=>zoneCompleted(i)).length,pct=Math.round(done/lessons.length*100);$('masteryText').textContent=`${done}/12 ZONES`;$('masteryPct').textContent=pct+'%';$('masteryBar').style.width=pct+'%';let next=lessons.findIndex((_,i)=>!zoneCompleted(i));$('nextZone').textContent=next<0?'MASTERED':`ZONE ${String(next+1).padStart(2,'0')}`;$('certStatus').textContent=done===12?'READY':'LOCKED';let groups=[['FOUNDATION DISTRICT','Zones 01–02','foundation','2'],['DEFENSE DISTRICT','Zones 03–08','defense','6'],['ADVANCED DISTRICT','Zones 09–12','advanced','4']];$('districts').innerHTML=groups.map(g=>{let count=lessons.filter(x=>x[1]===g[2]).length,completed=lessons.filter((x,i)=>x[1]===g[2]&&zoneCompleted(i)).length;return `<div class="district"><div><span class="districtIcon">${g[2]==='foundation'?'⌁':g[2]==='defense'?'◉':'⌬'}</span><div><small>${g[1]}</small><b>${g[0]}</b></div></div><span>${completed}/${count}</span></div>`}).join('')}
@@ -85,14 +83,11 @@ function sessionVisual(i,slide){
  </div>`;
 }
 function openSession(i){let x=sessions[i],slide=0;function draw(){let sl=x.slides[slide];$('modalBody').innerHTML=`<div class="sessionModal"><div class="sessionModalHead"><span class="kicker">CYBER//QUEST SESSION ${String(i+1).padStart(2,'0')} // ${x.level}</span><span class="slideCount">SLIDE ${slide+1}/${x.slides.length}</span></div><h2>${x.icon} ${x.title}</h2><div class="slideProgress"><span style="width:${((slide+1)/x.slides.length)*100}%"></span></div><div class="sessionVisualWrap">${sessionVisual(i,slide)}<div class="sessionSlide"><span class="slideLabel">${sl[0]}</span><p>${sl[1]}</p></div></div><div class="sessionNav"><button class="choice" id="prevSlide" ${slide===0?'disabled':''}>← PREVIOUS</button><button class="btn primary" id="nextSlide">${slide===x.slides.length-1?'FINISH SESSION':'NEXT SLIDE →'}</button></div>${slide===x.slides.length-1?`<div class="sessionTakeaway"><b>DEFENDER TAKEAWAY</b><p>${x.takeaway}</p></div>${state.completed.includes('session-'+i)?'<div class="feedback">✓ Session completed. Your progress is saved.</div>':'<button class="btn primary full" id="completeSession">MARK SESSION COMPLETE +40 XP</button>'}`:''}</div>`;$('modal').style.display='grid';$('prevSlide').onclick=()=>{slide--;draw()};$('nextSlide').onclick=()=>{if(slide<x.slides.length-1){slide++;draw()}else if(!state.completed.includes('session-'+i)){completeSession(i)}};let cs=$('completeSession');if(cs)cs.onclick=()=>completeSession(i)}draw()}
-async function completeSession(i){if(state.completed.includes('session-'+i))return;try{await gain(40,'session-'+i);alert('Session completed! +40 XP added.');openSession(i)}catch(e){alert('XP could not be saved: '+e.message)}}
+async function completeSession(i){if(state.completed.includes('session-'+i))return;await gain(40,'session-'+i);openSession(i)}
 function lesson(i){let x=lessons[i];if(!zoneUnlocked(i)){let prev=lessons[i-1];$('modalBody').innerHTML=`<span class="kicker">ACCESS CONTROL // LOCKED ZONE</span><h2>ZONE ${String(i+1).padStart(2,'0')} LOCKED</h2><p>Complete <b>${prev[0]}</b> first. CYBER//QUEST unlocks the next zone after each completed learning mission.</p><div class="lockCard">🔒 <b>PROGRESSION REQUIRED</b><span>Complete Zone ${String(i).padStart(2,'0')} to unlock this zone.</span></div>`;$('modal').style.display='grid';return}$('modalBody').innerHTML=`<span class="kicker">${x[1].toUpperCase()} // LEARNING ZONE ${String(i+1).padStart(2,'0')}</span><h2>${x[0]}</h2><p>${x[3]}</p><h3>CORE CONCEPTS</h3><ul>${x[4].map(t=>`<li>${t}</li>`).join('')}</ul><div class="think"><b>DEFENDER'S QUESTION</b><p>How could misunderstanding this concept create security risk?</p></div>${zoneCompleted(i)?'<div class="feedback">✓ Zone already completed. Your mastery progress is saved.</div>':`<button class="btn primary" onclick="completeLesson(${i})">COMPLETE LESSON +30 XP</button>`}`;$('modal').style.display='grid'}
-async function completeLesson(i){if(zoneCompleted(i))return;try{await gain(30,'lesson-'+i);alert('Learning zone completed! +30 XP added.');closeModal()}catch(e){alert('XP could not be saved: '+e.message)}}
+async function completeLesson(i){if(zoneCompleted(i))return;await gain(30,'lesson-'+i);closeModal()}
 function closeModal(){$('modal').style.display='none'}
-async function resultCard(title,desc,points,key,correct){
-  $('modalBody').insertAdjacentHTML('beforeend',`<div class="simResult ${correct?'success':'failure'}"><b>${correct?'✓':'✕'} ${title}</b><p>${desc}</p>${correct?`<span>+${points} XP</span>`:''}</div>`);
-  if(correct){try{await gain(points,key)}catch(e){$('modalBody').insertAdjacentHTML('beforeend',`<div class="feedback">⚠ XP save failed: ${e.message}</div>`)}}
-}
+function resultCard(title,desc,points,key,correct){$('modalBody').insertAdjacentHTML('beforeend',`<div class="simResult ${correct?'success':'failure'}"><b>${correct?'✓':'✕'} ${title}</b><p>${desc}</p>${correct?`<span>+${points} XP</span>`:''}</div>`);if(correct)gain(points,key)}
 function sim(t){let c=$('modalBody');
 if(t==='phish')c.innerHTML=`<span class="kicker">SIM 01 // PHISHING INVESTIGATION</span><h2>SPOT THE PHISH</h2><p class="simIntro">You are the first-line defender. Inspect the message, identify the warning signs, then make the call.</p><div class="emailMock"><div class="emailTop"><span>INBOX // NEW MESSAGE</span><span class="risk">RISK: HIGH</span></div><b>From: it-support@university-help.co</b><h3>URGENT — account suspension</h3><p>Your account will be disabled today. Click the link and sign in immediately.</p><div class="clueRow"><button class="clue" onclick="this.classList.toggle('found');document.getElementById('phishClues').textContent=document.querySelectorAll('.clue.found').length+'/3 clues found'">DOMAIN</button><button class="clue" onclick="this.classList.toggle('found');document.getElementById('phishClues').textContent=document.querySelectorAll('.clue.found').length+'/3 clues found'">URGENCY</button><button class="clue" onclick="this.classList.toggle('found');document.getElementById('phishClues').textContent=document.querySelectorAll('.clue.found').length+'/3 clues found'">LOGIN REQUEST</button></div><small id="phishClues">0/3 clues found</small></div><h3 class="decisionTitle">YOUR DECISION</h3><div class="simChoices"><button class="choice" onclick="phishDecision(false,this)">OPEN THE LINK</button><button class="choice" onclick="phishDecision(true,this)">REPORT PHISHING</button></div>`;
 if(t==='network')c.innerHTML=`<span class="kicker">SIM 02 // NETWORK DEFENSE</span><h2>PACKET PATROL</h2><p class="simIntro">Packets are approaching your firewall. Inspect each one and decide whether policy should ALLOW or BLOCK it.</p><div class="packetStage gameStage"><div class="node client">ENDPOINT</div><div class="fw">FIREWALL</div><div class="node server">SERVER</div><div class="packetGame" id="packetGame"></div></div><div id="packetInfo" class="simInfo">Packet 1 of 3 ready for inspection.</div><div class="simChoices" id="packetChoices"><button class="choice" onclick="packetDecision(true)">ALLOW</button><button class="choice" onclick="packetDecision(false)">BLOCK</button></div>`;

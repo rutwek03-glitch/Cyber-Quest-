@@ -1,4 +1,21 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CYBER//QUEST</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="/style.css"></head><body>
+<div id="cyberIntro" class="cyberIntro" aria-hidden="true">
+  <div class="introGrid"></div><div class="introScan"></div>
+  <div class="introHud">
+    <span>SECURE BOOT // CYBER//QUEST</span><span id="introClock">00:00:00</span>
+  </div>
+  <div class="introCore">
+    <div class="introOrb"><div class="introRing ringA"></div><div class="introRing ringB"></div><div class="introShield">⌁</div></div>
+    <div class="introStatus" id="introStatus">INITIALIZING SECURE CONNECTION...</div>
+    <h1>CYBER<span>//</span>QUEST</h1>
+    <p>LEARN · PRACTICE · DEFEND</p>
+    <div class="introProgress"><span id="introProgressBar"></span></div>
+    <small id="introHint">SCANNING CYBER CITY...</small>
+    <button id="introEnter" class="introEnter">PRESS ENTER TO ENTER <b>CYBER//QUEST</b></button>
+  </div>
+  <div class="introLog" id="introLog"><div>&gt; Initializing learning environment...</div></div>
+</div>
+
 <div id="auth" class="auth"><div class="authHero"><div class="brand">CYBER<span>//</span>QUEST</div><div class="orb"></div><span class="kicker">STUDENT CYBER ACADEMY</span><h1>ENTER THE<br><span>CYBER CITY.</span></h1><p>Learn cybersecurity through missions, animated examples and safe simulations.</p></div><div class="authBox"><div class="tabs"><button class="tab active" data-mode="login">SIGN IN</button><button class="tab" data-mode="register">CREATE ACCOUNT</button></div><form id="authForm"><label>EMAIL<input id="email" type="email" required placeholder="student@example.com"></label><label id="nameRow" class="hide">NAME<input id="name" placeholder="Your name"></label><label>PASSWORD<input id="password" type="password" required minlength="6" placeholder="••••••••"></label><button class="btn primary full" id="authSubmit">ENTER CYBER//QUEST →</button></form><div class="demo"><b>DEMO ACCOUNT</b><span>student@cyberquest.demo</span><span>Password: CyberQuest123</span><button id="demoBtn">USE DEMO</button></div><small>Passwords are hashed on the server. Never use a real password in a demo.</small></div></div>
 <div id="app" class="hide"><header><a class="brand" href="#top">CYBER<span>//</span>QUEST</span></a><nav><a href="#missions">Missions</a><a href="#simulations">Simulations</a><a href="#learn">Learn</a><a href="#sessions">Sessions</a><a href="#leaderboard">Leaderboard</a></nav><div><button id="theme">☼</button><button id="logout">LOG OUT</button></div></header><main id="top">
 <section class="hero"><div><span class="kicker">SECURITY OPERATIONS // STUDENT MODE</span><h1>LEARN.<br><span>THINK.</span><br>DEFEND.</h1><p>Welcome, <b id="welcome"></b>. Every mission earns XP and every concept unlocks another part of your cyber skill tree.</p><button class="btn primary" onclick="go('#missions')">START MISSION →</button></div><div class="terminal"><div class="termHead">SOC_TERMINAL <b>LIVE</b></div><div id="term"></div></div></section>
