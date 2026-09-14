@@ -145,3 +145,15 @@ footer{margin-left:238px;padding:28px 34px;border-top:1px solid #18272f;color:#5
 .ransomBanner h3{margin:5px 0 0;font-family:Orbitron,sans-serif;letter-spacing:.8px}.ransomStat{display:flex;flex-direction:column;justify-content:center;padding-left:14px;border-left:1px solid var(--line)}.ransomStat b{font:800 12px Orbitron,sans-serif}.ransomStat span{font-size:8px;letter-spacing:1px;opacity:.55;margin-top:5px}
 .ransomNext{margin-top:14px;padding:15px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}.ransomNext h3{margin:4px 0 12px}.ransomNextChoices{display:grid;gap:8px}.ransomNextChoices .choice{min-height:42px}
 @media(max-width:680px){.ransomBanner{grid-template-columns:1fr 1fr}.ransomBanner>div:first-child{grid-column:1/-1}.ransomStat{padding-left:0;border-left:0}}
+
+
+/* Phase 2.5 // Network Attack Investigation */
+.networkLabCard{position:relative;border-color:rgba(80,170,255,.22);background:linear-gradient(145deg,rgba(50,120,190,.07),rgba(255,255,255,.02))}
+.networkLabCard:after{content:"NEW";position:absolute;right:14px;top:14px;padding:4px 7px;border:1px solid currentColor;border-radius:20px;font:800 8px Orbitron;letter-spacing:1px}
+.networkEvidenceCard{border:1px solid var(--line);border-radius:12px;padding:14px;background:rgba(0,0,0,.12)}
+.networkMetric{display:flex;justify-content:space-between;gap:15px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:11px}
+.networkMetric:last-child{border-bottom:0}.networkMetric span{opacity:.55;font-size:9px;letter-spacing:1px}.networkMetric b{text-align:right}.networkMetric.critical b{font-family:Orbitron,sans-serif}
+.portMatrix{display:grid;gap:7px}.portMatrix>div{display:grid;grid-template-columns:110px 1fr 120px;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.025);font-size:10px}.portMatrix span{opacity:.5}.portMatrix em{font-style:normal;text-align:right;opacity:.75;font-family:monospace}
+.flowTable{border:1px solid var(--line);border-radius:10px;overflow:hidden}.flowTable>div{display:grid;grid-template-columns:75px 1fr 90px;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line);font-size:10px}.flowTable>div:last-child{border-bottom:0}.flowTable span{opacity:.5;font-family:monospace}.flowTable em{font-style:normal;text-align:right;opacity:.75}
+.networkMuted{font-size:9px;opacity:.5;line-height:1.5;margin:12px 0 0}.networkContainment{margin-top:14px;padding:15px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}.networkContainment h3{margin:4px 0 12px}.networkContainChoices{display:grid;gap:8px}.networkContainChoices .choice{min-height:42px}
+@media(max-width:680px){.portMatrix>div{grid-template-columns:1fr;gap:4px}.portMatrix em,.flowTable em{text-align:left}.flowTable>div{grid-template-columns:1fr;gap:4px}.networkMetric{align-items:flex-start;flex-direction:column}.networkMetric b{text-align:left}}

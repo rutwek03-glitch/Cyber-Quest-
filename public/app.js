@@ -451,3 +451,128 @@ advancedLab=function(type){
   if(type==='soc') return openSocLab();
   return _originalAdvancedLab(type);
 };
+
+
+// ============================================================
+// PHASE 2.5 // NETWORK ATTACK INVESTIGATION LAB
+// Safe, fictional defensive training scenario using documentation IPs.
+// ============================================================
+let networkEvidenceReviewed=new Set();
+let networkStage=0;
+
+function openNetworkLab(){
+  networkEvidenceReviewed=new Set();
+  networkStage=0;
+  const c=$('modalBody');
+  c.innerHTML=`
+    <div class="labModalHead">
+      <div><span class="kicker">PHASE 2 // ADVANCED LAB 04</span><h2>NETWORK ATTACK INVESTIGATION</h2>
+      <p class="simIntro">A monitoring sensor has flagged unusual traffic from a workstation. You are the network analyst. Correlate the traffic evidence before identifying the attack and selecting a defensive response.</p></div>
+      <div class="caseBadge">CASE NET-3141<br><small>ACTIVE</small></div>
+    </div>
+    <div class="labProgress"><span id="networkLabProgress" style="width:15%"></span></div>
+    <div class="investigationGrid">
+      <aside class="evidencePanel">
+        <div class="panelTitle"><span>CASE FILE</span><b>6 EVIDENCE ITEMS</b></div>
+        <button class="evidenceItem active" onclick="networkLabEvidence('alert',this)"><b>01</b><span>IDS ALERT</span><i>›</i></button>
+        <button class="evidenceItem" onclick="networkLabEvidence('ports',this)"><b>02</b><span>PORT ACTIVITY</span><i>›</i></button>
+        <button class="evidenceItem" onclick="networkLabEvidence('dns',this)"><b>03</b><span>DNS LOG</span><i>›</i></button>
+        <button class="evidenceItem" onclick="networkLabEvidence('flows',this)"><b>04</b><span>FLOW DATA</span><i>›</i></button>
+        <button class="evidenceItem" onclick="networkLabEvidence('firewall',this)"><b>05</b><span>FIREWALL</span><i>›</i></button>
+        <button class="evidenceItem" onclick="networkLabEvidence('timeline',this)"><b>06</b><span>TIMELINE</span><i>›</i></button>
+      </aside>
+      <div class="evidenceWorkspace">
+        <div id="networkEvidenceView" class="evidenceView"></div>
+        <div class="evidenceCounter"><span id="networkEvidenceCount">0/6 evidence items reviewed</span><span id="networkLabHint">Correlate traffic, ports and destinations before deciding.</span></div>
+      </div>
+    </div>
+    <div class="labDecisionBlock">
+      <div><span class="kicker">ATTACK IDENTIFICATION</span><h3>What is the most likely attack?</h3></div>
+      <div class="labDecisionChoices networkChoices">
+        <button class="choice" onclick="networkAttackDecision('portscan',this)">PORT SCANNING / RECONNAISSANCE</button>
+        <button class="choice" onclick="networkAttackDecision('beacon',this)">COMMAND-AND-CONTROL BEACONING</button>
+        <button class="choice" onclick="networkAttackDecision('dns',this)">DNS MISCONFIGURATION</button>
+      </div>
+      <div id="networkLabFeedback"></div>
+    </div>`;
+  $('modal').style.display='grid';
+  networkLabEvidence('alert',document.querySelector('.evidenceItem'));
+}
+
+const networkEvidenceData={
+ alert:{title:'IDS ALERT',type:'DETECTION',html:`<div class="networkEvidenceCard"><div class="networkMetric critical"><span>SEVERITY</span><b>HIGH</b></div><div class="networkMetric"><span>SIGNATURE</span><b>Horizontal connection sweep</b></div><div class="networkMetric"><span>SOURCE</span><b>10.20.4.17</b></div><div class="networkMetric"><span>WINDOW</span><b>14:02:11–14:02:29 UTC</b></div></div>`,clue:'The sensor detected many connection attempts from one internal workstation in a short window.'},
+ ports:{title:'PORT ACTIVITY',type:'TRAFFIC',html:`<div class="portMatrix"><div><span>DESTINATION</span><b>10.20.8.21</b><em>22 / CLOSED</em></div><div><span>DESTINATION</span><b>10.20.8.22</b><em>80 / CLOSED</em></div><div><span>DESTINATION</span><b>10.20.8.23</b><em>443 / CLOSED</em></div><div><span>DESTINATION</span><b>10.20.8.24</b><em>3389 / OPEN</em></div><div><span>DESTINATION</span><b>10.20.8.25</b><em>445 / CLOSED</em></div></div>`,clue:'The same source tests multiple hosts and ports, with one reachable service.'},
+ dns:{title:'DNS LOG',type:'NAME RESOLUTION',html:`<div class="networkEvidenceCard"><div class="networkMetric"><span>CLIENT</span><b>10.20.4.17</b></div><div class="networkMetric"><span>QUERY</span><b>fileserver.training.internal</b></div><div class="networkMetric"><span>RESULT</span><b>10.20.8.24</b></div><div class="networkMetric"><span>RATE</span><b>1 QUERY • NORMAL</b></div><p class="networkMuted">No suspicious external domain resolution appears in this case.</p></div>`,clue:'DNS is normal, making a name-resolution failure less likely than a network discovery event.'},
+ flows:{title:'FLOW DATA',type:'NETFLOW',html:`<div class="flowTable"><div><span>14:02:11</span><b>10.20.4.17 → 10.20.8.21:22</b><em>REJECT</em></div><div><span>14:02:15</span><b>10.20.4.17 → 10.20.8.22:80</b><em>REJECT</em></div><div><span>14:02:19</span><b>10.20.4.17 → 10.20.8.23:443</b><em>REJECT</em></div><div><span>14:02:24</span><b>10.20.4.17 → 10.20.8.24:3389</b><em>ACCEPT</em></div><div><span>14:02:29</span><b>10.20.4.17 → 10.20.8.25:445</b><em>REJECT</em></div></div>`,clue:'Sequential attempts across multiple hosts and ports form a clear horizontal scan pattern.'},
+ firewall:{title:'FIREWALL DECISION',type:'CONTROL',html:`<div class="networkEvidenceCard"><div class="networkMetric"><span>RULE</span><b>INTERNAL EAST-WEST TRAFFIC</b></div><div class="networkMetric"><span>DEFAULT</span><b>ALLOW WITH INSPECTION</b></div><div class="networkMetric"><span>ANOMALY ACTION</span><b>ALERT • NO AUTO-BLOCK</b></div><div class="redFlag">⚠ The source host remains online. A defensive response should limit further reconnaissance without destroying investigation evidence.</div></div>`,clue:'The network control has alerted but has not automatically contained the source workstation.'},
+ timeline:{title:'CORRELATED TIMELINE',type:'CORRELATION',html:`<div class="incidentTimeline networkTimeline"><div><b>14:02:11</b><span>First connection attempt from 10.20.4.17</span></div><div><b>14:02:15</b><span>Second destination probed</span></div><div><b>14:02:19</b><span>Third destination probed</span></div><div><b>14:02:24</b><span>RDP service responds on 10.20.8.24</span></div><div><b>14:02:29</b><span>Additional SMB probe observed</span></div></div>`,clue:'The sequence is broad, fast and sequential — consistent with reconnaissance across the internal network.'}
+};
+
+function networkLabEvidence(key,button){
+  const d=networkEvidenceData[key];
+  if(!d)return;
+  networkEvidenceReviewed.add(key);
+  document.querySelectorAll('.evidenceItem').forEach(x=>x.classList.remove('active'));
+  if(button)button.classList.add('active');
+  $('networkEvidenceView').innerHTML=`<div class="evidenceViewHead"><span class="kicker">${d.type}</span><h3>${d.title}</h3></div>${d.html}<div class="analystNote">ANALYST CLUE <span>✓ ${d.clue}</span></div>`;
+  $('networkEvidenceCount').textContent=`${networkEvidenceReviewed.size}/6 evidence items reviewed`;
+  $('networkLabProgress').style.width=(15+(networkEvidenceReviewed.size/6)*45)+'%';
+  $('networkLabHint').textContent=networkEvidenceReviewed.size===6?'Traffic correlated. Identify the attack pattern.':'Review the remaining evidence before deciding.';
+}
+
+async function networkAttackDecision(choice,b){
+  document.querySelectorAll('.networkChoices .choice').forEach(x=>x.disabled=true);
+  if(networkEvidenceReviewed.size!==6){
+    b.classList.add('wrong');
+    $('networkLabFeedback').innerHTML=`<div class="feedback wrongFeedback">⚠ Identification is premature. Review all six network evidence items first.</div>`;
+    setTimeout(()=>document.querySelectorAll('.networkChoices .choice').forEach(x=>x.disabled=false),650);
+    return;
+  }
+  if(choice==='portscan'){
+    b.classList.add('correct');
+    networkStage=1;
+    $('networkLabProgress').style.width='72%';
+    $('networkLabFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Correct. The sequential probes across multiple internal hosts and ports indicate network reconnaissance / port scanning.</div>
+      <div class="networkContainment"><span class="kicker">DEFENSIVE RESPONSE</span><h3>What is the safest first action?</h3>
+      <div class="containChoices networkContainChoices">
+        <button class="choice" onclick="networkContainment('isolate',this)">ISOLATE SOURCE HOST + PRESERVE TRAFFIC EVIDENCE</button>
+        <button class="choice" onclick="networkContainment('flush',this)">FLUSH ALL FIREWALL RULES</button>
+        <button class="choice" onclick="networkContainment('shutdown',this)">SHUT DOWN THE ENTIRE NETWORK</button>
+      </div><div id="networkContainFeedback"></div></div>`;
+  }else{
+    b.classList.add('wrong');
+    $('networkLabFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ Reassess the sequence. The evidence shows many short-lived probes across multiple internal destinations, not normal DNS behavior or a periodic beacon.</div>`;
+    setTimeout(()=>document.querySelectorAll('.networkChoices .choice').forEach(x=>x.disabled=false),650);
+  }
+}
+
+async function networkContainment(choice,b){
+  document.querySelectorAll('.networkContainChoices .choice').forEach(x=>x.disabled=true);
+  if(choice==='isolate'){
+    b.classList.add('correct');
+    networkStage=2;
+    $('networkLabProgress').style.width='100%';
+    $('networkContainFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Defensible response. Isolate the source workstation and preserve the network evidence for follow-up analysis.</div>`;
+    setTimeout(()=>completeNetworkLab(),650);
+  }else{
+    b.classList.add('wrong');
+    $('networkContainFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ That response is unnecessarily destructive or too broad. Contain the source host while preserving evidence.</div>`;
+    setTimeout(()=>document.querySelectorAll('.networkContainChoices .choice').forEach(x=>x.disabled=false),650);
+  }
+}
+
+async function completeNetworkLab(){
+  const score=Math.min(1000,730+networkEvidenceReviewed.size*45);
+  $('networkLabProgress').style.width='100%';
+  $('networkLabFeedback').insertAdjacentHTML('beforeend',`<div class="labResult"><div class="resultIcon">✓</div><div><span class="kicker">NETWORK CONTAINED</span><h3>INVESTIGATION COMPLETE</h3><p>You correlated ${networkEvidenceReviewed.size}/6 evidence items, identified the reconnaissance pattern and selected a targeted containment response.</p><b>NETWORK ANALYSIS SCORE ${score}/1000</b></div><div class="resultXP">+120 XP</div></div>`);
+  await gain(120,'advanced-network-attack-investigation');
+  $('networkLabHint').textContent='Case complete • XP saved to your academy progress.';
+  render();
+}
+
+// Extend the advanced lab launcher for Lab 04 without replacing earlier labs.
+const _advancedLabWithNetwork=advancedLab;
+advancedLab=function(type){
+  if(type==='network') return openNetworkLab();
+  return _advancedLabWithNetwork(type);
+};
