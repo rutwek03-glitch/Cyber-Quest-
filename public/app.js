@@ -576,3 +576,110 @@ advancedLab=function(type){
   if(type==='network') return openNetworkLab();
   return _advancedLabWithNetwork(type);
 };
+
+
+// ============================================================
+// PHASE 2.6 // DIGITAL FORENSICS CASE
+// Safe, fictional evidence only. No real files or systems are touched.
+// ============================================================
+let forensicsEvidenceReviewed=new Set();
+let forensicsStage=0;
+
+function openForensicsLab(){
+  forensicsEvidenceReviewed=new Set();
+  forensicsStage=0;
+  const c=$('modalBody');
+  c.innerHTML=`
+    <div class="labModalHead">
+      <div><span class="kicker">PHASE 2 // ADVANCED LAB 05</span><h2>DIGITAL FORENSICS CASE</h2>
+      <p class="simIntro">A fictional workstation was flagged after suspicious activity. Reconstruct the incident from simulated forensic artifacts, establish the timeline, and identify the evidence that supports your conclusion.</p></div>
+      <div class="caseBadge">CASE DF-2047<br><small>ACTIVE</small></div>
+    </div>
+    <div class="labProgress"><span id="forensicsLabProgress" style="width:14%"></span></div>
+    <div class="investigationGrid">
+      <aside class="evidencePanel">
+        <div class="panelTitle"><span>CASE FILE</span><b>7 EVIDENCE ITEMS</b></div>
+        <button class="evidenceItem active" onclick="forensicsEvidence('alert',this)"><b>01</b><span>CASE ALERT</span><i>›</i></button>
+        <button class="evidenceItem" onclick="forensicsEvidence('timeline',this)"><b>02</b><span>EVENT TIMELINE</span><i>›</i></button>
+        <button class="evidenceItem" onclick="forensicsEvidence('auth',this)"><b>03</b><span>AUTH LOG</span><i>›</i></button>
+        <button class="evidenceItem" onclick="forensicsEvidence('browser',this)"><b>04</b><span>BROWSER ARTIFACT</span><i>›</i></button>
+        <button class="evidenceItem" onclick="forensicsEvidence('process',this)"><b>05</b><span>PROCESS ARTIFACT</span><i>›</i></button>
+        <button class="evidenceItem" onclick="forensicsEvidence('persistence',this)"><b>06</b><span>PERSISTENCE CLUE</span><i>›</i></button>
+        <button class="evidenceItem" onclick="forensicsEvidence('network',this)"><b>07</b><span>NETWORK ARTIFACT</span><i>›</i></button>
+      </aside>
+      <div class="evidenceWorkspace">
+        <div id="forensicsEvidenceView" class="evidenceView"></div>
+        <div class="evidenceCounter"><span id="forensicsEvidenceCount">0/7 evidence items reviewed</span><span id="forensicsLabHint">Review every artifact before writing your conclusion.</span></div>
+        <div id="forensicsLabFeedback"></div>
+      </div>
+    </div>`;
+  $('modal').style.display='grid';
+  forensicsEvidence('alert',document.querySelector('.evidencePanel .evidenceItem'));
+}
+
+function forensicsEvidence(type,b){
+  if(b){document.querySelectorAll('.evidencePanel .evidenceItem').forEach(x=>x.classList.remove('active'));b.classList.add('active');}
+  forensicsEvidenceReviewed.add(type);
+  const views={
+    alert:`<div class="networkEvidence"><span class="kicker">CASE ALERT</span><h3>WORKSTATION ANOMALY DETECTED</h3><div class="socMetric"><span>HOST</span><b>ENG-LT-07</b></div><div class="socMetric"><span>USER</span><b>analyst01</b></div><div class="socMetric"><span>FIRST ALERT</span><b>09:14:22</b></div><div class="socMetric critical"><span>SEVERITY</span><b>HIGH</b></div><div class="analystNote">Start with the timeline. Your goal is to determine what happened, not simply what was detected.</div></div>`,
+    timeline:`<div class="logTable"><div><span>09:07:11</span><b>browser.exe</b><em>Opened shortened URL</em></div><div><span>09:08:03</span><b>powershell.exe</b><em>Started by browser child process</em></div><div><span>09:08:19</span><b>script-host</b><em>Executed encoded command</em></div><div><span>09:09:02</span><b>reg.exe</b><em>Modified user startup entry</em></div><div><span>09:14:22</span><b>EDR</b><em>Persistence behavior alerted</em></div></div><div class="analystNote">The sequence matters: browser activity precedes script execution and a startup modification.</div>`,
+    auth:`<div class="networkEvidence"><span class="kicker">AUTHENTICATION ARTIFACT</span><h3>ACCOUNT ACTIVITY</h3><div class="socMetric"><span>08:56:44</span><b>Local interactive logon — analyst01</b></div><div class="socMetric"><span>09:06:51</span><b>Browser session — analyst01</b></div><div class="socMetric"><span>09:17:05</span><b>Remote logon — NOT OBSERVED</b></div><div class="socMetric"><span>PRIVILEGE</span><b>STANDARD USER</b></div><div class="analystNote">No evidence suggests a separate remote account was used during the incident window.</div></div>`,
+    browser:`<div class="networkEvidence"><span class="kicker">BROWSER ARTIFACT</span><h3>VISITED RESOURCE</h3><div class="socMetric"><span>09:07:11</span><b>https://training-example.invalid/update</b></div><div class="socMetric"><span>REFERRER</span><b>EMAIL LINK</b></div><div class="socMetric"><span>DOWNLOAD</span><b>update-check.js</b></div><div class="analystNote">This is a fictional training domain. The artifact establishes the likely initial access vector.</div></div>`,
+    process:`<div class="processTree"><div><b>browser.exe</b><span> user session</span></div><div>↓</div><div><b>powershell.exe</b><span> suspicious encoded command</span></div><div>↓</div><div><b>script-host</b><span> created startup modification</span></div></div>`,
+    persistence:`<div class="networkEvidence"><span class="kicker">PERSISTENCE ARTIFACT</span><h3>STARTUP ENTRY</h3><div class="socMetric"><span>LOCATION</span><b>SIMULATED USER STARTUP KEY</b></div><div class="socMetric"><span>VALUE</span><b>script-host --profile</b></div><div class="socMetric critical"><span>ASSESSMENT</span><b>UNEXPECTED PERSISTENCE</b></div><div class="analystNote">The artifact shows an attempt to run a suspicious process automatically at user sign-in.</div></div>`,
+    network:`<div class="networkEvidence"><span class="kicker">NETWORK ARTIFACT</span><h3>OUTBOUND CONNECTION</h3><div class="socMetric"><span>09:08:21</span><b>ENG-LT-07 → 192.0.2.44:443</b></div><div class="socMetric"><span>TRAFFIC</span><b>SMALL PERIODIC HTTPS REQUESTS</b></div><div class="socMetric"><span>DESTINATION</span><b>DOCUMENTATION ADDRESS</b></div><div class="analystNote">The address is reserved for documentation. In this fictional case, the pattern is a simulated command-and-control clue.</div></div>`
+  };
+  $('forensicsEvidenceView').innerHTML=views[type];
+  $('forensicsEvidenceCount').textContent=`${forensicsEvidenceReviewed.size}/7 evidence items reviewed`;
+  $('forensicsLabProgress').style.width=`${Math.max(14,Math.round(forensicsEvidenceReviewed.size/7*58))}%`;
+  if(forensicsEvidenceReviewed.size===7) showForensicsDecision();
+}
+
+function showForensicsDecision(){
+  if($('forensicsDecisionBlock')) return;
+  $('forensicsLabFeedback').innerHTML=`<div id="forensicsDecisionBlock" class="labDecisionBlock"><span class="kicker">FINAL ANALYSIS</span><h3>What is the best-supported conclusion?</h3><div class="labDecisionChoices"><button class="choice" onclick="forensicsDecision('malicious',this)">MALICIOUS EXECUTION WITH PERSISTENCE</button><button class="choice" onclick="forensicsDecision('benign',this)">NORMAL SOFTWARE UPDATE</button><button class="choice" onclick="forensicsDecision('hardware',this)">HARDWARE FAILURE</button></div><div id="forensicsDecisionFeedback"></div></div>`;
+  $('forensicsLabHint').textContent='All evidence reviewed. Build the most defensible conclusion.';
+  $('forensicsLabProgress').style.width='72%';
+}
+
+function forensicsDecision(choice,b){
+  document.querySelectorAll('#forensicsDecisionBlock .choice').forEach(x=>x.disabled=true);
+  if(choice==='malicious'){
+    b.classList.add('correct');
+    $('forensicsDecisionFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Correct. The evidence supports a browser-led execution chain followed by persistence and simulated outbound beaconing.</div><div class="labDecisionBlock"><span class="kicker">EVIDENCE PRESERVATION</span><h3>What should the analyst do next?</h3><div class="labDecisionChoices"><button class="choice" onclick="forensicsContainment('preserve',this)">PRESERVE THE IMAGE + TIMELINE AND ESCALATE</button><button class="choice" onclick="forensicsContainment('delete',this)">DELETE THE ARTIFACTS IMMEDIATELY</button><button class="choice" onclick="forensicsContainment('reconnect',this)">RECONNECT THE HOST TO NORMAL TRAFFIC</button></div><div id="forensicsContainFeedback"></div></div>`;
+  }else{
+    b.classList.add('wrong');
+    $('forensicsDecisionFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ Reassess the evidence. The sequence includes script execution, persistence, and a simulated periodic outbound connection.</div>`;
+    setTimeout(()=>document.querySelectorAll('#forensicsDecisionBlock .choice').forEach(x=>x.disabled=false),650);
+  }
+}
+
+async function forensicsContainment(choice,b){
+  document.querySelectorAll('#forensicsDecisionBlock .choice').forEach(x=>x.disabled=true);
+  if(choice==='preserve'){
+    b.classList.add('correct');
+    forensicsStage=2;
+    $('forensicsLabProgress').style.width='100%';
+    $('forensicsContainFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Correct forensic practice. Preserve the evidence and timeline, document findings, and escalate for response.</div>`;
+    setTimeout(()=>completeForensicsLab(),650);
+  }else{
+    b.classList.add('wrong');
+    $('forensicsContainFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ That could destroy evidence or increase risk. Preserve the artifacts and timeline before remediation.</div>`;
+    setTimeout(()=>document.querySelectorAll('#forensicsDecisionBlock .choice').forEach(x=>x.disabled=false),650);
+  }
+}
+
+async function completeForensicsLab(){
+  const score=Math.min(1000,760+forensicsEvidenceReviewed.size*34);
+  $('forensicsLabFeedback').insertAdjacentHTML('beforeend',`<div class="labResult"><div class="resultIcon">✓</div><div><span class="kicker">CASE RECONSTRUCTED</span><h3>INVESTIGATION COMPLETE</h3><p>You reconstructed the browser-to-script sequence, identified persistence, and preserved the simulated evidence.</p><b>FORENSIC ANALYSIS SCORE ${score}/1000</b></div><div class="resultXP">+150 XP</div></div>`);
+  await gain(150,'advanced-digital-forensics-case');
+  $('forensicsLabHint').textContent='Case complete • XP saved to your academy progress.';
+  render();
+}
+
+// Extend the advanced lab launcher for Lab 05 without replacing earlier labs.
+const _advancedLabWithForensics=advancedLab;
+advancedLab=function(type){
+  if(type==='forensics') return openForensicsLab();
+  return _advancedLabWithForensics(type);
+};

@@ -157,3 +157,8 @@ footer{margin-left:238px;padding:28px 34px;border-top:1px solid #18272f;color:#5
 .flowTable{border:1px solid var(--line);border-radius:10px;overflow:hidden}.flowTable>div{display:grid;grid-template-columns:75px 1fr 90px;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line);font-size:10px}.flowTable>div:last-child{border-bottom:0}.flowTable span{opacity:.5;font-family:monospace}.flowTable em{font-style:normal;text-align:right;opacity:.75}
 .networkMuted{font-size:9px;opacity:.5;line-height:1.5;margin:12px 0 0}.networkContainment{margin-top:14px;padding:15px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}.networkContainment h3{margin:4px 0 12px}.networkContainChoices{display:grid;gap:8px}.networkContainChoices .choice{min-height:42px}
 @media(max-width:680px){.portMatrix>div{grid-template-columns:1fr;gap:4px}.portMatrix em,.flowTable em{text-align:left}.flowTable>div{grid-template-columns:1fr;gap:4px}.networkMetric{align-items:flex-start;flex-direction:column}.networkMetric b{text-align:left}}
+
+
+/* Phase 2.6 // Digital Forensics */
+.forensicsLabCard{position:relative}
+.forensicsLabCard:after{content:"NEW";position:absolute;right:14px;top:14px;padding:4px 7px;border:1px solid currentColor;border-radius:20px;font:800 8px Orbitron;letter-spacing:1px}
