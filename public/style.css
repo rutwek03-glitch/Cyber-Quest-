@@ -162,3 +162,14 @@ footer{margin-left:238px;padding:28px 34px;border-top:1px solid #18272f;color:#5
 /* Phase 2.6 // Digital Forensics */
 .forensicsLabCard{position:relative}
 .forensicsLabCard:after{content:"NEW";position:absolute;right:14px;top:14px;padding:4px 7px;border:1px solid currentColor;border-radius:20px;font:800 8px Orbitron;letter-spacing:1px}
+
+
+/* Phase 2.7 // Web Security Lab */
+.webSecurityLabCard{position:relative;border-color:rgba(110,210,170,.24);background:linear-gradient(145deg,rgba(40,140,100,.07),rgba(255,255,255,.02))}
+.webSecurityLabCard:after{content:"NEW";position:absolute;right:14px;top:14px;padding:4px 7px;border:1px solid currentColor;border-radius:20px;font:800 8px Orbitron;letter-spacing:1px}
+.webEvidenceCard{border:1px solid var(--line);border-radius:12px;padding:14px;background:rgba(0,0,0,.12)}
+.webMetric{display:flex;justify-content:space-between;gap:15px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:11px}.webMetric:last-child{border-bottom:0}.webMetric span{opacity:.55;font-size:9px;letter-spacing:1px}.webMetric b{text-align:right}.webMetric.critical b{font-family:Orbitron,sans-serif}
+.accessMatrix{display:grid;gap:7px}.accessMatrix>div{display:grid;grid-template-columns:100px 1fr 110px;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.025);font-size:10px}.accessMatrix span{opacity:.5}.accessMatrix em{font-style:normal;text-align:right;opacity:.75}.accessMatrix .badRow{border-color:#e0646b55}.accessMatrix .badRow em{font-weight:800}
+.inputFlow{display:grid;justify-items:center;gap:7px;padding:8px}.inputFlow>div{width:min(520px,100%);padding:11px 13px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.025);font-size:10px}.inputFlow span{opacity:.5}.inputFlow b{float:right;font-size:9px}
+.webLogTable{border:1px solid var(--line);border-radius:10px;overflow:hidden}.webLogTable>div{display:grid;grid-template-columns:80px 1fr 90px;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line);font-size:10px}.webLogTable>div:last-child{border-bottom:0}.webLogTable span{opacity:.5;font-family:monospace}.webLogTable em{font-style:normal;text-align:right;opacity:.75}.webMuted{font-size:9px;opacity:.5;line-height:1.5;margin:12px 0 0}.webRemediation{margin-top:14px;padding:15px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}.webRemediation h3{margin:4px 0 12px}.webRemediationChoices{display:grid;gap:8px}.webRemediationChoices .choice{min-height:42px}
+@media(max-width:680px){.accessMatrix>div{grid-template-columns:1fr;gap:4px}.accessMatrix em,.webLogTable em{text-align:left}.webLogTable>div{grid-template-columns:1fr;gap:4px}.webMetric{align-items:flex-start;flex-direction:column}.webMetric b{text-align:left}.inputFlow b{float:none;display:block;margin-top:5px}}

@@ -683,3 +683,118 @@ advancedLab=function(type){
   if(type==='forensics') return openForensicsLab();
   return _advancedLabWithForensics(type);
 };
+
+
+// ============================================================
+// PHASE 2.7 // WEB SECURITY LAB
+// Safe, fictional application-security training environment.
+// ============================================================
+let webEvidenceReviewed=new Set();
+let webStage=0;
+
+function openWebSecurityLab(){
+  webEvidenceReviewed=new Set();
+  webStage=0;
+  const c=$('modalBody');
+  c.innerHTML=`
+    <div class="labModalHead">
+      <div><span class="kicker">PHASE 2 // ADVANCED LAB 06</span><h2>WEB SECURITY LAB</h2>
+      <p class="simIntro">You are reviewing a fictional student portal after unusual application activity. Inspect the evidence, identify the weaknesses, then select the safest remediation sequence.</p></div>
+      <div class="caseBadge">CASE WEB-3014<br><small>ACTIVE</small></div>
+    </div>
+    <div class="labProgress"><span id="webLabProgress" style="width:14%"></span></div>
+    <div class="investigationGrid">
+      <aside class="evidencePanel">
+        <div class="panelTitle"><span>APPLICATION CASE FILE</span><b>6 EVIDENCE ITEMS</b></div>
+        <button class="evidenceItem active" onclick="webSecurityEvidence('alert',this)"><b>01</b><span>ALERT</span><i>›</i></button>
+        <button class="evidenceItem" onclick="webSecurityEvidence('request',this)"><b>02</b><span>REQUEST TRACE</span><i>›</i></button>
+        <button class="evidenceItem" onclick="webSecurityEvidence('auth',this)"><b>03</b><span>AUTH SESSION</span><i>›</i></button>
+        <button class="evidenceItem" onclick="webSecurityEvidence('access',this)"><b>04</b><span>ACCESS CONTROL</span><i>›</i></button>
+        <button class="evidenceItem" onclick="webSecurityEvidence('input',this)"><b>05</b><span>INPUT VALIDATION</span><i>›</i></button>
+        <button class="evidenceItem" onclick="webSecurityEvidence('logs',this)"><b>06</b><span>APP LOGS</span><i>›</i></button>
+      </aside>
+      <div class="evidenceWorkspace">
+        <div id="webEvidenceView" class="evidenceView"></div>
+        <div class="evidenceCounter"><span id="webEvidenceCount">0/6 evidence items reviewed</span><span id="webLabHint">Review every artifact before selecting a remediation.</span></div>
+      </div>
+    </div>
+    <div class="labDecisionBlock">
+      <div><span class="kicker">VULNERABILITY ASSESSMENT</span><h3>What is the best-supported primary finding?</h3></div>
+      <div class="labDecisionChoices webChoices">
+        <button class="choice" onclick="webSecurityDecision('cosmetic',this)">COSMETIC UI ISSUE</button>
+        <button class="choice" onclick="webSecurityDecision('access',this)">ACCESS CONTROL + INPUT VALIDATION WEAKNESS</button>
+        <button class="choice" onclick="webSecurityDecision('hardware',this)">HARDWARE FAILURE</button>
+      </div>
+      <div id="webLabFeedback"></div>
+    </div>`;
+  $('modal').style.display='grid';
+  webSecurityEvidence('alert',document.querySelector('.evidenceItem'));
+}
+
+const webSecurityEvidenceData={
+ alert:{title:'APPLICATION ALERT',type:'DETECTION',html:`<div class="webEvidenceCard"><div class="webMetric critical"><span>SEVERITY</span><b>HIGH</b></div><div class="webMetric"><span>RULE</span><b>Unexpected account access + invalid object requests</b></div><div class="webMetric"><span>APP</span><b>STUDENT PORTAL // SIMULATED</b></div><div class="webMetric"><span>TIME WINDOW</span><b>14:22:10–14:24:41 UTC</b></div></div>`,clue:'The alert combines identity and object-access anomalies in one application session.'},
+ request:{title:'REQUEST TRACE',type:'HTTP TELEMETRY',html:`<div class="webEvidenceCard"><div class="webMetric"><span>METHOD</span><b>GET</b></div><div class="webMetric"><span>ROUTE</span><b>/api/profile?id=student-104</b></div><div class="webMetric"><span>RESPONSE</span><b class="warningText">200 • UNEXPECTED OBJECT</b></div><div class="webMetric"><span>NOTE</span><b>SIMULATED TRACE</b></div><div class="redFlag">⚠ The fictional endpoint returns another student's profile when the object identifier is changed.</div></div>`,clue:'The application should verify authorization for the requested object, not rely only on a client-supplied identifier.'},
+ auth:{title:'AUTH SESSION',type:'SESSION SECURITY',html:`<div class="webEvidenceCard"><div class="webMetric"><span>SESSION</span><b>WEB-7F31</b></div><div class="webMetric"><span>USER</span><b>student01</b></div><div class="webMetric"><span>STATUS</span><b>AUTHENTICATED</b></div><div class="webMetric"><span>COOKIE</span><b>SIMULATED • SECURE</b></div><div class="analystNote">The session itself is valid. The weakness is what the application permits the authenticated user to access.</div></div>`,clue:'A valid login does not grant access to every object. Authorization must be checked server-side.'},
+ access:{title:'ACCESS CONTROL',type:'AUTHORIZATION',html:`<div class="webEvidenceCard"><div class="accessMatrix"><div><span>student01</span><b>OWN PROFILE</b><em>ALLOW</em></div><div class="badRow"><span>student01</span><b>student-104 PROFILE</b><em>ALLOW ⚠</em></div><div><span>student01</span><b>ADMIN SETTINGS</b><em>DENY</em></div></div><p class="webMuted">The fictional application correctly blocks an admin-only route but fails to enforce ownership on one profile object.</p></div>`,clue:'Authorization is partially enforced; object ownership must be checked on every protected request.'},
+ input:{title:'INPUT VALIDATION',type:'APPLICATION INPUT',html:`<div class="webEvidenceCard"><div class="inputFlow"><div>USER INPUT <b>profileId</b></div><span>↓</span><div class="badRow">DIRECT OBJECT LOOKUP <b>NO SERVER-SIDE OWNERSHIP CHECK</b></div><span>↓</span><div>PROFILE RESPONSE</div></div><div class="redFlag">⚠ Treat identifiers as untrusted input. Validate format and authorization on the server before returning data.</div></div>`,clue:'Input validation and authorization belong on the server and should be enforced before sensitive data is returned.'},
+ logs:{title:'APPLICATION LOGS',type:'CORRELATION',html:`<div class="webLogTable"><div><span>14:22:10</span><b>LOGIN</b><em>student01</em></div><div><span>14:23:04</span><b>GET /api/profile?id=student-104</b><em>200</em></div><div><span>14:23:16</span><b>GET /api/profile?id=student-104</b><em>200</em></div><div><span>14:24:41</span><b>ALERT CORRELATED</b><em>REVIEW</em></div></div>`,clue:'Repeated cross-object requests after a valid login provide the strongest correlation for the access-control finding.'}
+};
+
+function webSecurityEvidence(key,button){
+  const d=webSecurityEvidenceData[key];
+  if(!d)return;
+  webEvidenceReviewed.add(key);
+  document.querySelectorAll('.evidencePanel .evidenceItem').forEach(x=>x.classList.remove('active'));
+  if(button)button.classList.add('active');
+  $('webEvidenceView').innerHTML=`<div class="evidenceViewHead"><span class="kicker">${d.type}</span><h3>${d.title}</h3></div>${d.html}<div class="analystNote">ANALYST CLUE <span>✓ ${d.clue}</span></div>`;
+  $('webEvidenceCount').textContent=`${webEvidenceReviewed.size}/6 evidence items reviewed`;
+  $('webLabProgress').style.width=(14+(webEvidenceReviewed.size/6)*52)+'%';
+  $('webLabHint').textContent=webEvidenceReviewed.size===6?'Evidence correlated. Select the primary finding.':'Review the remaining evidence before deciding.';
+}
+
+function webSecurityDecision(choice,b){
+  document.querySelectorAll('.webChoices .choice').forEach(x=>x.disabled=true);
+  const complete=webEvidenceReviewed.size===6;
+  const correct=choice==='access';
+  if(correct)b.classList.add('correct'); else b.classList.add('wrong');
+  if(!complete){
+    $('webLabFeedback').innerHTML=`<div class="feedback wrongFeedback">⚠ Assessment is premature. Review all six evidence items before recording the finding.</div>`;
+    setTimeout(()=>document.querySelectorAll('.webChoices .choice').forEach(x=>x.disabled=false),650);
+    return;
+  }
+  if(correct){
+    $('webLabFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Correct. The evidence supports an object-level authorization weakness combined with insufficient server-side input validation.</div><div class="webRemediation"><span class="kicker">REMEDIATION</span><h3>What should the development team implement?</h3><div class="webRemediationChoices"><button class="choice" onclick="webSecurityRemediation('server',this)">ENFORCE SERVER-SIDE AUTHORIZATION + INPUT VALIDATION</button><button class="choice" onclick="webSecurityRemediation('client',this)">HIDE THE ID FIELD IN THE UI</button><button class="choice" onclick="webSecurityRemediation('disable',this)">DISABLE ALL USER PROFILES</button></div><div id="webRemediationFeedback"></div></div>`;
+    $('webLabProgress').style.width='82%';
+  }else{
+    $('webLabFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ Reassess the evidence. The application is authenticating the user but not consistently authorizing access to the requested object.</div>`;
+    setTimeout(()=>document.querySelectorAll('.webChoices .choice').forEach(x=>x.disabled=false),650);
+  }
+}
+
+async function webSecurityRemediation(choice,b){
+  document.querySelectorAll('.webRemediationChoices .choice').forEach(x=>x.disabled=true);
+  if(choice==='server'){
+    b.classList.add('correct');
+    $('webLabProgress').style.width='100%';
+    $('webRemediationFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Correct remediation. Validate untrusted input and enforce object ownership on the server before returning sensitive data.</div>`;
+    setTimeout(()=>completeWebSecurityLab(),650);
+  }else{
+    b.classList.add('wrong');
+    $('webRemediationFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ This does not address the server-side authorization weakness. Client-side hiding or disabling the feature is not sufficient.</div>`;
+    setTimeout(()=>document.querySelectorAll('.webRemediationChoices .choice').forEach(x=>x.disabled=false),650);
+  }
+}
+
+async function completeWebSecurityLab(){
+  const score=Math.min(1000,760+webEvidenceReviewed.size*40);
+  $('webLabFeedback').insertAdjacentHTML('beforeend',`<div class="labResult"><div class="resultIcon">✓</div><div><span class="kicker">APPLICATION SECURED</span><h3>WEB SECURITY LAB COMPLETE</h3><p>You correlated the simulated request trail, identified the authorization weakness, and selected a server-side remediation.</p><b>SECURITY ANALYSIS SCORE ${score}/1000</b></div><div class="resultXP">+130 XP</div></div>`);
+  await gain(130,'advanced-web-security-lab');
+  $('webLabHint').textContent='Lab complete • XP saved to your academy progress.';
+  render();
+}
+
+const _advancedLabWithWeb=_advancedLabWithForensics;
+advancedLab=function(type){
+  if(type==='web') return openWebSecurityLab();
+  return _advancedLabWithWeb(type);
+};
