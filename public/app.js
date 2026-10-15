@@ -1,6 +1,6 @@
 let user=null,state=null,mode='login',today=new Date().toISOString().slice(0,10);
 const $=id=>document.getElementById(id);
-const viewMeta={dashboard:['Dashboard','Your command center for learning, practice and cyber defense.'],city:['Cyber City','Unlock districts, build mastery and progress through the cybersecurity journey.'],courses:['Courses','Structured cybersecurity domains from foundations to advanced concepts.'],sessions:['Cyber Sessions','Classroom-style sessions with visuals, real-world threats and defender checks.'],labs:['Cyber Labs','Practice security decisions through safe, interactive simulations.'],challenges:['Challenges','Complete missions and knowledge checks to earn XP and build consistency.'],achievements:['Achievements','Turn learning milestones into visible cybersecurity accomplishments.'],leaderboard:['Leaderboard','See how your cyber learning progress compares with the academy community.'],profile:['My Cyber Profile','Your identity, XP, streak, mastery and academy credentials.'],certificate:['Certificate','Your CYBER//QUEST academy credential and completion progress.'],settings:['Settings','Manage your learning environment and security preferences.'],intelligence:['Cyber Intelligence','Your adaptive skill profile, learning signals and next-best action.'],radar:['Cyber Skill Radar','A visual map of your cybersecurity strengths and development areas.'],recommendations:['Next Best Action','A personalized learning path based on your current skill signals and completed work.'],analytics:['Student Analytics','Track your learning momentum, activity, XP growth and cybersecurity development.'],missions:['Cyber Missions','Story-driven security incidents where you investigate, decide and defend.']};
+const viewMeta={dashboard:['Dashboard','Your command center for learning, practice and cyber defense.'],city:['Cyber City','Unlock districts, build mastery and progress through the cybersecurity journey.'],courses:['Courses','Structured cybersecurity domains from foundations to advanced concepts.'],sessions:['Cyber Sessions','Classroom-style sessions with visuals, real-world threats and defender checks.'],labs:['Cyber Labs','Practice security decisions through safe, interactive simulations.'],challenges:['Challenges','Complete missions and knowledge checks to earn XP and build consistency.'],achievements:['Achievements','Turn learning milestones into visible cybersecurity accomplishments.'],leaderboard:['Leaderboard','See how your cyber learning progress compares with the academy community.'],profile:['My Cyber Profile','Your identity, XP, streak, mastery and academy credentials.'],certificate:['Certificate','Your CYBER//QUEST academy credential and completion progress.'],settings:['Settings','Manage your learning environment and security preferences.'],intelligence:['Cyber Intelligence','Your adaptive skill profile, learning signals and next-best action.'],radar:['Cyber Skill Radar','A visual map of your cybersecurity strengths and development areas.'],recommendations:['Next Best Action','A personalized learning path based on your current skill signals and completed work.'],analytics:['Student Analytics','Track your learning momentum, activity, XP growth and cybersecurity development.'],puzzles:['Cyber Puzzles','Solve interactive cybersecurity puzzles, crack clues and earn XP.'],missions:['Cyber Missions','Story-driven security incidents where you investigate, decide and defend.']};
 function setView(view,scroll=true){view=view||'dashboard';document.querySelectorAll('.sideNav [data-view],.sideBottom [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));document.querySelectorAll('[data-view-section]').forEach(el=>{const views=(el.dataset.viewSection||'').split(/\s+/);el.classList.toggle('viewHidden',!views.includes(view));});const meta=viewMeta[view]||viewMeta.dashboard;$('viewHeading').textContent=meta[0];$('viewSubheading').textContent=meta[1];document.body.dataset.view=view; if(scroll)window.scrollTo({top:0,behavior:'smooth'});}
 const go=s=>{const id=(s||'').replace('#','');const map={missions:'challenges',simulations:'labs',learn:'courses',sessions:'sessions',leaderboard:'leaderboard',progress:'city',certificate:'certificate'};setView(map[id]||'dashboard');setTimeout(()=>document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'}),80)};
 
@@ -859,3 +859,116 @@ advancedLab=function(type){
   if(type==='web') return openWebSecurityLab();
   return _advancedLabWithWeb(type);
 };
+
+
+const cyberPuzzles = {
+  cipher: {
+    title: "CRACK THE CIPHER",
+    category: "CRYPTOGRAPHY",
+    question: "Shift each letter three places backward to decode KHOOR.",
+    answer: "HELLO",
+    hint: "K becomes H when shifted three places backward."
+  },
+  evidence: {
+    title: "DIGITAL EVIDENCE",
+    category: "DIGITAL FORENSICS",
+    question: "A log shows successful logins at 10:00 AM and 10:02 AM. Which event is suspicious: a failed login at 10:01 AM or a normal logout at 10:05 AM?",
+    answer: "FAILED LOGIN",
+    hint: "Look for the event that may indicate an unauthorized access attempt."
+  },
+  network: {
+    title: "TRACE THE ATTACK",
+    category: "NETWORK SECURITY",
+    question: "Which source IP appears in the most suspicious requests: 192.168.1.10 (2 requests), 203.0.113.42 (8 requests), or 10.0.0.5 (1 request)?",
+    answer: "203.0.113.42",
+    hint: "Compare the number of suspicious requests from each address."
+  },
+  logic: {
+    title: "SECURITY LOGIC",
+    category: "ACCESS CONTROL",
+    question: "A secure file requires BOTH a valid password AND an approved access card. The password is valid, but the card is not approved. Is access granted?",
+    answer: "NO",
+    hint: "Both conditions must be true."
+  }
+};
+
+let activePuzzleId = null;
+
+function startPuzzle(id = "cipher") {
+  const puzzle = cyberPuzzles[id];
+  const workspace = document.getElementById("puzzleWorkspace");
+
+  if (!puzzle || !workspace) return;
+
+  activePuzzleId = id;
+  workspace.hidden = false;
+  workspace.innerHTML = `
+    <article class="puzzleCard">
+      <span class="kicker">${puzzle.category}</span>
+      <h2>${puzzle.title}</h2>
+      <p>${puzzle.question}</p>
+
+      <input id="puzzleAnswer"
+        type="text"
+        placeholder="Enter your answer"
+        autocomplete="off" />
+
+      <button class="btn primary" onclick="checkCipher()">
+        VERIFY ANSWER →
+      </button>
+
+      <button class="btn" onclick="showPuzzleHint()">
+        SHOW HINT
+      </button>
+
+      <p id="puzzleFeedback" aria-live="polite"></p>
+    </article>
+  `;
+
+  workspace.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+
+async function checkCipher() {
+  const puzzle = cyberPuzzles[activePuzzleId];
+  const input = document.getElementById("puzzleAnswer");
+  const feedback = document.getElementById("puzzleFeedback");
+
+  if (!puzzle || !input || !feedback) return;
+
+  if (input.value.trim().toUpperCase() !== puzzle.answer) {
+    feedback.textContent = "Not quite. Try again or use the hint.";
+    feedback.style.color = "#ff7272";
+    return;
+  }
+
+  const rewardKey = "puzzle-" + activePuzzleId;
+
+  try {
+    feedback.textContent = "Answer correct! Saving your reward...";
+
+    await gain(50, rewardKey);
+
+    feedback.textContent =
+      "CORRECT! Puzzle solved. XP reward processed: +50 XP if this is your first completion.";
+    feedback.style.color = "#20d9a0";
+
+    input.disabled = true;
+  } catch (error) {
+    feedback.textContent =
+      "Correct answer, but the reward could not be saved. Please try again.";
+    feedback.style.color = "#ff7272";
+  }
+}
+
+
+function showPuzzleHint() {
+  const puzzle = cyberPuzzles[activePuzzleId];
+  const feedback = document.getElementById("puzzleFeedback");
+
+  if (puzzle && feedback) {
+    feedback.textContent = "HINT: " + puzzle.hint;
+    feedback.style.color = "#f0c674";
+  }
+}
+

@@ -28,6 +28,7 @@
     <button data-view="sessions"><span>◫</span> Cyber Sessions</button>
     <button data-view="intelligence"><span>◉</span> Cyber Intelligence</button><button data-view="radar"><span>◎</span> Skill Radar</button><button data-view="recommendations"><span>🎯</span> Next Best Action</button><button data-view="analytics"><span>▥</span> Student Analytics</button><button data-view="missions"><span>⚔</span> Cyber Missions</button>
     <button data-view="labs"><span>⌬</span> Cyber Labs</button>
+    <button data-view="puzzles"><span>🧩</span> Cyber Puzzles</button>
     <button data-view="challenges"><span>⚡</span> Challenges</button>
     <button data-view="achievements"><span>★</span> Achievements</button>
     <button data-view="leaderboard"><span>♜</span> Leaderboard</button>
@@ -72,5 +73,50 @@
   <div id="missionCards" class="missionGrid"></div>
   <div class="missionFooter"><span>⚡ XP is awarded once per mission.</span><span>🛡️ AUTHORIZED TRAINING ONLY</span></div>
 </section>
+
+<section id="puzzlesHub" class="view puzzlesView" data-view-section="puzzles">
+  <div class="head">
+    <div>
+      <span class="kicker">PHASE 4.2 // PUZZLE LAB</span>
+      <h2>CYBER PUZZLES</h2>
+      <p>Crack the clues. Test your skills. Defend the system.</p>
+    </div>
+  </div>
+
+  
+<div class="puzzleGrid">
+  <article class="puzzleCard">
+    <span class="kicker">PUZZLE 01</span>
+    <h3>CRACK THE CIPHER</h3>
+    <p>Decode an intercepted encrypted message.</p>
+    <button class="btn primary" onclick="startPuzzle('cipher')">START PUZZLE →</button>
+  </article>
+
+  <article class="puzzleCard">
+    <span class="kicker">PUZZLE 02</span>
+    <h3>DIGITAL EVIDENCE</h3>
+    <p>Identify the suspicious login in a security log.</p>
+    <button class="btn primary" onclick="startPuzzle('evidence')">START PUZZLE →</button>
+  </article>
+
+  <article class="puzzleCard">
+    <span class="kicker">PUZZLE 03</span>
+    <h3>TRACE THE ATTACK</h3>
+    <p>Find the source IP address responsible for suspicious traffic.</p>
+    <button class="btn primary" onclick="startPuzzle('network')">START PUZZLE →</button>
+  </article>
+
+  <article class="puzzleCard">
+    <span class="kicker">PUZZLE 04</span>
+    <h3>SECURITY LOGIC</h3>
+    <p>Apply access-control rules to protect a secure system.</p>
+    <button class="btn primary" onclick="startPuzzle('logic')">START PUZZLE →</button>
+  </article>
+</div>
+
+
+  <div id="puzzleWorkspace" class="puzzleWorkspace" hidden></div>
+</section>
+
 <section id="achievements" class="view achievementsView" data-view-section="achievements"><div class="head"><div><span class="kicker">COLLECT THEM</span><h2>ACHIEVEMENTS</h2><p>Unlock milestones as you learn, practice and defend.</p></div></div><div id="badges" class="badges"></div></section><section id="settingsView" class="view settingsView" data-view-section="settings"><div class="head"><div><span class="kicker">SYSTEM PREFERENCES</span><h2>SETTINGS</h2><p>Manage your CYBER//QUEST learning environment.</p></div></div><div class="settingsGrid"><article><b>Appearance</b><p>Switch between the dark command-center theme and light mode.</p><button class="btn" onclick="document.getElementById('theme').click()">TOGGLE THEME</button></article><article><b>Security</b><p>Your password is hashed on the server and your learning progress is stored securely.</p><span class="settingBadge">● ACCOUNT PROTECTED</span></article><article><b>Learning Mode</b><p>Interactive simulations are educational and must only be used on authorized systems.</p><span class="settingBadge">AUTHORIZED TRAINING ONLY</span></article></div></section></main><footer>CYBER//QUEST • Educational simulations only • Test systems only when authorized.</footer></div>
 <div id="modal" class="modal"><div class="modalBox"><button class="close" onclick="closeModal()">×</button><div id="modalBody"></div></div></div><script src="/app.js"></script></body></html>
