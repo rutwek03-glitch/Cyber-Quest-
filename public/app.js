@@ -971,4 +971,26 @@ function showPuzzleHint() {
     feedback.style.color = "#f0c674";
   }
 }
+// CYBER//QUEST Sidebar Toggle
+document.addEventListener('DOMContentLoaded', () => {
+  const sidebar = document.querySelector('.sidebar');
+  const toggle = document.getElementById('sidebarToggle');
 
+  if (!sidebar || !toggle) return;
+
+  // Close sidebar automatically on startup
+  sidebar.classList.add('is-closed');
+
+  // Show the separate sidebar button
+  toggle.style.display = 'grid';
+
+  toggle.addEventListener('click', () => {
+    const isClosed = sidebar.classList.toggle('is-closed');
+
+    toggle.textContent = isClosed ? '☰' : '×';
+    toggle.setAttribute(
+      'aria-label',
+      isClosed ? 'Open sidebar' : 'Close sidebar'
+    );
+  });
+});
