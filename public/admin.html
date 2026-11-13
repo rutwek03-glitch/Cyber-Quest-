@@ -1,0 +1,1311 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Professor Portal | CYBER//QUEST</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #080e18;
+      color: #e8f0fa;
+      font-family: Arial, sans-serif;
+    }
+
+    button, input { font: inherit; }
+
+    .hidden { display: none !important; }
+
+    .brand {
+      font-size: 23px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .brand span { color: #39e6b0; }
+
+    .loginPage {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .loginCard {
+      width: 100%;
+      max-width: 420px;
+      padding: 36px;
+      background: #111c2b;
+      border: 1px solid #26394d;
+      border-radius: 18px;
+    }
+
+    .kicker {
+      color: #39e6b0;
+      font-size: 12px;
+      letter-spacing: 2px;
+      margin-top: 30px;
+    }
+
+    h1 { font-size: 29px; }
+
+    .muted { color: #91a2b8; line-height: 1.6; }
+
+    label {
+      display: block;
+      margin: 20px 0 8px;
+      font-size: 13px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      background: #091321;
+      border: 1px solid #30455d;
+      border-radius: 9px;
+      color: white;
+      outline: none;
+    }
+
+    input:focus { border-color: #39e6b0; }
+
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 9px;
+      padding: 13px 18px;
+      font-weight: bold;
+    }
+
+    .primary {
+      width: 100%;
+      margin-top: 24px;
+      background: #39e6b0;
+      color: #071711;
+    }
+
+    .message {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #ff8585;
+    }
+
+    header {
+      padding: 20px 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #26394d;
+    }
+
+    .logout {
+      color: #ffaaaa;
+      background: #2b1b27;
+    }
+
+    main {
+      max-width: 1150px;
+      margin: auto;
+      padding: 45px 24px;
+    }
+
+    .welcome {
+      padding: 30px;
+      background: linear-gradient(120deg, #142c39, #111c2b);
+      border: 1px solid #294b55;
+      border-radius: 16px;
+    }
+
+    .welcome h1 { margin-bottom: 8px; }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      margin-top: 25px;
+    }
+
+    .card {
+      padding: 25px;
+      background: #111c2b;
+      border: 1px solid #26394d;
+      border-radius: 14px;
+    }
+
+    .card h3 { margin-top: 0; }
+
+    .card p {
+      color: #91a2b8;
+      line-height: 1.6;
+    }
+
+    .status {
+      display: inline-block;
+      color: #39e6b0;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    @media(max-width: 600px) {
+      .cards { grid-template-columns: 1fr; }
+      .loginCard { padding: 25px; }
+      header { padding: 16px; }
+    }
+    /* MEMBER MANAGEMENT */
+
+.memberToolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+
+.memberToolbar select {
+  flex: 1;
+  min-width: 180px;
+  padding: 12px;
+  background: #091321;
+  color: #e8f0fa;
+  border: 1px solid #30455d;
+  border-radius: 9px;
+}
+
+.memberToolbar .primary {
+  width: auto;
+  margin: 0;
+}
+
+.memberTableWrap {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 18px;
+}
+
+table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+th, td {
+  padding: 15px 12px;
+  border-bottom: 1px solid #26394d;
+  font-size: 13px;
+}
+
+th {
+  color: #39e6b0;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+.memberAction,
+.memberDanger {
+  margin: 3px;
+  padding: 8px 11px;
+  font-size: 11px;
+}
+
+.memberAction {
+  background: #173d38;
+  color: #39e6b0;
+}
+
+.memberDanger {
+  background: #38212a;
+  color: #ffaaaa;
+}
+
+.memberAction:disabled,
+.memberDanger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#memberManagement {
+  margin-top: 25px;
+}
+  </style>
+</head>
+
+<body>
+
+  <!-- PROFESSOR LOGIN -->
+  <section id="loginPage" class="loginPage">
+    <div class="loginCard">
+      <div class="brand">CYBER<span>//</span>QUEST</div>
+
+      <div class="kicker">FACULTY ACCESS // PROFESSOR PORTAL</div>
+
+      <h1>Professor Login</h1>
+
+      <p class="muted">
+        Secure access to the Cybersecurity Academy
+        management center.
+      </p>
+
+      <form id="loginForm">
+        <label for="email">Official Admin Email</label>
+        <input
+          id="email"
+          type="email"
+          value=""
+          placeholder="Enter professor email"
+          autocomplete="username"
+          required
+        >
+
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          placeholder="Enter admin password"
+          autocomplete="current-password"
+          required
+        >
+
+        <button class="primary" type="submit">
+          ACCESS PROFESSOR PORTAL
+        </button>
+
+        <div id="loginMessage" class="message" role="alert"></div>
+      </form>
+    </div>
+  </section>
+
+  <!-- PROFESSOR DASHBOARD -->
+  <section id="dashboard" class="hidden">
+    <header>
+      <div class="brand">CYBER<span>//</span>QUEST</div>
+      <button id="logoutButton" class="logout">LOG OUT</button>
+    </header>
+
+    <main>
+      <section class="welcome">
+        <div class="kicker">PROFESSOR COMMAND CENTER</div>
+        <h1>Welcome, <span id="professorName"></span></h1>
+        <p class="muted">
+          Manage cybersecurity academy activities from one place.
+        </p>
+        <p id="professorEmail" class="muted"></p>
+      </section>
+      <!-- MEMBER MANAGEMENT -->
+<section class="card" id="memberManagement">
+  <h2>👥 Member Management</h2>
+
+  <p class="muted">
+    Review registrations and manage cybersecurity academy members.
+  </p>
+
+  <div class="memberToolbar">
+    <select id="memberStatusFilter">
+      <option value="all">All Members</option>
+      <option value="pending">Pending Approval</option>
+      <option value="approved">Approved Members</option>
+      <option value="suspended">Suspended Members</option>
+      <option value="removed">Removed Members</option>
+    </select>
+
+    <button id="refreshMembers" class="primary">
+      Refresh Members
+    </button>
+  </div>
+
+  <p id="membersMessage" class="muted">Loading members...</p>
+
+  <div class="memberTableWrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>XP</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="membersTableBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- PROFESSOR VIDEO LIBRARY -->
+<section class="card" id="videoManagement">
+
+  <h2>🎥 Video Library</h2>
+
+  <p class="muted">
+    Upload and publish cybersecurity teaching lessons
+    for approved academy students.
+  </p>
+
+  <form id="videoUploadForm">
+
+    <label for="videoTitle">Lesson Title</label>
+    <input
+      type="text"
+      id="videoTitle"
+      maxlength="120"
+      placeholder="Example: Introduction to Network Security"
+      required
+    >
+
+    <label for="videoCategory">Course Category</label>
+    <select id="videoCategory" required>
+      <option value="General">General Cybersecurity</option>
+      <option value="Networking">Networking</option>
+      <option value="Ethical Hacking">Ethical Hacking</option>
+      <option value="Cryptography">Cryptography</option>
+      <option value="Web Security">Web Security</option>
+      <option value="Digital Forensics">Digital Forensics</option>
+      <option value="SOC">SOC & Incident Response</option>
+      <option value="Cloud Security">Cloud Security</option>
+    </select>
+
+    <label for="videoDescription">Lesson Description</label>
+    <textarea
+      id="videoDescription"
+      maxlength="2000"
+      rows="4"
+      placeholder="Explain what students will learn in this video..."
+    ></textarea>
+
+    <label for="videoFile">Select MP4 Video</label>
+    <input
+      type="file"
+      id="videoFile"
+      accept=".mp4,video/mp4"
+      required
+    >
+
+    <p class="muted">
+      Accepted format: MP4. Maximum file size: 500 MB.
+    </p>
+
+    <button
+      type="submit"
+      id="uploadVideoButton"
+      class="primary"
+    >
+      UPLOAD VIDEO
+    </button>
+
+  </form>
+
+  <div
+    id="videoUploadStatus"
+    class="muted"
+    role="status"
+    aria-live="polite"
+  ></div>
+
+  <div id="videoProgressWrap" class="hidden">
+    <div id="videoProgressBar"></div>
+    <span id="videoProgressText">0%</span>
+  </div>
+
+  <div class="videoLibraryList">
+    <h3>Uploaded Lessons</h3>
+
+    <p id="videosMessage" class="muted">
+      Your uploaded videos will appear here.
+    </p>
+
+    <div id="videosList"></div>
+  </div>
+
+</section>
+
+      <div class="cards">
+
+
+
+<!-- PROFESSOR MEETING CENTER -->
+<article class="card" id="meetingManagement"
+         style="grid-column: 1 / -1;">
+
+  <h2>📅 Meeting Center</h2>
+
+  <p class="muted">
+    Schedule cybersecurity meetings and invite approved academy members.
+  </p>
+
+  <form id="meetingForm">
+
+    <label for="meetingTitle">Meeting Title</label>
+    <input
+      id="meetingTitle"
+      type="text"
+      maxlength="150"
+      placeholder="Example: Cybersecurity Awareness Workshop"
+      required
+    >
+
+    <label for="meetingDescription">Meeting Description</label>
+    <textarea
+      id="meetingDescription"
+      maxlength="3000"
+      rows="3"
+      placeholder="Enter meeting agenda and details..."
+    ></textarea>
+
+    <label for="meetingDate">Meeting Date and Time</label>
+    <input
+      id="meetingDate"
+      type="datetime-local"
+      required
+    >
+
+    <label for="meetingDuration">Duration (minutes)</label>
+    <select id="meetingDuration">
+      <option value="30">30 minutes</option>
+      <option value="45">45 minutes</option>
+      <option value="60" selected>60 minutes</option>
+      <option value="90">90 minutes</option>
+      <option value="120">120 minutes</option>
+    </select>
+
+    <label for="meetingUrl">Meeting Link (optional)</label>
+    <input
+      id="meetingUrl"
+      type="url"
+      placeholder="https://meet.google.com/..."
+    >
+
+    <label>
+      <input
+        id="inviteAllMembers"
+        type="checkbox"
+        style="width:auto;"
+      >
+      Invite all approved students
+    </label>
+
+    <label for="meetingMembers">Select Individual Members</label>
+    <select
+      id="meetingMembers"
+      multiple
+      size="6"
+      style="width:100%;"
+      disabled
+    ></select>
+
+    <p class="muted">
+      Hold Ctrl while selecting multiple students.
+    </p>
+
+    <button type="submit" class="primary" id="createMeetingButton">
+      CREATE MEETING & SEND INVITATIONS
+    </button>
+
+  </form>
+
+  <p id="meetingMessage" class="muted" role="status"></p>
+
+  <div class="meetingList">
+    <h3>Scheduled Meetings</h3>
+    <p id="meetingsMessage" class="muted">
+      Loading meetings...
+    </p>
+    <div id="meetingsList"></div>
+  </div>
+
+</article>
+
+
+        <article class="card">
+          <h3>🔔 Notifications</h3>
+          <p>
+            Manage in-app notifications and email invitations.
+          </p>
+          <span class="status">MODULE PLANNED</span>
+        </article>
+      </div>
+    </main>
+  </section>
+
+  <script>
+    const loginPage = document.getElementById('loginPage');
+    const dashboard = document.getElementById('dashboard');
+    const loginForm = document.getElementById('loginForm');
+    const loginMessage = document.getElementById('loginMessage');
+
+    function showDashboard(user) {
+      loginPage.classList.add('hidden');
+      dashboard.classList.remove('hidden');
+
+      document.getElementById('professorName').textContent = user.name;
+      document.getElementById('professorEmail').textContent = user.email;
+    }
+
+    function showLogin() {
+      dashboard.classList.add('hidden');
+      loginPage.classList.remove('hidden');
+    }
+
+    async function checkAdminSession() {
+      try {
+        const response = await fetch('/api/admin/me', {
+          credentials: 'same-origin'
+        });
+
+        if (!response.ok) {
+          showLogin();
+          return;
+        }
+
+        const data = await response.json();
+
+        if (data.role === 'admin') {
+          showDashboard(data);
+           loadMembers();
+           loadVideos();
+           loadMeetingMembers();
+loadMeetings();
+        } else {
+          showLogin();
+        }
+      } catch {
+        showLogin();
+      }
+    }
+
+    loginForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      loginMessage.textContent = 'Verifying credentials...';
+
+      try {
+        const response = await fetch('/api/admin/login', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Login failed.');
+        }
+
+        if (data.role !== 'admin') {
+          throw new Error('Professor access required.');
+        }
+
+        document.getElementById('password').value = '';
+        loginMessage.textContent = '';
+
+        await checkAdminSession();
+
+      } catch (error) {
+        loginMessage.textContent = error.message;
+      }
+    });
+
+    document.getElementById('logoutButton').addEventListener('click', async () => {
+      try {
+        await fetch('/api/logout', {
+          method: 'POST',
+          credentials: 'same-origin'
+        });
+      } finally {
+        showLogin();
+      }
+    });
+
+// =================================
+// PROFESSOR MEMBER MANAGEMENT UI
+// =================================
+
+const membersTableBody = document.getElementById('membersTableBody');
+const membersMessage = document.getElementById('membersMessage');
+
+async function loadMembers() {
+  const status = document.getElementById('memberStatusFilter').value;
+
+  membersMessage.textContent = 'Loading members...';
+  membersTableBody.replaceChildren();
+
+  try {
+    const response = await fetch(
+      `/api/admin/members?status=${encodeURIComponent(status)}`,
+      { credentials: 'same-origin' }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Could not load members.');
+    }
+
+    if (!data.members.length) {
+      membersMessage.textContent = 'No members found.';
+      return;
+    }
+
+    membersMessage.textContent = `${data.members.length} member(s) found.`;
+
+    data.members.forEach(member => {
+      const row = document.createElement('tr');
+
+      function addCell(value) {
+        const cell = document.createElement('td');
+        cell.textContent = value ?? '';
+        row.appendChild(cell);
+      }
+
+      addCell(member.name);
+      addCell(member.email);
+      addCell(member.xp);
+      addCell(member.account_status);
+
+      const actions = document.createElement('td');
+
+      function addAction(label, status, danger = false) {
+        const button = document.createElement('button');
+
+        button.textContent = label;
+        button.dataset.memberId = member.id;
+        button.dataset.memberStatus = status;
+        button.className = danger ? 'memberDanger' : 'memberAction';
+
+        actions.appendChild(button);
+      }
+
+      if (member.account_status === 'pending') {
+        addAction('Approve', 'approved');
+        addAction('Suspend', 'suspended', true);
+        addAction('Remove', 'removed', true);
+      } else if (member.account_status === 'approved') {
+        addAction('Suspend', 'suspended', true);
+        addAction('Remove', 'removed', true);
+      } else if (member.account_status === 'suspended') {
+        addAction('Reactivate', 'approved');
+        addAction('Remove', 'removed', true);
+      } else if (member.account_status === 'removed') {
+        addAction('Restore', 'approved');
+      }
+
+      row.appendChild(actions);
+      membersTableBody.appendChild(row);
+    });
+
+  } catch (error) {
+    membersMessage.textContent = error.message;
+  }
+}
+
+// Handle member approval and status changes
+membersTableBody.addEventListener('click', async event => {
+  const button = event.target.closest('button[data-member-id]');
+
+  if (!button) return;
+
+  const id = button.dataset.memberId;
+  const status = button.dataset.memberStatus;
+
+  if (!confirm(`Change this member's status to "${status}"?`)) {
+    return;
+  }
+
+  try {
+    button.disabled = true;
+
+    const response = await fetch(
+      `/api/admin/members/${encodeURIComponent(id)}/status`,
+      {
+        method: 'PATCH',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Could not update member.');
+    }
+
+    membersMessage.textContent = data.message;
+    await loadMembers();
+
+  } catch (error) {
+    membersMessage.textContent = error.message;
+    button.disabled = false;
+  }
+});
+
+// Filter and refresh controls
+document.getElementById('memberStatusFilter')
+  .addEventListener('change', loadMembers);
+
+document.getElementById('refreshMembers')
+  .addEventListener('click', loadMembers);
+
+// =================================
+// PROFESSOR VIDEO LIBRARY
+// =================================
+
+const videoForm = document.getElementById('videoUploadForm');
+const videoStatus = document.getElementById('videoUploadStatus');
+const videosList = document.getElementById('videosList');
+const videosMessage = document.getElementById('videosMessage');
+const videoProgressWrap = document.getElementById('videoProgressWrap');
+const videoProgressBar = document.getElementById('videoProgressBar');
+const videoProgressText = document.getElementById('videoProgressText');
+
+const MAX_VIDEO_SIZE = 500 * 1024 * 1024;
+
+// Progress bar appearance
+videoProgressWrap.style.cssText =
+  'height:12px;background:#26394d;border-radius:20px;overflow:hidden;margin-top:15px;';
+
+videoProgressBar.style.cssText =
+  'height:100%;width:0%;background:#39e6b0;transition:width .2s;';
+
+async function videoApi(url, options = {}) {
+  const response = await fetch(url, {
+    credentials: 'same-origin',
+    ...options,
+    headers: {
+      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      ...options.headers
+    }
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Video request failed.');
+  }
+
+  return data;
+}
+
+// Direct upload to private Vercel Blob with progress
+function uploadVideoFile(url, file) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    xhr.open('PUT', url);
+
+    xhr.upload.addEventListener('progress', event => {
+      if (!event.lengthComputable) return;
+
+      const percentage = Math.round(
+        (event.loaded / event.total) * 100
+      );
+
+      videoProgressBar.style.width = percentage + '%';
+      videoProgressText.textContent = percentage + '%';
+      videoStatus.textContent = 'Uploading video...';
+    });
+
+    xhr.addEventListener('load', () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve();
+      } else {
+        reject(new Error(
+          'Blob upload failed. HTTP ' + xhr.status
+        ));
+      }
+    });
+
+    xhr.addEventListener('error', () => {
+      reject(new Error('Network error during video upload.'));
+    });
+
+    xhr.addEventListener('abort', () => {
+      reject(new Error('Video upload was cancelled.'));
+    });
+
+    xhr.send(file);
+  });
+}
+
+// Load professor's video library
+async function loadVideos() {
+  videosMessage.textContent = 'Loading videos...';
+  videosList.replaceChildren();
+
+  try {
+    const data = await videoApi('/api/admin/videos');
+
+    if (!data.videos.length) {
+      videosMessage.textContent =
+        'No videos uploaded yet. Add your first lesson above.';
+      return;
+    }
+
+    videosMessage.textContent =
+      data.videos.length + ' video lesson(s).';
+
+    data.videos.forEach(video => {
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.style.marginTop = '15px';
+
+      const title = document.createElement('h3');
+      title.textContent = video.title;
+
+      const category = document.createElement('p');
+      category.className = 'muted';
+      category.textContent =
+        video.category + ' • ' +
+        (Number(video.file_size_bytes) / (1024 * 1024)).toFixed(1) +
+        ' MB';
+
+      const description = document.createElement('p');
+      description.textContent = video.description || 'No description.';
+
+      const status = document.createElement('span');
+      status.className = 'status';
+      status.textContent =
+        video.is_published ? 'PUBLISHED' : 'DRAFT';
+
+      const action = document.createElement('button');
+      action.className = 'primary';
+      action.style.width = 'auto';
+      action.style.marginTop = '15px';
+
+      action.textContent =
+        video.is_published ? 'UNPUBLISH' : 'PUBLISH';
+
+      action.dataset.videoId = video.id;
+      action.dataset.nextPublished =
+        String(!video.is_published);
+
+      card.append(title, category, description, status, action);
+      videosList.appendChild(card);
+    });
+
+  } catch (error) {
+    videosMessage.textContent = error.message;
+  }
+}
+
+// Upload and save a lesson
+videoForm.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const file = document.getElementById('videoFile').files[0];
+
+  if (!file) {
+    videoStatus.textContent = 'Please select an MP4 video.';
+    return;
+  }
+
+  if (!file.name.toLowerCase().endsWith('.mp4')) {
+    videoStatus.textContent = 'Only MP4 files are allowed.';
+    return;
+  }
+
+  if (file.type && file.type !== 'video/mp4') {
+    videoStatus.textContent = 'The selected file is not an MP4 video.';
+    return;
+  }
+
+  if (file.size <= 0 || file.size > MAX_VIDEO_SIZE) {
+    videoStatus.textContent = 'Maximum video size is 500 MB.';
+    return;
+  }
+
+  const uploadButton = document.getElementById('uploadVideoButton');
+
+  uploadButton.disabled = true;
+  uploadButton.textContent = 'UPLOADING...';
+
+  videoProgressWrap.classList.remove('hidden');
+  videoProgressBar.style.width = '0%';
+  videoProgressText.textContent = '0%';
+
+  try {
+    // Request a signed upload URL
+    videoStatus.textContent = 'Preparing secure upload...';
+
+    const upload = await videoApi(
+      '/api/admin/videos/upload-url',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          title: document.getElementById('videoTitle').value,
+          description:
+            document.getElementById('videoDescription').value,
+          category:
+            document.getElementById('videoCategory').value,
+          fileName: file.name,
+          fileSize: file.size
+        })
+      }
+    );
+
+    // Send file directly to private Blob storage
+    await uploadVideoFile(upload.uploadUrl, file);
+
+    // Verify upload and save lesson in PostgreSQL
+    videoStatus.textContent = 'Verifying uploaded video...';
+
+    await videoApi('/api/admin/videos/complete', {
+      method: 'POST',
+      body: JSON.stringify({
+        uploadId: upload.uploadId
+      })
+    });
+
+    videoProgressBar.style.width = '100%';
+    videoProgressText.textContent = '100%';
+
+    videoStatus.textContent =
+      'Video uploaded successfully! It is saved as a draft.';
+
+    videoForm.reset();
+
+    await loadVideos();
+
+  } catch (error) {
+    videoStatus.textContent = error.message;
+  } finally {
+    uploadButton.disabled = false;
+    uploadButton.textContent = 'UPLOAD VIDEO';
+  }
+});
+
+// Publish or unpublish a lesson
+videosList.addEventListener('click', async event => {
+  const button = event.target.closest('button[data-video-id]');
+
+  if (!button) return;
+
+  const id = button.dataset.videoId;
+  const isPublished =
+    button.dataset.nextPublished === 'true';
+
+  button.disabled = true;
+
+  try {
+    await videoApi(
+      `/api/admin/videos/${encodeURIComponent(id)}/publish`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ isPublished })
+      }
+    );
+
+    await loadVideos();
+
+  } catch (error) {
+    videosMessage.textContent = error.message;
+    button.disabled = false;
+  }
+});
+
+
+// =================================
+// PROFESSOR MEETING CENTER
+// =================================
+
+const meetingForm = document.getElementById('meetingForm');
+const meetingMessage = document.getElementById('meetingMessage');
+const meetingsMessage = document.getElementById('meetingsMessage');
+const meetingsList = document.getElementById('meetingsList');
+const meetingMembers = document.getElementById('meetingMembers');
+const inviteAllMembers = document.getElementById('inviteAllMembers');
+
+// Shared meeting API helper
+async function meetingApi(url, options = {}) {
+  const response = await fetch(url, {
+    credentials: 'same-origin',
+    ...options,
+    headers: {
+      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      ...options.headers
+    }
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Meeting request failed.');
+  }
+
+  return data;
+}
+
+// Load approved students into the meeting selector
+async function loadMeetingMembers() {
+  meetingMembers.replaceChildren();
+
+  try {
+    const data = await meetingApi('/api/admin/members?status=approved');
+
+    data.members.forEach(member => {
+      const option = document.createElement('option');
+      option.value = String(member.id);
+      option.textContent = `${member.name} (${member.email})`;
+      meetingMembers.appendChild(option);
+    }); // Start with no students selected.
+meetingMembers.selectedIndex = -1;
+
+  } catch (error) {
+    meetingMessage.textContent =
+      'Could not load approved students: ' + error.message;
+  }
+}
+
+// Enable individual selection when Invite All is unchecked
+inviteAllMembers.addEventListener('change', () => {
+  meetingMembers.disabled = inviteAllMembers.checked;
+});
+
+// Display meeting invitation responses
+async function loadMeetingInvitations(meetingId, container) {
+  container.replaceChildren();
+
+  try {
+    const data = await meetingApi(
+      `/api/admin/meetings/${encodeURIComponent(meetingId)}/invitations`
+    );
+
+    const heading = document.createElement('h4');
+    heading.textContent = 'Invitation Responses';
+    container.appendChild(heading);
+
+    data.invitations.forEach(invitation => {
+      const item = document.createElement('p');
+
+      item.textContent =
+        `${invitation.name} — ${invitation.status} — Email: ${invitation.email_status}`;
+
+      container.appendChild(item);
+    });
+
+    if (!data.invitations.length) {
+      const empty = document.createElement('p');
+      empty.textContent = 'No invitations found.';
+      container.appendChild(empty);
+    }
+
+  } catch (error) {
+    const message = document.createElement('p');
+    message.textContent = error.message;
+    container.appendChild(message);
+  }
+}
+
+// Load all scheduled meetings
+async function loadMeetings() {
+  meetingsMessage.textContent = 'Loading meetings...';
+  meetingsList.replaceChildren();
+
+  try {
+    const data = await meetingApi('/api/admin/meetings');
+
+    if (!data.meetings.length) {
+      meetingsMessage.textContent = 'No meetings scheduled yet.';
+      return;
+    }
+
+    meetingsMessage.textContent =
+      `${data.meetings.length} meeting(s) found.`;
+
+    data.meetings.forEach(meeting => {
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.style.marginTop = '15px';
+
+      const title = document.createElement('h3');
+      title.textContent = meeting.title;
+
+      const description = document.createElement('p');
+      description.textContent =
+        meeting.description || 'No description provided.';
+
+      const date = document.createElement('p');
+      date.textContent = new Date(meeting.scheduled_at)
+        .toLocaleString();
+
+      const duration = document.createElement('p');
+      duration.textContent =
+        `${meeting.duration_minutes} minutes`;
+
+      const status = document.createElement('span');
+      status.className = 'status';
+      status.textContent = meeting.status.toUpperCase();
+
+      const statistics = document.createElement('p');
+      statistics.textContent =
+        `Invited: ${meeting.invited_count} | ` +
+        `Accepted: ${meeting.accepted_count} | ` +
+        `Declined: ${meeting.declined_count} | ` +
+        `Pending: ${meeting.pending_count}`;
+
+      card.append(
+        title,
+        description,
+        date,
+        duration,
+        status,
+        statistics
+      );
+
+      if (meeting.meeting_url) {
+        const link = document.createElement('a');
+        link.href = meeting.meeting_url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = 'Open Meeting Link';
+        card.appendChild(link);
+      }
+
+      const viewButton = document.createElement('button');
+      viewButton.className = 'memberAction';
+      viewButton.textContent = 'VIEW INVITATIONS';
+
+      const invitationContainer = document.createElement('div');
+      invitationContainer.style.marginTop = '12px';
+
+      viewButton.addEventListener('click', () => {
+        loadMeetingInvitations(
+          meeting.id,
+          invitationContainer
+        );
+      });
+
+      card.append(viewButton, invitationContainer);
+
+      if (meeting.status === 'scheduled') {
+        const cancelButton = document.createElement('button');
+        cancelButton.className = 'memberDanger';
+        cancelButton.textContent = 'CANCEL MEETING';
+
+        cancelButton.addEventListener('click', async () => {
+          if (!confirm(`Cancel "${meeting.title}"?`)) return;
+
+          cancelButton.disabled = true;
+
+          try {
+            const result = await meetingApi(
+              `/api/admin/meetings/${encodeURIComponent(meeting.id)}/cancel`,
+              { method: 'PATCH' }
+            );
+
+            meetingMessage.textContent = result.message;
+            await loadMeetings();
+
+          } catch (error) {
+            meetingMessage.textContent = error.message;
+            cancelButton.disabled = false;
+          }
+        });
+
+        card.appendChild(cancelButton);
+      }
+
+      meetingsList.appendChild(card);
+    });
+
+  } catch (error) {
+    meetingsMessage.textContent = error.message;
+  }
+}
+
+// Create a meeting and invite selected students
+meetingForm.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const button = document.getElementById('createMeetingButton');
+
+  const dateValue = document.getElementById('meetingDate').value;
+
+  const selectedMembers = Array.from(
+    meetingMembers.selectedOptions
+  ).map(option => Number(option.value));
+
+  const inviteAll = inviteAllMembers.checked;
+  const recipientSummary = inviteAll
+  ? `ALL ${meetingMembers.options.length} approved students`
+  : Array.from(meetingMembers.selectedOptions)
+      .map(option => option.textContent)
+      .join(', ');
+
+if (!confirm(`Send this meeting invitation to:\n${recipientSummary}?`)) {
+  return;
+}
+
+  if (!inviteAll && selectedMembers.length === 0) {
+    meetingMessage.textContent =
+      'Select at least one approved student or choose Invite All.';
+    return;
+  }
+
+  const localDate = new Date(dateValue);
+
+  if (Number.isNaN(localDate.getTime()) ||
+      localDate.getTime() <= Date.now()) {
+    meetingMessage.textContent =
+      'Choose a valid future meeting date and time.';
+    return;
+  }
+
+  const payload = {
+    title: document.getElementById('meetingTitle').value,
+    description: document.getElementById('meetingDescription').value,
+    scheduledAt: localDate.toISOString(),
+    durationMinutes: Number(
+      document.getElementById('meetingDuration').value
+    ),
+    meetingUrl: document.getElementById('meetingUrl').value.trim(),
+    inviteAll,
+    memberIds: inviteAll ? [] : selectedMembers
+  };
+
+  button.disabled = true;
+  button.textContent = 'CREATING MEETING...';
+
+  try {
+    const result = await meetingApi(
+      '/api/admin/meetings',
+      {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      }
+    );
+
+    meetingMessage.textContent =
+      `${result.message} ${result.invitedCount} student(s) invited.`;
+
+    meetingForm.reset();
+    meetingMembers.disabled = false;
+
+    await loadMeetings();
+
+  } catch (error) {
+    meetingMessage.textContent = error.message;
+
+  } finally {
+    button.disabled = false;
+    button.textContent = 'CREATE MEETING & SEND INVITATIONS';
+  }
+});
+
+checkAdminSession();
+  </script>
+
+</body>
+</html>

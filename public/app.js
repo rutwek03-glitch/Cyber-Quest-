@@ -1,6 +1,6 @@
 let user=null,state=null,mode='login',today=new Date().toISOString().slice(0,10);
 const $=id=>document.getElementById(id);
-const viewMeta={dashboard:['Dashboard','Your command center for learning, practice and cyber defense.'],city:['Cyber City','Unlock districts, build mastery and progress through the cybersecurity journey.'],courses:['Courses','Structured cybersecurity domains from foundations to advanced concepts.'],sessions:['Cyber Sessions','Classroom-style sessions with visuals, real-world threats and defender checks.'],labs:['Cyber Labs','Practice security decisions through safe, interactive simulations.'],challenges:['Challenges','Complete missions and knowledge checks to earn XP and build consistency.'],achievements:['Achievements','Turn learning milestones into visible cybersecurity accomplishments.'],leaderboard:['Leaderboard','See how your cyber learning progress compares with the academy community.'],profile:['My Cyber Profile','Your identity, XP, streak, mastery and academy credentials.'],certificate:['Certificate','Your CYBER//QUEST academy credential and completion progress.'],settings:['Settings','Manage your learning environment and security preferences.'],intelligence:['Cyber Intelligence','Your adaptive skill profile, learning signals and next-best action.'],radar:['Cyber Skill Radar','A visual map of your cybersecurity strengths and development areas.'],recommendations:['Next Best Action','A personalized learning path based on your current skill signals and completed work.'],analytics:['Student Analytics','Track your learning momentum, activity, XP growth and cybersecurity development.'],puzzles:['Cyber Puzzles','Solve interactive cybersecurity puzzles, crack clues and earn XP.'],missions:['Cyber Missions','Story-driven security incidents where you investigate, decide and defend.']};
+const viewMeta={dashboard:['Dashboard','Your command center for learning, practice and cyber defense.'],city:['Cyber City','Unlock districts, build mastery and progress through the cybersecurity journey.'],courses:['Courses','Structured cybersecurity domains from foundations to advanced concepts.'],videos: ['Video Lessons', 'Watch cybersecurity lessons published by your professor.'],meetings: ['Meeting Center', 'Manage academy meeting invitations, responses and notifications.'],sessions:['Cyber Sessions','Classroom-style sessions with visuals, real-world threats and defender checks.'],labs:['Cyber Labs','Practice security decisions through safe, interactive simulations.'],challenges:['Challenges','Complete missions and knowledge checks to earn XP and build consistency.'],achievements:['Achievements','Turn learning milestones into visible cybersecurity accomplishments.'],leaderboard:['Leaderboard','See how your cyber learning progress compares with the academy community.'],profile:['My Cyber Profile','Your identity, XP, streak, mastery and academy credentials.'],certificate:['Certificate','Your CYBER//QUEST academy credential and completion progress.'],settings:['Settings','Manage your learning environment and security preferences.'],intelligence:['Cyber Intelligence','Your adaptive skill profile, learning signals and next-best action.'],radar:['Cyber Skill Radar','A visual map of your cybersecurity strengths and development areas.'],recommendations:['Next Best Action','A personalized learning path based on your current skill signals and completed work.'],analytics:['Student Analytics','Track your learning momentum, activity, XP growth and cybersecurity development.'],puzzles:['Cyber Puzzles','Solve interactive cybersecurity puzzles, crack clues and earn XP.'],missions:['Cyber Missions','Story-driven security incidents where you investigate, decide and defend.']};
 function setView(view,scroll=true){view=view||'dashboard';document.querySelectorAll('.sideNav [data-view],.sideBottom [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));document.querySelectorAll('[data-view-section]').forEach(el=>{const views=(el.dataset.viewSection||'').split(/\s+/);el.classList.toggle('viewHidden',!views.includes(view));});const meta=viewMeta[view]||viewMeta.dashboard;$('viewHeading').textContent=meta[0];$('viewSubheading').textContent=meta[1];document.body.dataset.view=view; if(scroll)window.scrollTo({top:0,behavior:'smooth'});}
 const go=s=>{const id=(s||'').replace('#','');const map={missions:'challenges',simulations:'labs',learn:'courses',sessions:'sessions',leaderboard:'leaderboard',progress:'city',certificate:'certificate'};setView(map[id]||'dashboard');setTimeout(()=>document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'}),80)};
 
@@ -20,7 +20,41 @@ async function api(u,o={}){let r=await fetch(u,{headers:{'Content-Type':'applica
 async function boot(){try{let d=await api('/api/me');user=d.user;state=d.progress;show()}catch(e){$('auth').classList.remove('hide')}}
 function show(){$('auth').classList.add('hide');$('app').classList.remove('hide');setView('dashboard',false);$('welcome').textContent=user.name.split(' ')[0];$('pname').textContent=user.name;$('pemail').textContent=user.email;$('avatar').textContent=user.name[0].toUpperCase();render();term()}
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');mode=b.dataset.mode;$('nameRow').classList.toggle('hide',mode==='login');$('authSubmit').textContent=mode==='login'?'ENTER CYBER//QUEST →':'CREATE CYBER ID →'});
-$('authForm').onsubmit=async e=>{e.preventDefault();try{let body={email:$('email').value,password:$('password').value};if(mode==='register')body.name=$('name').value;let d=await api(mode==='login'?'/api/login':'/api/register',{method:'POST',body:JSON.stringify(body)});user=d.user;state=d.progress;show()}catch(e){alert(e.message)}};
+$('authForm').onsubmit = async e => {
+  e.preventDefault();
+
+  try {
+    let body = {
+      email: $('email').value,
+      password: $('password').value
+    };
+
+    if (mode === 'register') {
+      body.name = $('name').value;
+    }
+
+    let d = await api(
+      mode === 'login' ? '/api/login' : '/api/register',
+      {
+        method: 'POST',
+        body: JSON.stringify(body)
+      }
+    );
+
+    if (mode === 'register' && d.pendingApproval) {
+      alert(d.message);
+      $('authForm').reset();
+      return;
+    }
+
+    user = d.user;
+    state = d.progress;
+    show();
+
+  } catch (e) {
+    alert(e.message);
+  }
+};
 $('demoBtn').onclick=()=>{$('email').value='student@cyberquest.demo';$('password').value='CyberQuest123';$('authForm').requestSubmit()};
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
 $('profileQuick').onclick=()=>setView('profile');
@@ -994,3 +1028,348 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   });
 });
+
+// =================================
+// STUDENT VIDEO LESSONS
+// =================================
+
+async function loadStudentVideos() {
+  const list = document.getElementById('studentVideosList');
+  const message = document.getElementById('studentVideosMessage');
+  const player = document.getElementById('studentVideoPlayer');
+
+  if (!list || !message || !player) return;
+
+  list.replaceChildren();
+  message.textContent = 'Loading published lessons...';
+  player.replaceChildren();
+
+  try {
+    const data = await api('/api/videos');
+
+    if (!data.videos || data.videos.length === 0) {
+      message.textContent = 'No published lessons are available yet.';
+      return;
+    }
+
+    message.textContent = `${data.videos.length} published lesson(s) available.`;
+
+    data.videos.forEach(video => {
+      const card = document.createElement('article');
+      card.className = 'card studentVideoCard';
+
+      const title = document.createElement('h3');
+      title.textContent = video.title;
+
+      const category = document.createElement('span');
+      category.className = 'status';
+      category.textContent = video.category;
+
+      const description = document.createElement('p');
+      description.textContent = video.description || 'No description available.';
+
+      const watchButton = document.createElement('button');
+      watchButton.className = 'btn primary';
+      watchButton.textContent = '▶ WATCH LESSON';
+
+      watchButton.addEventListener('click', () => {
+        playStudentVideo(video.id, video.title, watchButton);
+      });
+
+      card.append(title, category, description, watchButton);
+      list.appendChild(card);
+    });
+
+  } catch (error) {
+    message.textContent = error.message;
+  }
+}
+
+
+// Play an individual published lesson
+async function playStudentVideo(id, title, button) {
+  const player = document.getElementById('studentVideoPlayer');
+
+  if (!player) return;
+
+  player.replaceChildren();
+
+  const heading = document.createElement('h3');
+  heading.textContent = title;
+
+  const message = document.createElement('p');
+  message.textContent = 'Authorizing secure video playback...';
+
+  player.append(heading, message);
+
+  button.disabled = true;
+
+  try {
+    const data = await api(
+      `/api/videos/${encodeURIComponent(id)}/access`,
+      {
+        method: 'POST',
+        body: JSON.stringify({})
+      }
+    );
+
+    const video = document.createElement('video');
+
+    video.controls = true;
+    video.preload = 'metadata';
+    video.playsInline = true;
+    video.style.width = '100%';
+    video.style.maxWidth = '900px';
+    video.style.borderRadius = '12px';
+    video.style.background = '#000';
+    video.src = data.videoUrl;
+
+    message.textContent = 'Your lesson is ready.';
+
+    player.appendChild(video);
+    video.load();
+
+    player.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+
+  } catch (error) {
+    message.textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+
+// Navigation and refresh
+document.querySelector('[data-view="videos"]')
+  ?.addEventListener('click', loadStudentVideos);
+
+document.getElementById('refreshStudentVideos')
+  ?.addEventListener('click', loadStudentVideos);
+
+
+// =================================
+// STUDENT MEETING CENTER
+// =================================
+
+const studentMeetingsList =
+  document.getElementById('studentMeetingsList');
+
+const studentMeetingsMessage =
+  document.getElementById('studentMeetingsMessage');
+
+const studentNotificationsList =
+  document.getElementById('studentNotificationsList');
+
+const studentNotificationsMessage =
+  document.getElementById('studentNotificationsMessage');
+
+
+// Load student meeting invitations
+async function loadStudentMeetings() {
+  if (!studentMeetingsList) return;
+
+  studentMeetingsList.replaceChildren();
+  studentMeetingsMessage.textContent =
+    'Loading your meeting invitations...';
+
+  try {
+    const data = await api('/api/student/meetings');
+
+    if (!data.meetings || data.meetings.length === 0) {
+      studentMeetingsMessage.textContent =
+        'You have no meeting invitations yet.';
+      return;
+    }
+
+    studentMeetingsMessage.textContent =
+      `${data.meetings.length} meeting(s) found.`;
+
+    data.meetings.forEach(meeting => {
+      const card = document.createElement('article');
+      card.className = 'card studentMeetingCard';
+
+      const title = document.createElement('h3');
+      title.textContent = meeting.title;
+
+      const description = document.createElement('p');
+      description.textContent =
+        meeting.description || 'No description available.';
+
+      const date = document.createElement('p');
+      date.textContent =
+        new Date(meeting.scheduled_at).toLocaleString();
+
+      const duration = document.createElement('p');
+      duration.textContent =
+        `${meeting.duration_minutes} minutes`;
+
+      const status = document.createElement('span');
+      status.className = 'status';
+      status.textContent =
+        `MEETING: ${meeting.meeting_status.toUpperCase()} · ` +
+        `INVITATION: ${meeting.invitation_status.toUpperCase()}`;
+
+      card.append(title, description, date, duration, status);
+
+      if (meeting.meeting_url &&
+          meeting.meeting_status === 'scheduled') {
+        const link = document.createElement('a');
+
+        link.href = meeting.meeting_url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = 'OPEN MEETING LINK';
+
+        card.appendChild(link);
+      }
+
+      if (
+        meeting.meeting_status === 'scheduled' &&
+        meeting.invitation_status === 'pending'
+      ) {
+        const actions = document.createElement('div');
+        actions.className = 'meetingResponseActions';
+
+        ['accepted', 'declined'].forEach(response => {
+          const button = document.createElement('button');
+
+          button.className = 'btn';
+          button.textContent =
+            response === 'accepted' ? 'ACCEPT' : 'DECLINE';
+
+          button.addEventListener('click', async () => {
+            if (
+              response === 'declined' &&
+              !confirm('Decline this meeting invitation?')
+            ) {
+              return;
+            }
+
+            button.disabled = true;
+
+            try {
+              await api(
+                `/api/student/meetings/${encodeURIComponent(meeting.id)}/respond`,
+                {
+                  method: 'PATCH',
+                  body: JSON.stringify({ status: response })
+                }
+              );
+
+              await loadStudentMeetings();
+
+            } catch (error) {
+              alert(error.message);
+              button.disabled = false;
+            }
+          });
+
+          actions.appendChild(button);
+        });
+
+        card.appendChild(actions);
+      }
+
+      studentMeetingsList.appendChild(card);
+    });
+
+  } catch (error) {
+    studentMeetingsMessage.textContent = error.message;
+  }
+}
+
+
+// Load in-app meeting notifications
+async function loadStudentMeetingNotifications() {
+  if (!studentNotificationsList) return;
+
+  studentNotificationsList.replaceChildren();
+
+  studentNotificationsMessage.textContent =
+    'Loading notifications...';
+
+  try {
+    const data = await api('/api/student/notifications');
+
+    if (!data.notifications || data.notifications.length === 0) {
+      studentNotificationsMessage.textContent =
+        'No notifications available.';
+      return;
+    }
+
+    studentNotificationsMessage.textContent =
+      `${data.notifications.length} notification(s).`;
+
+    data.notifications.forEach(notification => {
+      const card = document.createElement('article');
+      card.className = 'card studentNotificationCard';
+
+      const title = document.createElement('h4');
+      title.textContent = notification.title;
+
+      const message = document.createElement('p');
+      message.textContent = notification.message;
+
+      const date = document.createElement('small');
+      date.textContent =
+        new Date(notification.created_at).toLocaleString();
+
+      card.append(title, message, date);
+
+      if (!notification.is_read) {
+        const button = document.createElement('button');
+
+        button.className = 'btn';
+        button.textContent = 'MARK AS READ';
+
+        button.addEventListener('click', async () => {
+          button.disabled = true;
+
+          try {
+            await api(
+              `/api/student/notifications/${encodeURIComponent(notification.id)}/read`,
+              { method: 'PATCH' }
+            );
+
+            await loadStudentMeetingNotifications();
+
+          } catch (error) {
+            alert(error.message);
+            button.disabled = false;
+          }
+        });
+
+        card.appendChild(button);
+      } else {
+        const readStatus = document.createElement('span');
+        readStatus.textContent = 'READ';
+        readStatus.className = 'status';
+        card.appendChild(readStatus);
+      }
+
+      studentNotificationsList.appendChild(card);
+    });
+
+  } catch (error) {
+    studentNotificationsMessage.textContent = error.message;
+  }
+}
+
+
+// Refresh controls and navigation
+document
+  .querySelector('[data-view="meetings"]')
+  ?.addEventListener('click', () => {
+    loadStudentMeetings();
+    loadStudentMeetingNotifications();
+  });
+
+document
+  .getElementById('refreshStudentMeetings')
+  ?.addEventListener('click', () => {
+    loadStudentMeetings();
+    loadStudentMeetingNotifications();
+  });

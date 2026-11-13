@@ -25,6 +25,13 @@
     <button data-view="dashboard" class="active"><span>⌂</span> Dashboard</button>
     <button data-view="city"><span>◈</span> Cyber City</button>
     <button data-view="courses"><span>▤</span> Courses</button>
+   <button data-view="videos">
+  <span>🎥</span> Video Lessons
+</button>
+
+<button data-view="meetings">
+  <span>📅</span> Meeting Center
+</button>
     <button data-view="sessions"><span>◫</span> Cyber Sessions</button>
     <button data-view="intelligence"><span>◉</span> Cyber Intelligence</button><button data-view="radar"><span>◎</span> Skill Radar</button><button data-view="recommendations"><span>🎯</span> Next Best Action</button><button data-view="analytics"><span>▥</span> Student Analytics</button><button data-view="missions"><span>⚔</span> Cyber Missions</button>
     <button data-view="labs"><span>⌬</span> Cyber Labs</button>
@@ -118,6 +125,80 @@
 
 
   <div id="puzzleWorkspace" class="puzzleWorkspace" hidden></div>
+</section>
+
+
+<!-- STUDENT VIDEO LESSONS -->
+<section
+  id="videosHub"
+  class="view videosView"
+  data-view-section="videos"
+>
+  <div class="head">
+    <div>
+      <span class="kicker">CYBER//QUEST CLASSROOM</span>
+      <h2>VIDEO LESSONS</h2>
+      <p>
+        Learn cybersecurity through lessons published
+        by your professor.
+      </p>
+    </div>
+  </div>
+
+  <div class="videoStudentToolbar">
+    <span class="progressPill">FACULTY PUBLISHED CONTENT</span>
+    <button class="btn" id="refreshStudentVideos">
+      REFRESH LESSONS
+    </button>
+  </div>
+
+  <p id="studentVideosMessage">
+    Loading available lessons...
+  </p>
+
+  <div id="studentVideosList" class="studentVideosGrid"></div>
+
+  <div id="studentVideoPlayer" class="studentVideoPlayer">
+    <p>Select a lesson to start watching.</p>
+  </div>
+</section>
+
+<!-- STUDENT MEETING CENTER -->
+<section
+  id="meetingsHub"
+  class="view meetingsView"
+  data-view-section="meetings"
+>
+  <div class="head">
+    <div>
+      <span class="kicker">CYBER//QUEST CLASSROOM</span>
+      <h2>MEETING CENTER</h2>
+      <p>
+        View academy meeting invitations and manage your participation.
+      </p>
+    </div>
+  </div>
+
+  <div class="videoStudentToolbar">
+    <span class="progressPill">ACADEMY MEETINGS</span>
+    <button class="btn" id="refreshStudentMeetings">
+      REFRESH MEETINGS
+    </button>
+  </div>
+
+  <p id="studentMeetingsMessage">
+    Loading your meeting invitations...
+  </p>
+
+  <div id="studentMeetingsList"></div>
+
+  <div class="studentMeetingNotifications">
+    <h3>🔔 Meeting Notifications</h3>
+    <p id="studentNotificationsMessage">
+      Loading notifications...
+    </p>
+    <div id="studentNotificationsList"></div>
+  </div>
 </section>
 
 <section id="achievements" class="view achievementsView" data-view-section="achievements"><div class="head"><div><span class="kicker">COLLECT THEM</span><h2>ACHIEVEMENTS</h2><p>Unlock milestones as you learn, practice and defend.</p></div></div><div id="badges" class="badges"></div></section><section id="settingsView" class="view settingsView" data-view-section="settings"><div class="head"><div><span class="kicker">SYSTEM PREFERENCES</span><h2>SETTINGS</h2><p>Manage your CYBER//QUEST learning environment.</p></div></div><div class="settingsGrid"><article><b>Appearance</b><p>Switch between the dark command-center theme and light mode.</p><button class="btn" onclick="document.getElementById('theme').click()">TOGGLE THEME</button></article><article><b>Security</b><p>Your password is hashed on the server and your learning progress is stored securely.</p><span class="settingBadge">● ACCOUNT PROTECTED</span></article><article><b>Learning Mode</b><p>Interactive simulations are educational and must only be used on authorized systems.</p><span class="settingBadge">AUTHORIZED TRAINING ONLY</span></article></div></section></main><footer>CYBER//QUEST • Educational simulations only • Test systems only when authorized.</footer></div>

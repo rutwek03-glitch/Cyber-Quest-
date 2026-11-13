@@ -2,3 +2,10 @@ node_modules/
 .env
 .DS_Store
 .neon
+
+.vercel
+.env*
+# Local admin maintenance scripts
+/check-admin.js
+/update-admin-password.js
+/verify-admin-password.js
