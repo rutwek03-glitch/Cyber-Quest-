@@ -1373,3 +1373,443 @@ document
     loadStudentMeetings();
     loadStudentMeetingNotifications();
   });
+
+// =================================
+// CYBER//QUEST ANIMATED MESH CANVAS
+// =================================
+(function initCyberBackground() {
+  const canvas = document.getElementById('cyberBgCanvas');
+  if (!canvas) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const ctx = canvas.getContext('2d');
+  let width = 0;
+  let height = 0;
+  let dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let nodes = [];
+  let pulses = [];
+  let animId = null;
+  const mouse = { x: -9999, y: -9999 };
+
+  function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const targetCount = Math.min(75, Math.max(28, Math.floor((width * height) / 22000)));
+    nodes = Array.from({ length: targetCount }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.42,
+      vy: (Math.random() - 0.5) * 0.42,
+      r: Math.random() * 1.6 + 1.2,
+      hub: Math.random() < 0.16
+    }));
+    pulses = [];
+  }
+
+  window.addEventListener('resize', resize);
+  window.addEventListener('mousemove', e => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  }, { passive: true });
+  window.addEventListener('mouseleave', () => {
+    mouse.x = -9999;
+    mouse.y = -9999;
+  });
+
+  function step() {
+    ctx.clearRect(0, 0, width, height);
+
+    // Subtle tactical grid overlay
+    ctx.strokeStyle = 'rgba(54, 242, 178, 0.032)';
+    ctx.lineWidth = 1;
+    const grid = 64;
+    for (let x = 0; x < width; x += grid) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+    for (let y = 0; y < height; y += grid) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+
+    const maxDist = 145;
+
+    // Update & draw nodes
+    for (let i = 0; i < nodes.length; i++) {
+      const a = nodes[i];
+      a.x += a.vx;
+      a.y += a.vy;
+
+      if (a.x < 0 || a.x > width) a.vx *= -1;
+      if (a.y < 0 || a.y > height) a.vy *= -1;
+
+      // Gentle cursor repulsion
+      const mdx = a.x - mouse.x;
+      const mdy = a.y - mouse.y;
+      const mDist = Math.hypot(mdx, mdy);
+      if (mDist < 120 && mDist > 0) {
+        a.x += (mdx / mDist) * 0.6;
+        a.y += (mdy / mDist) * 0.6;
+      }
+
+      // Connect nearby nodes
+      for (let j = i + 1; j < nodes.length; j++) {
+        const b = nodes[j];
+        const dist = Math.hypot(a.x - b.x, a.y - b.y);
+        if (dist < maxDist) {
+          const alpha = (1 - dist / maxDist) * 0.22;
+          ctx.strokeStyle = `rgba(54, 242, 178, ${alpha.toFixed(3)})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+
+          // Occasionally spawn a data packet pulse along an active link
+          if (pulses.length < 18 && Math.random() < 0.0006) {
+            pulses.push({ from: a, to: b, t: 0, speed: 0.015 + Math.random() * 0.015 });
+          }
+        }
+      }
+
+      // Draw node
+      ctx.beginPath();
+      ctx.arc(a.x, a.y, a.hub ? a.r + 1.1 : a.r, 0, Math.PI * 2);
+      ctx.fillStyle = a.hub ? 'rgba(54, 242, 178, 0.75)' : 'rgba(108, 124, 255, 0.55)';
+      ctx.fill();
+
+      if (a.hub) {
+        ctx.beginPath();
+        ctx.arc(a.x, a.y, a.r + 5, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(54, 242, 178, 0.16)';
+        ctx.stroke();
+      }
+    }
+
+    // Draw traveling packet pulses
+    for (let i = pulses.length - 1; i >= 0; i--) {
+      const p = pulses[i];
+      p.t += p.speed;
+      if (p.t >= 1) {
+        pulses.splice(i, 1);
+        continue;
+      }
+      const px = p.from.x + (p.to.x - p.from.x) * p.t;
+      const py = p.from.y + (p.to.y - p.from.y) * p.t;
+      ctx.beginPath();
+      ctx.arc(px, py, 2.2, 0, Math.PI * 2);
+      ctx.fillStyle = '#36f2b2';
+      ctx.fill();
+    }
+
+    animId = requestAnimationFrame(step);
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && animId) {
+      cancelAnimationFrame(animId);
+      animId = null;
+    } else if (!document.hidden && !animId) {
+      animId = requestAnimationFrame(step);
+    }
+  });
+
+  resize();
+  step();
+})();
+
+// =================================
+// CYBER//QUEST ANIMATED BACKGROUND & SETTINGS CONTROL
+// =================================
+(function initCyberBackground() {
+  const canvas = document.getElementById('cyberBgCanvas');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  const toggleBtn = document.getElementById('bgToggleBtn');
+  const styleBtn = document.getElementById('bgStyleBtn');
+
+  const STYLES = ['MESH', 'MATRIX', 'RADAR'];
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let enabled = localStorage.getItem('cq_bg_enabled') !== null
+    ? localStorage.getItem('cq_bg_enabled') === 'true'
+    : !prefersReduced;
+  let currentStyle = STYLES.includes(localStorage.getItem('cq_bg_style'))
+    ? localStorage.getItem('cq_bg_style')
+    : 'MESH';
+
+  let width = 0;
+  let height = 0;
+  let dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let animId = null;
+
+  // State for MESH
+  let nodes = [];
+  let pulses = [];
+  const mouse = { x: -9999, y: -9999 };
+
+  // State for MATRIX
+  let drops = [];
+  const glyphs = '0123456789ABCDEF⌬◈⌁';
+
+  // State for RADAR
+  let radarAngle = 0;
+
+  function syncControls() {
+    document.body.classList.toggle('bg-off', !enabled);
+    if (toggleBtn) toggleBtn.textContent = enabled ? 'PAUSE MOTION' : 'ENABLE MOTION';
+    if (styleBtn) styleBtn.textContent = `STYLE: ${currentStyle}`;
+  }
+
+  function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // Init MESH
+    const targetCount = Math.min(75, Math.max(28, Math.floor((width * height) / 22000)));
+    nodes = Array.from({ length: targetCount }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.42,
+      vy: (Math.random() - 0.5) * 0.42,
+      r: Math.random() * 1.6 + 1.2,
+      hub: Math.random() < 0.16
+    }));
+    pulses = [];
+
+    // Init MATRIX
+    const colWidth = 22;
+    const cols = Math.ceil(width / colWidth);
+    drops = Array.from({ length: cols }, () => Math.random() * -40);
+  }
+
+  function drawGrid() {
+    ctx.strokeStyle = 'rgba(54, 242, 178, 0.032)';
+    ctx.lineWidth = 1;
+    const grid = 64;
+    for (let x = 0; x < width; x += grid) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+    for (let y = 0; y < height; y += grid) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+  }
+
+  function renderMesh() {
+    drawGrid();
+    const maxDist = 145;
+
+    for (let i = 0; i < nodes.length; i++) {
+      const a = nodes[i];
+      a.x += a.vx;
+      a.y += a.vy;
+
+      if (a.x < 0 || a.x > width) a.vx *= -1;
+      if (a.y < 0 || a.y > height) a.vy *= -1;
+
+      const mdx = a.x - mouse.x;
+      const mdy = a.y - mouse.y;
+      const mDist = Math.hypot(mdx, mdy);
+      if (mDist < 120 && mDist > 0) {
+        a.x += (mdx / mDist) * 0.6;
+        a.y += (mdy / mDist) * 0.6;
+      }
+
+      for (let j = i + 1; j < nodes.length; j++) {
+        const b = nodes[j];
+        const dist = Math.hypot(a.x - b.x, a.y - b.y);
+        if (dist < maxDist) {
+          const alpha = (1 - dist / maxDist) * 0.22;
+          ctx.strokeStyle = `rgba(54, 242, 178, ${alpha.toFixed(3)})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+
+          if (pulses.length < 18 && Math.random() < 0.0006) {
+            pulses.push({ from: a, to: b, t: 0, speed: 0.015 + Math.random() * 0.015 });
+          }
+        }
+      }
+
+      ctx.beginPath();
+      ctx.arc(a.x, a.y, a.hub ? a.r + 1.1 : a.r, 0, Math.PI * 2);
+      ctx.fillStyle = a.hub ? 'rgba(54, 242, 178, 0.75)' : 'rgba(108, 124, 255, 0.55)';
+      ctx.fill();
+
+      if (a.hub) {
+        ctx.beginPath();
+        ctx.arc(a.x, a.y, a.r + 5, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(54, 242, 178, 0.16)';
+        ctx.stroke();
+      }
+    }
+
+    for (let i = pulses.length - 1; i >= 0; i--) {
+      const p = pulses[i];
+      p.t += p.speed;
+      if (p.t >= 1) {
+        pulses.splice(i, 1);
+        continue;
+      }
+      const px = p.from.x + (p.to.x - p.from.x) * p.t;
+      const py = p.from.y + (p.to.y - p.from.y) * p.t;
+      ctx.beginPath();
+      ctx.arc(px, py, 2.2, 0, Math.PI * 2);
+      ctx.fillStyle = '#36f2b2';
+      ctx.fill();
+    }
+  }
+
+  function renderMatrix() {
+    ctx.font = '12px monospace';
+    const colWidth = 22;
+    for (let i = 0; i < drops.length; i++) {
+      const x = i * colWidth + 6;
+      const y = drops[i] * 18;
+      const ch = glyphs[Math.floor(Math.random() * glyphs.length)];
+
+      ctx.fillStyle = 'rgba(54, 242, 178, 0.34)';
+      ctx.fillText(ch, x, y);
+
+      ctx.fillStyle = 'rgba(54, 242, 178, 0.12)';
+      ctx.fillText(glyphs[Math.floor(Math.random() * glyphs.length)], x, y - 18);
+
+      if (y > height && Math.random() > 0.975) {
+        drops[i] = 0;
+      } else {
+        drops[i] += 0.35;
+      }
+    }
+  }
+
+  function renderRadar() {
+    drawGrid();
+    const cx = width * 0.74;
+    const cy = height * 0.45;
+    const maxR = Math.min(width, height) * 0.42;
+
+    for (let r = 80; r <= maxR; r += 85) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(54, 242, 178, 0.11)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // Sweep line
+    const sx = cx + Math.cos(radarAngle) * maxR;
+    const sy = cy + Math.sin(radarAngle) * maxR;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(sx, sy);
+    ctx.strokeStyle = 'rgba(54, 242, 178, 0.42)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Soft sweep sector
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, maxR, radarAngle - 0.35, radarAngle);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(54, 242, 178, 0.05)';
+    ctx.fill();
+
+    radarAngle = (radarAngle + 0.012) % (Math.PI * 2);
+  }
+
+  function step() {
+    if (!enabled) {
+      animId = null;
+      return;
+    }
+    ctx.clearRect(0, 0, width, height);
+
+    if (currentStyle === 'MATRIX') renderMatrix();
+    else if (currentStyle === 'RADAR') renderRadar();
+    else renderMesh();
+
+    animId = requestAnimationFrame(step);
+  }
+
+  function start() {
+    if (!animId && enabled && !document.hidden) {
+      animId = requestAnimationFrame(step);
+    }
+  }
+
+  function stop() {
+    if (animId) {
+      cancelAnimationFrame(animId);
+      animId = null;
+    }
+    ctx.clearRect(0, 0, width, height);
+  }
+
+  toggleBtn?.addEventListener('click', () => {
+    enabled = !enabled;
+    localStorage.setItem('cq_bg_enabled', String(enabled));
+    syncControls();
+    if (enabled) start();
+    else stop();
+  });
+
+  styleBtn?.addEventListener('click', () => {
+    const nextIdx = (STYLES.indexOf(currentStyle) + 1) % STYLES.length;
+    currentStyle = STYLES[nextIdx];
+    localStorage.setItem('cq_bg_style', currentStyle);
+    syncControls();
+    if (!enabled) {
+      enabled = true;
+      localStorage.setItem('cq_bg_enabled', 'true');
+      syncControls();
+      start();
+    }
+  });
+
+  window.addEventListener('resize', resize);
+  window.addEventListener('mousemove', e => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  }, { passive: true });
+  window.addEventListener('mouseleave', () => {
+    mouse.x = -9999;
+    mouse.y = -9999;
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      if (animId) {
+        cancelAnimationFrame(animId);
+        animId = null;
+      }
+    } else {
+      start();
+    }
+  });
+
+  resize();
+  syncControls();
+  start();
+})();
