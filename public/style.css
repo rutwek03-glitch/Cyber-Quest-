@@ -413,3 +413,85 @@ header nav::-webkit-scrollbar-thumb {
   background: #36f2b2;
   border-radius: 999px;
 }
+
+/* ============================================================
+   YOUTUBE CHANNEL HUB & QUIZ PORTAL STYLES
+   ============================================================ */
+.youtubeHubView .studentVideoPlayer {
+  margin-top: 16px;
+}
+
+.ytPlayerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ytChannelLink {
+  color: var(--accent);
+  font: 700 10px Orbitron, sans-serif;
+  text-decoration: none;
+  letter-spacing: 0.8px;
+}
+
+.ytChannelLink:hover {
+  text-decoration: underline;
+}
+
+.ytFrameWrap {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid #23483d;
+  background: #000;
+  margin-top: 16px;
+}
+
+.ytFrameWrap iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.ytChannelSubBtn {
+  background: #0b171d;
+  border: 1px solid #23483d;
+  color: var(--accent);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ytQuizLockedBtn {
+  background: #0a1117;
+  border: 1px dashed #293840;
+  color: #71808a;
+  cursor: not-allowed;
+}
+
+.ytQuizActiveBtn {
+  background: #10251f;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ytCardActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.ytCardActions .btn {
+  margin-top: 0;
+}

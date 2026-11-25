@@ -24,15 +24,11 @@
   <div class="sideLabel">COMMAND CENTER</div>
   <nav class="sideNav">
     <button data-view="dashboard" class="active"><span>⌂</span> Dashboard</button>
+    <button data-view="youtube-hub"><span>▶</span> YouTube Classes</button>
     <button data-view="city"><span>◈</span> Cyber City</button>
     <button data-view="courses"><span>▤</span> Courses</button>
-   <button data-view="videos">
-  <span>🎥</span> Video Lessons
-</button>
-
-<button data-view="meetings">
-  <span>📅</span> Meeting Center
-</button>
+    <button data-view="videos"><span>🎥</span> Video Lessons</button>
+    <button data-view="meetings"><span>📅</span> Meeting Center</button>
     <button data-view="sessions"><span>◫</span> Cyber Sessions</button>
     <button data-view="intelligence"><span>◉</span> Cyber Intelligence</button><button data-view="radar"><span>◎</span> Skill Radar</button><button data-view="recommendations"><span>🎯</span> Next Best Action</button><button data-view="analytics"><span>▥</span> Student Analytics</button><button data-view="missions"><span>⚔</span> Cyber Missions</button>
     <button data-view="labs"><span>⌬</span> Cyber Labs</button>
@@ -52,6 +48,62 @@
 <section class="hero view dashboardView" data-view-section="dashboard"><div><span class="kicker">SECURITY OPERATIONS // STUDENT MODE</span><h1>LEARN.<br><span>THINK.</span><br>DEFEND.</h1><p>Welcome, <b id="welcome"></b>. Every mission earns XP and every concept unlocks another part of your cyber skill tree.</p><button class="btn primary" onclick="go('#missions')">START MISSION →</button></div><div class="terminal"><div class="termHead">SOC_TERMINAL <b>LIVE</b></div><div id="term"></div></div></section>
 <section class="profile view dashboardView profileView" data-view-section="dashboard profile"><div class="identity"><div id="avatar">C</div><div><span class="kicker">CYBER IDENTITY</span><h2 id="pname"></h2><small id="pemail"></small></div></div><div><small>RANK</small><b id="rank"></b></div><div><small>XP</small><b id="xp"></b></div><div><small>STREAK</small><b>🔥 <span id="streak"></span></b></div></section>
 <section id="missions" class="view dashboardView challengeView" data-view-section="dashboard challenges"><div class="head"><div><span class="kicker">TODAY'S OBJECTIVE</span><h2>DAILY MISSION</h2></div><span id="today"></span></div><div class="mission"><strong>01</strong><div><span id="mtype"></span><h3 id="mtitle"></h3><p id="mdesc"></p></div><button class="btn primary" id="startM">ACCEPT</button></div><div id="mchallenge" class="challenge"><h3 id="mq"></h3><div id="mc" class="choices"></div><div id="mf"></div></div></section>
+
+<!-- YOUTUBE CHANNEL & CLASS PORTAL (@CyberPunk-g5y) -->
+<section id="youtubeHub" class="view youtubeHubView" data-view-section="youtube-hub">
+  <div class="head">
+    <div>
+      <span class="kicker">OFFICIAL CLUB BROADCASTS // @CYBERPUNK-G5Y</span>
+      <h2>YOUTUBE CLASSES</h2>
+      <p>Watch live &amp; recorded cybersecurity sessions on our official YouTube channel, then test your knowledge in the assessment portal.</p>
+    </div>
+    <span class="progressPill">@CYBERPUNK-G5Y • LIVE</span>
+  </div>
+
+  <div class="videoStudentToolbar">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <a href="https://www.youtube.com/@CyberPunk-g5y" target="_blank" rel="noopener noreferrer" class="btn primary" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;">
+        ▶ OPEN @CYBERPUNK-G5Y CHANNEL
+      </a>
+      <a href="https://www.youtube.com/@CyberPunk-g5y?sub_confirmation=1" target="_blank" rel="noopener noreferrer" class="btn" style="background:#0b171d;border:1px solid #23483d;color:#36f2b2;text-decoration:none;display:inline-flex;align-items:center;gap:8px;">
+        + SUBSCRIBE
+      </a>
+    </div>
+    <button id="ytQuizPortalBtn" type="button" class="btn" disabled style="background:#0a1117;border:1px dashed #293840;color:#71808a;cursor:not-allowed;" title="Quiz web portal will be linked soon">
+      🔒 ATTEMPT QUIZ (PORTAL COMING SOON)
+    </button>
+  </div>
+
+  <div class="studentVideoPlayer">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+      <div>
+        <span class="kicker">CHANNEL BROADCAST DECK</span>
+        <h3 id="ytActiveClassTitle" style="font-family:Orbitron,sans-serif;margin:6px 0 0;">@CyberPunk-g5y — Cybersecurity Club Sessions</h3>
+      </div>
+      <a href="https://www.youtube.com/@CyberPunk-g5y/videos" target="_blank" rel="noopener noreferrer" style="color:#36f2b2;font:700 10px Orbitron;text-decoration:none;">
+        VIEW ALL UPLOADS ↗
+      </a>
+    </div>
+
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;border:1px solid #23483d;background:#000;margin-top:16px;">
+      <iframe
+        id="ytClassFrame"
+        src="https://www.youtube-nocookie.com/embed?listType=user_uploads&list=CyberPunk-g5y"
+        title="CyberPunk-g5y YouTube Channel"
+        style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen>
+      </iframe>
+    </div>
+
+    <p style="color:#71808a;font-size:11px;margin:12px 0 0;">
+      Note: Watch the class lecture first. Once the external Quiz Web Portal is published, the <strong>Attempt Quiz</strong> button will unlock automatically.
+    </p>
+  </div>
+
+  <div id="ytClassGrid" class="studentVideosGrid"></div>
+</section>
+
 <section id="simulations" class="view labsView" data-view-section="labs">
 <div class="head"><div><span class="kicker">CYBER//QUEST LAB NETWORK</span><h2>CYBER LABS</h2><p>Practice safe security decisions in simulations, then step into evidence-based incident investigations.</p></div><span class="progressPill">PHASE 2 // ACTIVE</span></div>
 <div class="labSectionLabel"><span>SIMULATION DECK</span><small>FAST PRACTICE</small></div>
@@ -204,4 +256,80 @@
 
 <section id="achievements" class="view achievementsView" data-view-section="achievements"><div class="head"><div><span class="kicker">COLLECT THEM</span><h2>ACHIEVEMENTS</h2><p>Unlock milestones as you learn, practice and defend.</p></div></div><div id="badges" class="badges"></div></section>
 <section id="settingsView" class="view settingsView" data-view-section="settings"><div class="head"><div><span class="kicker">SYSTEM PREFERENCES</span><h2>SETTINGS</h2><p>Manage your CYBER//QUEST learning environment.</p></div></div><div class="settingsGrid"><article><b>Appearance</b><p>Switch between the dark command-center theme and light mode.</p><button class="btn" onclick="document.getElementById('theme').click()">TOGGLE THEME</button></article><article><b>Animated Background</b><p>Control the live command-center canvas or switch visual styles.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="bgToggleBtn" type="button">PAUSE MOTION</button><button class="btn" id="bgStyleBtn" type="button">STYLE: MESH</button></div></article><article><b>Security</b><p>Your password is hashed on the server and your learning progress is stored securely.</p><span class="settingBadge">● ACCOUNT PROTECTED</span></article><article><b>Learning Mode</b><p>Interactive simulations are educational and must only be used on authorized systems.</p><span class="settingBadge">AUTHORIZED TRAINING ONLY</span></article></div></section></main><footer>CYBER//QUEST • Educational simulations only • Test systems only when authorized.</footer></div>
-<div id="modal" class="modal"><div class="modalBox"><button class="close" onclick="closeModal()">×</button><div id="modalBody"></div></div></div><script src="/app.js"></script></body></html>
+<div id="modal" class="modal"><div class="modalBox"><button class="close" onclick="closeModal()">×</button><div id="modalBody"></div></div></div><script src="/app.js"></script>
+<script>
+(function () {
+  const YOUTUBE_CHANNEL_URL = "https://www.youtube.com/@CyberPunk-g5y";
+  const QUIZ_PORTAL_URL = ""; // Paste your quiz web URL here once deployed
+
+  const YT_CLASSES = [
+    {
+      code: "BROADCAST // 01",
+      title: "Cybersecurity Foundations & Threat Landscape",
+      desc: "Watch the session on @CyberPunk-g5y to understand core security concepts and attack vectors.",
+      videoId: ""
+    },
+    {
+      code: "BROADCAST // 02",
+      title: "Phishing, Social Engineering & OSINT",
+      desc: "Learn how attackers craft lures and how defenders verify links, headers, and domains.",
+      videoId: ""
+    },
+    {
+      code: "BROADCAST // 03",
+      title: "Network Defense & SOC Incident Triage",
+      desc: "Explore firewall rules, traffic anomalies, and step-by-step incident containment.",
+      videoId: ""
+    }
+  ];
+
+  function renderYtHub() {
+    const grid = document.getElementById("ytClassGrid");
+    const topQuizBtn = document.getElementById("ytQuizPortalBtn");
+    if (topQuizBtn && QUIZ_PORTAL_URL) {
+      topQuizBtn.disabled = false;
+      topQuizBtn.style.cssText = "background:#10251f;border:1px solid #36f2b2;color:#36f2b2;cursor:pointer;";
+      topQuizBtn.textContent = "📝 ATTEMPT QUIZ PORTAL ↗";
+      topQuizBtn.onclick = () => window.open(QUIZ_PORTAL_URL, "_blank", "noopener,noreferrer");
+    }
+    if (!grid) return;
+    grid.innerHTML = YT_CLASSES.map((c, idx) => `
+      <article class="studentVideoCard">
+        <span class="kicker">${c.code}</span>
+        <h3 style="margin-top:8px;">${c.title}</h3>
+        <p>${c.desc}</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
+          <button type="button" class="btn primary" onclick="watchYtClass(${idx})">▶ WATCH CLASS</button>
+          ${QUIZ_PORTAL_URL
+            ? `<a href="${QUIZ_PORTAL_URL}" target="_blank" rel="noopener noreferrer" class="btn" style="background:#10251f;border:1px solid #36f2b2;color:#36f2b2;text-decoration:none;">📝 ATTEMPT QUIZ</a>`
+            : `<button type="button" class="btn" disabled style="background:#0a1117;border:1px solid #293840;color:#71808a;cursor:not-allowed;">🔒 QUIZ SOON</button>`
+          }
+        </div>
+      </article>
+    `).join("");
+  }
+
+  window.watchYtClass = function (idx) {
+    const item = YT_CLASSES[idx];
+    if (!item || !item.videoId) {
+      window.open(YOUTUBE_CHANNEL_URL, "_blank", "noopener,noreferrer");
+      return;
+    }
+    const frame = document.getElementById("ytClassFrame");
+    const title = document.getElementById("ytActiveClassTitle");
+    if (title) title.textContent = item.title;
+    if (frame) {
+      frame.src = "https://www.youtube-nocookie.com/embed/" + item.videoId + "?rel=0&autoplay=1";
+      frame.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
+
+  window.openYoutubeHub = function () {
+    const btn = document.querySelector('.sideNav button[data-view="youtube-hub"]');
+    if (btn) btn.click();
+  };
+
+  document.addEventListener("DOMContentLoaded", renderYtHub);
+})();
+</script>
+</body></html>
