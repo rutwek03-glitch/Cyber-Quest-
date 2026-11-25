@@ -1,1815 +1,1106 @@
-let user=null,state=null,mode='login',today=new Date().toISOString().slice(0,10);
-const $=id=>document.getElementById(id);
-const viewMeta={dashboard:['Dashboard','Your command center for learning, practice and cyber defense.'],city:['Cyber City','Unlock districts, build mastery and progress through the cybersecurity journey.'],courses:['Courses','Structured cybersecurity domains from foundations to advanced concepts.'],videos: ['Video Lessons', 'Watch cybersecurity lessons published by your professor.'],meetings: ['Meeting Center', 'Manage academy meeting invitations, responses and notifications.'],sessions:['Cyber Sessions','Classroom-style sessions with visuals, real-world threats and defender checks.'],labs:['Cyber Labs','Practice security decisions through safe, interactive simulations.'],challenges:['Challenges','Complete missions and knowledge checks to earn XP and build consistency.'],achievements:['Achievements','Turn learning milestones into visible cybersecurity accomplishments.'],leaderboard:['Leaderboard','See how your cyber learning progress compares with the academy community.'],profile:['My Cyber Profile','Your identity, XP, streak, mastery and academy credentials.'],certificate:['Certificate','Your CYBER//QUEST academy credential and completion progress.'],settings:['Settings','Manage your learning environment and security preferences.'],intelligence:['Cyber Intelligence','Your adaptive skill profile, learning signals and next-best action.'],radar:['Cyber Skill Radar','A visual map of your cybersecurity strengths and development areas.'],recommendations:['Next Best Action','A personalized learning path based on your current skill signals and completed work.'],analytics:['Student Analytics','Track your learning momentum, activity, XP growth and cybersecurity development.'],puzzles:['Cyber Puzzles','Solve interactive cybersecurity puzzles, crack clues and earn XP.'],missions:['Cyber Missions','Story-driven security incidents where you investigate, decide and defend.']};
-function setView(view,scroll=true){view=view||'dashboard';document.querySelectorAll('.sideNav [data-view],.sideBottom [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));document.querySelectorAll('[data-view-section]').forEach(el=>{const views=(el.dataset.viewSection||'').split(/\s+/);el.classList.toggle('viewHidden',!views.includes(view));});const meta=viewMeta[view]||viewMeta.dashboard;$('viewHeading').textContent=meta[0];$('viewSubheading').textContent=meta[1];document.body.dataset.view=view; if(scroll)window.scrollTo({top:0,behavior:'smooth'});}
-const go=s=>{const id=(s||'').replace('#','');const map={missions:'challenges',simulations:'labs',learn:'courses',sessions:'sessions',leaderboard:'leaderboard',progress:'city',certificate:'certificate'};setView(map[id]||'dashboard');setTimeout(()=>document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'}),80)};
+(() => {
+  'use strict';
 
-// CYBER//QUEST cinematic secure-boot intro
-(function initCyberIntro(){
-  const intro=$('cyberIntro'); if(!intro) return;
-  const bar=$('introProgressBar'), status=$('introStatus'), hint=$('introHint'), log=$('introLog'), enter=$('introEnter'), clock=$('introClock');
-  const lines=['Establishing encrypted channel...','Checking identity services...','Loading Cyber City modules...','Activating threat simulations...','Synchronizing learner progress...','SYSTEM READY ✓'];
-  const started=Date.now(); let finished=false;
-  function tick(){const d=new Date(); clock.textContent=d.toTimeString().slice(0,8); if(!finished) requestAnimationFrame(tick)} tick();
-  function finish(){if(finished)return; finished=true; bar.style.width='100%'; status.textContent='SYSTEM SECURED ✓'; hint.textContent='WELCOME TO THE CYBER//QUEST LEARNING GRID'; enter.classList.add('ready'); intro.classList.add('complete'); setTimeout(()=>{intro.classList.add('gone');intro.setAttribute('aria-hidden','true');},850);}
-  function run(){let i=0; const step=()=>{if(i>=lines.length){setTimeout(finish,450);return} status.textContent=lines[i].toUpperCase(); hint.textContent=['VERIFYING...','AUTH SERVICES ONLINE','BUILDING CYBER CITY','SIMULATIONS ONLINE','PROGRESS DATABASE ONLINE','ALL SYSTEMS NOMINAL'][i]; bar.style.width=((i+1)/lines.length*100)+'%'; const div=document.createElement('div');div.textContent='> '+lines[i];log.appendChild(div);i++;setTimeout(step,520)};step()}
-  enter.onclick=finish; document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!finished)finish()});
-  setTimeout(run,350);
-})();
-async function api(u,o={}){let r=await fetch(u,{headers:{'Content-Type':'application/json'},...o}),d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'Request failed');return d}
-async function boot(){try{let d=await api('/api/me');user=d.user;state=d.progress;show()}catch(e){$('auth').classList.remove('hide')}}
-function show(){$('auth').classList.add('hide');$('app').classList.remove('hide');setView('dashboard',false);$('welcome').textContent=user.name.split(' ')[0];$('pname').textContent=user.name;$('pemail').textContent=user.email;$('avatar').textContent=user.name[0].toUpperCase();render();term()}
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');mode=b.dataset.mode;$('nameRow').classList.toggle('hide',mode==='login');$('authSubmit').textContent=mode==='login'?'ENTER CYBER//QUEST →':'CREATE CYBER ID →'});
-$('authForm').onsubmit = async e => {
-  e.preventDefault();
+  /* ============================================================================
+     1. STORAGE & CONFIG (Backend-Ready Adapter for Vercel / Render PostgreSQL)
+     ============================================================================ */
+  const STORAGE_KEY = 'CYBER_QUEST_PRIVATE_CLUB_V1';
 
-  try {
-    let body = {
-      email: $('email').value,
-      password: $('password').value
+  const DEFAULT_STATE = {
+    accessKeys: {
+      news: 'NEWS-CQ26',
+      research: 'RES-CQ26',
+      professor: 'PROF-MASTER-2026',
+      admin: 'ADMIN-MASTER-2026',
+    },
+    users: [
+      {
+        id: 'CQ-STU-101',
+        name: 'Aarav Sharma',
+        role: 'student',
+        password: 'pass123',
+        xp: 220,
+        completedQuizzes: ['qz-1'],
+        domainScores: {
+          'Network Security': 85,
+          'Web & AppSec': 70,
+          'Threat Intelligence': 65,
+          'Cryptography': 60,
+          'Social Engineering': 90,
+        },
+      },
+    ],
+    reports: [
+      {
+        id: 'rep-1',
+        category: 'NEWS',
+        domain: 'Social Engineering',
+        title: 'Cyber Flash: Surge in AI Voice-Clone Phishing Targeting Students',
+        summary: 'News Team awareness alert detailing real-time voice synthesis scams and verification protocols.',
+        content:
+          'Attackers are leveraging 3-second audio samples from public social media reels to spoof urgent calls. Always verify financial or credential requests via a secondary out-of-band channel.',
+        author: 'News Team Desk',
+        role: 'news',
+        refLink: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        createdAt: '2026-11-24',
+      },
+      {
+        id: 'rep-2',
+        category: 'RESEARCH',
+        domain: 'Web & AppSec',
+        title: 'Technical Advisory: Broken Object Level Authorization (BOLA) in REST APIs',
+        summary: 'Research Team breakdown of IDOR/BOLA flaws in modern student web portals and mitigation patterns.',
+        content:
+          'When endpoints rely solely on client-supplied resource IDs without verifying session ownership server-side, attackers enumerate records trivially. Enforce strict RBAC middleware on every route.',
+        author: 'Research Division',
+        role: 'research',
+        refLink: '',
+        createdAt: '2026-11-25',
+      },
+    ],
+    lessons: [
+      {
+        id: 'les-1',
+        title: 'Lecture 01: Packet Analysis & Network Reconnaissance',
+        type: 'Lecture',
+        domain: 'Network Security',
+        instructor: 'Professor & Club Admin',
+        url: 'https://www.youtube.com/embed/qiQR5rTSshw',
+        desc: 'Foundational walkthrough of TCP/IP handshakes, ARP spoofing detection, and Wireshark display filters.',
+      },
+      {
+        id: 'les-2',
+        title: 'CyberPulse Daily: Locking Down Personal Accounts & 2FA',
+        type: 'Awareness',
+        domain: 'Social Engineering',
+        instructor: 'News & Awareness Team',
+        url: 'https://www.youtube.com/embed/hpair2-59nU',
+        desc: 'Practical guide to hardware security keys, authenticator apps, and credential hygiene.',
+      },
+    ],
+    quizzes: [
+      {
+        id: 'qz-1',
+        title: 'API Security & BOLA Defense Assessment',
+        domain: 'Web & AppSec',
+        xp: 120,
+        questions: [
+          {
+            q: 'What is the primary root cause of Broken Object Level Authorization (BOLA)?',
+            options: [
+              'Weak TLS cipher suites on the load balancer',
+              'Failing to verify whether the authenticated user owns the requested object ID',
+              'Using Base64 encoding for session cookies',
+              'Missing Content-Security-Policy headers',
+            ],
+            correct: 1,
+          },
+          {
+            q: 'Which defense best prevents unauthorized ID enumeration on sensitive records?',
+            options: [
+              'Hiding the API route from frontend JavaScript',
+              'Server-side ownership checks paired with non-sequential UUIDs',
+              'Client-side form validation',
+              'Disabling CORS preflight requests',
+            ],
+            correct: 1,
+          },
+        ],
+      },
+      {
+        id: 'qz-2',
+        title: 'Social Engineering & Voice Phishing Readiness',
+        domain: 'Social Engineering',
+        xp: 100,
+        questions: [
+          {
+            q: 'You receive an urgent call sounding identical to your professor asking for your portal OTP. What is the safest action?',
+            options: [
+              'Read the OTP quickly to avoid academic penalties',
+              'Hang up and verify through an independent, pre-verified channel',
+              'Ask the caller to repeat your student ID',
+              'Reply via SMS with a partial code',
+            ],
+            correct: 1,
+          },
+        ],
+      },
+    ],
+    meetings: [
+      {
+        id: 'mtg-1',
+        title: 'Live Lecture: Threat Modeling & Live SOC Triage',
+        date: '2026-11-29T18:30',
+        host: 'Professor Mentor & Admin',
+        link: 'https://meet.google.com',
+        agenda: 'Interactive walkthrough of live log triage followed by Q&A with News & Research teams.',
+      },
+    ],
+  };
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_STATE));
+        return structuredClone(DEFAULT_STATE);
+      }
+      return JSON.parse(raw);
+    } catch {
+      return structuredClone(DEFAULT_STATE);
+    }
+  }
+
+  let db = loadState();
+  let currentUser = null;
+
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+  }
+
+  /* ============================================================================
+     2. ANIMATED CYBER BACKGROUND ENGINE (MESH / MATRIX / RADAR)
+     ============================================================================ */
+  const bgEngine = (() => {
+    const canvas = document.getElementById('cyberBgCanvas');
+    const ctx = canvas.getContext('2d');
+    let mode = localStorage.getItem('CQ_BG_MODE') || 'MESH';
+    let w = (canvas.width = window.innerWidth);
+    let h = (canvas.height = window.innerHeight);
+
+    window.addEventListener('resize', () => {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    });
+
+    const nodes = Array.from({ length: 48 }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.55,
+      vy: (Math.random() - 0.5) * 0.55,
+    }));
+
+    const cols = Math.floor(w / 20);
+    const drops = Array.from({ length: cols }, () => Math.random() * -50);
+    let radarAngle = 0;
+
+    function drawMesh() {
+      ctx.clearRect(0, 0, w, h);
+      for (let i = 0; i < nodes.length; i++) {
+        const a = nodes[i];
+        a.x += a.vx;
+        a.y += a.vy;
+        if (a.x < 0 || a.x > w) a.vx *= -1;
+        if (a.y < 0 || a.y > h) a.vy *= -1;
+
+        ctx.fillStyle = 'rgba(0, 240, 255, 0.55)';
+        ctx.beginPath();
+        ctx.arc(a.x, a.y, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        for (let j = i + 1; j < nodes.length; j++) {
+          const b = nodes[j];
+          const dist = Math.hypot(a.x - b.x, a.y - b.y);
+          if (dist < 145) {
+            ctx.strokeStyle = `rgba(0, 240, 255, ${(1 - dist / 145) * 0.22})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(5, 8, 17, 0.14)';
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = '#00f0ff';
+      ctx.font = '14px JetBrains Mono, monospace';
+      const chars = '01ABCDEF#$%&*';
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(text, i * 20, drops[i] * 20);
+        if (drops[i] * 20 > h && Math.random() > 0.975) drops[i] = 0;
+        drops[i] += 0.65;
+      }
+    }
+
+    function drawRadar() {
+      ctx.fillStyle = 'rgba(5, 8, 17, 0.18)';
+      ctx.fillRect(0, 0, w, h);
+      const cx = w / 2;
+      const cy = h / 2;
+      const maxR = Math.min(w, h) * 0.42;
+
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.14)';
+      for (let r = maxR / 4; r <= maxR; r += maxR / 4) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      radarAngle += 0.015;
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.55)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(radarAngle) * maxR, cy + Math.sin(radarAngle) * maxR);
+      ctx.stroke();
+    }
+
+    function loop() {
+      if (mode === 'MATRIX') drawMatrix();
+      else if (mode === 'RADAR') drawRadar();
+      else drawMesh();
+      requestAnimationFrame(loop);
+    }
+    loop();
+
+    return {
+      setMode(newMode) {
+        mode = newMode;
+        localStorage.setItem('CQ_BG_MODE', newMode);
+        document.querySelectorAll('.bg-mode-btn').forEach((btn) => {
+          btn.classList.toggle('active', btn.dataset.bg === newMode);
+        });
+      },
+      getMode: () => mode,
+    };
+  })();
+
+  /* ============================================================================
+     3. CINEMATIC INTRO BOOT SEQUENCE
+     ============================================================================ */
+  const introOverlay = document.getElementById('introOverlay');
+  const bootTerminal = document.getElementById('bootTerminal');
+  const bootProgressBar = document.getElementById('bootProgressBar');
+  const enterPortalBtn = document.getElementById('enterPortalBtn');
+  const authGate = document.getElementById('authGate');
+
+  const BOOT_LINES = [
+    '[OK] Initializing CYBER//QUEST Private Collective Kernel...',
+    '[OK] Mounting Role-Based Access Control (Student / News / Research / Prof / Admin)...',
+    '[OK] Syncing Threat Intelligence & Awareness Broadcast Feeds...',
+    '[OK] Telemetry & Skill Ability Radar Online. Ready for Authentication.',
+  ];
+
+  function runIntroSequence() {
+    introOverlay.classList.remove('hidden', 'fade-out');
+    bootTerminal.innerHTML = '';
+    bootProgressBar.style.width = '0%';
+    enterPortalBtn.disabled = true;
+    enterPortalBtn.textContent = 'INITIALIZING NODE...';
+
+    BOOT_LINES.forEach((line, idx) => {
+      setTimeout(() => {
+        const div = document.createElement('div');
+        div.textContent = line;
+        bootTerminal.appendChild(div);
+        bootProgressBar.style.width = `${((idx + 1) / BOOT_LINES.length) * 100}%`;
+
+        if (idx === BOOT_LINES.length - 1) {
+          enterPortalBtn.disabled = false;
+          enterPortalBtn.textContent = 'ENTER ACCESS GATE >>';
+        }
+      }, 380 * (idx + 1));
+    });
+  }
+
+  function closeIntroToAuth() {
+    introOverlay.classList.add('fade-out');
+    setTimeout(() => {
+      introOverlay.classList.add('hidden');
+      if (!currentUser) authGate.classList.remove('hidden');
+    }, 500);
+  }
+
+  enterPortalBtn.addEventListener('click', closeIntroToAuth);
+  document.getElementById('skipIntroBtn').addEventListener('click', closeIntroToAuth);
+  document.getElementById('replayIntroBtn').addEventListener('click', () => {
+    authGate.classList.add('hidden');
+    runIntroSequence();
+  });
+
+  /* ============================================================================
+     4. 5-TIER ROLE-BASED AUTHENTICATION LOGIC
+     ============================================================================ */
+  let selectedRole = 'student';
+  let studentAuthMode = 'login';
+
+  const roleTabs = document.querySelectorAll('.role-tab');
+  const studentSubToggle = document.getElementById('studentSubToggle');
+  const nameFieldWrap = document.getElementById('nameFieldWrap');
+  const passwordFieldWrap = document.getElementById('passwordFieldWrap');
+  const accessKeyWrap = document.getElementById('accessKeyWrap');
+  const idLabel = document.getElementById('idLabel');
+  const keyLabel = document.getElementById('keyLabel');
+  const keyHint = document.getElementById('keyHint');
+  const authError = document.getElementById('authError');
+
+  function updateAuthFormUI() {
+    authError.classList.add('hidden');
+    const isStudent = selectedRole === 'student';
+
+    studentSubToggle.classList.toggle('hidden', !isStudent);
+    nameFieldWrap.classList.toggle('hidden', !(isStudent && studentAuthMode === 'register'));
+    passwordFieldWrap.classList.toggle('hidden', !isStudent);
+    accessKeyWrap.classList.toggle('hidden', isStudent);
+
+    document.getElementById('authPassword').required = isStudent;
+    document.getElementById('authAccessKey').required = !isStudent;
+
+    const labels = {
+      student: ['Student ID / Handle', '', ''],
+      news: ['News Team Member ID', 'News Team Access Key', 'Default demo key: NEWS-CQ26'],
+      research: ['Research Team Member ID', 'Research Team Access Key', 'Default demo key: RES-CQ26'],
+      professor: ['Professor ID / Name', 'Professor Master Access Key', 'Default demo key: PROF-MASTER-2026'],
+      admin: ['Admin ID / Name', 'Admin Master Access Key', 'Default demo key: ADMIN-MASTER-2026'],
     };
 
-    if (mode === 'register') {
-      body.name = $('name').value;
-    }
+    idLabel.textContent = labels[selectedRole][0];
+    keyLabel.textContent = labels[selectedRole][1];
+    keyHint.textContent = labels[selectedRole][2];
+  }
 
-    let d = await api(
-      mode === 'login' ? '/api/login' : '/api/register',
-      {
-        method: 'POST',
-        body: JSON.stringify(body)
+  roleTabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      roleTabs.forEach((t) => t.classList.remove('active'));
+      tab.classList.add('active');
+      selectedRole = tab.dataset.role;
+      updateAuthFormUI();
+    });
+  });
+
+  document.querySelectorAll('.sub-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.sub-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      studentAuthMode = btn.dataset.authMode;
+      updateAuthFormUI();
+    });
+  });
+
+  document.getElementById('authForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    authError.classList.add('hidden');
+
+    const userId = document.getElementById('authUserId').value.trim();
+    const password = document.getElementById('authPassword').value.trim();
+    const accessKey = document.getElementById('authAccessKey').value.trim();
+    const fullName = document.getElementById('authFullName').value.trim();
+
+    if (selectedRole === 'student') {
+      if (studentAuthMode === 'register') {
+        if (!fullName || !userId || !password) {
+          return showAuthError('Please complete all enrollment fields.');
+        }
+        if (db.users.some((u) => u.id.toLowerCase() === userId.toLowerCase())) {
+          return showAuthError('That Student ID is already registered. Switch to Student Login.');
+        }
+        const newStudent = {
+          id: userId,
+          name: fullName,
+          role: 'student',
+          password,
+          xp: 50,
+          completedQuizzes: [],
+          domainScores: {
+            'Network Security': 40,
+            'Web & AppSec': 40,
+            'Threat Intelligence': 40,
+            'Cryptography': 40,
+            'Social Engineering': 40,
+          },
+        };
+        db.users.push(newStudent);
+        saveState();
+        enterSession(newStudent);
+      } else {
+        const found = db.users.find(
+          (u) => u.role === 'student' && u.id.toLowerCase() === userId.toLowerCase() && u.password === password
+        );
+        if (!found) {
+          return showAuthError('Invalid Student ID or password. (Demo student: CQ-STU-101 / pass123)');
+        }
+        enterSession(found);
       }
-    );
-
-    if (mode === 'register' && d.pendingApproval) {
-      alert(d.message);
-      $('authForm').reset();
       return;
     }
 
-    user = d.user;
-    state = d.progress;
-    show();
+    // Team, Professor, and Admin Clearance Key Verification
+    const expectedKey = db.accessKeys[selectedRole];
+    if (accessKey !== expectedKey) {
+      return showAuthError(`Access Denied: Invalid ${selectedRole.toUpperCase()} clearance key.`);
+    }
 
-  } catch (e) {
-    alert(e.message);
+    const staffUser = {
+      id: userId || `${selectedRole.toUpperCase()}-OP`,
+      name: userId || `${selectedRole.toUpperCase()} Operator`,
+      role: selectedRole,
+      xp: 9999,
+      completedQuizzes: [],
+      domainScores: {
+        'Network Security': 95,
+        'Web & AppSec': 95,
+        'Threat Intelligence': 95,
+        'Cryptography': 95,
+        'Social Engineering': 95,
+      },
+    };
+    enterSession(staffUser);
+  });
+
+  function showAuthError(msg) {
+    authError.textContent = msg;
+    authError.classList.remove('hidden');
   }
-};
-$('demoBtn').onclick=()=>{$('email').value='student@cyberquest.demo';$('password').value='CyberQuest123';$('authForm').requestSubmit()};
-document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
-$('profileQuick').onclick=()=>setView('profile');
-$('globalSearch').oninput=e=>{const q=e.target.value.trim().toLowerCase();if(!q)return;setView('courses',false);$('search').value=q;renderZones();};
 
-$('logout').onclick=async()=>{await api('/api/logout',{method:'POST'});location.reload()};$('theme').onclick=()=>document.body.classList.toggle('light');
+  /* ============================================================================
+     5. SESSION & NAVIGATION CONTROLLER
+     ============================================================================ */
+  const appShell = document.getElementById('appShell');
 
-const lessons=[['Computer & Network Fundamentals','foundation','⌁','Understand networks, devices and communication.',['IP/DNS','TCP/IP','Routers & switches','Firewalls']],['Cybersecurity Foundations','foundation','◈','Build the core security mindset.',['CIA triad','Threats','Vulnerabilities','Risk']],['Social Engineering & Phishing','defense','✉','Recognize manipulation and suspicious messages.',['Phishing','Pretexting','Baiting','Reporting']],['Identity & Access Control','defense','🔐','Learn authentication and authorization.',['MFA','RBAC','Least privilege','Accounts']],['Malware & Ransomware','defense','☣','Explore malware types and defenses.',['Virus','Trojan','Ransomware','Recovery']],['Cryptography','advanced','⌬','Understand encryption, hashing and signatures.',['Symmetric','Public key','Hashing','Signatures']],['Network Defense & SOC','defense','◉','Learn monitoring and incident triage.',['Logs','SIEM','IDS/IPS','Triage']],['Operating System Security','defense','▣','Secure endpoints through updates and controls.',['Patching','Permissions','Processes','Endpoint']],['Web & Application Security','advanced','</>','Learn secure development concepts.',['Input validation','Sessions','Access control','OWASP']],['Cloud Security','advanced','☁','Understand cloud identity and shared responsibility.',['IAM','Storage','Monitoring','Responsibility']],['Digital Forensics & IR','advanced','⌕','Investigate incidents and preserve evidence.',['Evidence','Timelines','Containment','Recovery']],['Ethical Hacking Concepts','advanced','⚔','Learn authorized security testing responsibly.',['Assessment','Validation','Disclosure','Authorization']]];
-const sessions=[
-{title:'Computer & Network Fundamentals',level:'FOUNDATION',icon:'⌁',definition:'Computer networks allow devices to exchange data and services using agreed communication rules. Cybersecurity starts with understanding how traffic moves between users, devices, routers, servers and the internet.',slides:[['THE BIG PICTURE','A network connects endpoints such as laptops and phones to services such as web servers. IP addresses identify devices logically, DNS helps resolve names, and protocols such as TCP/IP define how data is transported.'],['CORE DEFINITIONS','IP address: a logical network address. DNS: translates names into addresses. Router: forwards traffic between networks. Switch: connects devices within a local network. Firewall: applies rules to traffic.'],['HOW A THREAT TRAVELS','An attacker may enter through a compromised device, exposed service, stolen credentials or unsafe network. Once inside, poor segmentation can let the attacker move toward more valuable systems.'],['REAL-LIFE THREAT','Large botnets have repeatedly abused insecure internet-connected devices to launch distributed denial-of-service attacks. The lesson: every exposed device can become part of a larger attack surface.'],['DEFENDER CHECK','Use secure Wi-Fi, patch routers and endpoints, segment sensitive systems, disable unnecessary services, and monitor unusual traffic.'] ],takeaway:'Know the path of data before trying to secure it.'},
-{title:'Cybersecurity Foundations',level:'FOUNDATION',icon:'◈',definition:'Cybersecurity protects systems, information and people from unauthorized access, misuse, disruption, alteration and destruction. The CIA triad is a simple framework for thinking about security goals.',slides:[['THE CIA TRIAD','Confidentiality keeps information from unauthorized people. Integrity protects data from unauthorized change. Availability keeps systems and information accessible when needed.'],['KEY DEFINITIONS','Threat: something that can cause harm. Vulnerability: a weakness. Risk: the likelihood and impact of a threat exploiting a weakness. Control: a safeguard that reduces risk.'],['RISK THINKING','Security is not only about blocking attacks. Teams identify valuable assets, assess likely threats, choose controls, test them and improve when conditions change.'],['REAL-LIFE THREAT','Ransomware incidents show all three CIA goals can be affected: files may become unavailable, data may be stolen, and attackers may alter systems.'],['DEFENDER CHECK','Start with assets and impact. Prioritize strong authentication, backups, patching, access control, monitoring and an incident-response plan.']],takeaway:'Think in terms of assets, threats, vulnerabilities, impact and controls.'},
-{title:'Social Engineering & Phishing',level:'DEFENSE',icon:'✉',definition:'Social engineering manipulates people into revealing information, approving actions or bypassing security. Phishing is a common form that uses messages, websites or other communication to create a deceptive request.',slides:[['WHAT IS PHISHING?','Phishing messages often imitate trusted organizations and create urgency, fear, curiosity or authority. The goal may be to steal credentials, money or access.'],['WARNING SIGNS','Unexpected urgency, mismatched domains, unusual payment requests, suspicious attachments, requests for passwords or MFA codes, and links that do not match the claimed organization are common warning signs.'],['ATTACK FLOW','A message creates pressure → the victim clicks or responds → the attacker collects information or delivers a malicious action → the attacker attempts account or financial abuse.'],['REAL-LIFE THREAT','Business email compromise has caused organizations to send large payments to fraudulent accounts after attackers impersonated executives or suppliers.'],['DEFENDER CHECK','Pause. Verify using an independent official channel. Never share passwords or one-time codes. Report suspicious messages and preserve them for investigation.']],takeaway:'The safest response to pressure is to slow down and verify.'},
-{title:'Identity & Access Control',level:'DEFENSE',icon:'🔐',definition:'Identity and access control determines who or what is requesting access and what that identity is allowed to do. Authentication proves identity; authorization determines permissions.',slides:[['AUTHENTICATION VS AUTHORIZATION','Authentication answers “Who are you?” Authorization answers “What are you allowed to do?” Accounting or logging records important access activity.'],['CORE DEFINITIONS','MFA uses multiple verification factors. RBAC assigns permissions through roles. Least privilege gives only necessary access. Session management controls how authenticated sessions are created and ended.'],['ATTACK FLOW','Credential theft → login attempt → MFA bypass or abuse → unauthorized access → privilege escalation or data theft. Strong controls break this chain.'],['REAL-LIFE THREAT','Credential-stuffing attacks reuse passwords leaked from other services. When people reuse passwords, one breach can become an entry point to other accounts.'],['DEFENDER CHECK','Use unique passwords, a password manager, phishing-resistant MFA where available, least privilege, timely access removal and login monitoring.']],takeaway:'Strong identity controls reduce the damage caused by stolen credentials.'},
-{title:'Malware & Ransomware',level:'DEFENSE',icon:'☣',definition:'Malware is software designed to perform unwanted or harmful actions. Ransomware is malware that can encrypt or otherwise disrupt data and may threaten to expose stolen information.',slides:[['MALWARE TYPES','Viruses attach to files, worms spread between systems, trojans disguise malicious behavior, spyware collects information, and ransomware disrupts access or extorts victims.'],['HOW INFECTIONS START','Common paths include malicious attachments, compromised websites, vulnerable services, unsafe downloads, stolen credentials and infected removable media.'],['ATTACK FLOW','Initial access → execution → persistence → privilege escalation → data access or disruption → extortion. Defenders aim to detect and stop the chain early.'],['REAL-LIFE THREAT','WannaCry demonstrated how rapidly ransomware can spread when vulnerable systems are left unpatched, affecting organizations around the world.'],['DEFENDER CHECK','Patch quickly, restrict execution, use endpoint protection, segment networks, maintain tested offline or isolated backups, and rehearse recovery.']],takeaway:'Backups matter, but prevention and rapid containment matter too.'},
-{title:'Cryptography',level:'ADVANCED',icon:'⌬',definition:'Cryptography uses mathematical techniques to protect information and establish trust. Encryption mainly protects confidentiality, hashing supports integrity, and digital signatures help prove integrity and origin.',slides:[['THREE CORE TOOLS','Encryption transforms readable data into protected ciphertext using a key. Hashing produces a fixed-length digest for integrity checks. Digital signatures use asymmetric cryptography to support authenticity and integrity.'],['SYMMETRIC VS PUBLIC-KEY','Symmetric encryption uses the same secret key to encrypt and decrypt. Public-key cryptography uses a public/private key pair and supports tasks such as key exchange and signatures.'],['WHERE IT APPEARS','HTTPS, secure messaging, disk encryption, password storage systems and signed software updates all rely on cryptographic techniques in different ways.'],['REAL-LIFE THREAT','Weak or incorrectly implemented cryptography can expose sensitive information even when an application appears “encrypted.” Security depends on correct algorithms, key management and implementation.'],['DEFENDER CHECK','Use modern, well-reviewed cryptography, protect keys, avoid inventing algorithms, use secure protocols and store passwords with appropriate password-hashing methods.']],takeaway:'Encryption, hashing and signatures solve different security problems.'},
-{title:'Network Defense & SOC',level:'DEFENSE',icon:'◉',definition:'Network defense combines controls and monitoring to detect suspicious activity and protect communications. A Security Operations Center (SOC) investigates alerts and coordinates response.',slides:[['DEFENSE LAYERS','Firewalls filter traffic. IDS/IPS can detect or prevent suspicious activity. Network segmentation limits movement. Secure configurations reduce exposed services.'],['SOC DEFINITIONS','A log records an event. SIEM systems centralize and correlate security data. An alert signals something worth investigating. Triage determines priority and likely impact.'],['INCIDENT FLOW','Detect → validate and triage → contain → eradicate or remediate → recover → learn. Good responders preserve useful evidence while reducing harm.'],['REAL-LIFE THREAT','Attackers often combine multiple failed logins, unusual locations and suspicious processes. Individually these events may look small; together they can reveal an account compromise.'],['DEFENDER CHECK','Centralize logs, synchronize time, define alert priorities, monitor privileged activity and document an incident-response process.']],takeaway:'Good defense turns noisy events into a clear, prioritized story.'},
-{title:'Operating System Security',level:'DEFENSE',icon:'▣',definition:'Operating system security protects the software layer that manages hardware, files, processes, users and permissions. Secure configuration and timely updates reduce attack opportunities.',slides:[['WHAT THE OS CONTROLS','The operating system manages accounts, processes, memory, storage, networking and device access. A compromise at this layer can affect many applications.'],['CORE CONTROLS','Patching fixes known weaknesses. Permissions limit access. Secure boot helps protect startup integrity. Endpoint protection monitors suspicious behavior.'],['ATTACK FLOW','Exploit a vulnerable component → gain execution → escalate privileges → establish persistence → access or alter data.'],['REAL-LIFE THREAT','Unpatched operating systems have repeatedly been exploited by worms and ransomware. The recurring lesson is simple: known vulnerabilities become dangerous when updates are delayed.'],['DEFENDER CHECK','Enable automatic updates where appropriate, remove unnecessary software, use standard accounts for daily work, protect administrator access and monitor endpoints.']],takeaway:'A secure operating system is maintained, minimized and monitored.'},
-{title:'Web & Application Security',level:'ADVANCED',icon:'</>',definition:'Application security protects software from design-time and runtime weaknesses. Secure development validates inputs, protects sessions, enforces authorization and handles data safely.',slides:[['COMMON WEAKNESSES','Broken access control, injection, insecure authentication, security misconfiguration and unsafe handling of sensitive data are recurring application risks.'],['CORE DEFINITIONS','Input validation checks data before use. Access control decides what a user may do. Session management protects authenticated state. Secure defaults reduce accidental exposure.'],['ATTACK FLOW','Craft malicious input or request → application processes it incorrectly → attacker reads, changes or triggers something unintended → data or account impact.'],['REAL-LIFE THREAT','The Log4Shell vulnerability showed how a flaw in a widely used software component could affect many applications and organizations downstream.'],['DEFENDER CHECK','Use secure coding practices, dependency scanning, code review, strong authorization checks, safe error handling and regular security testing.']],takeaway:'Security must be designed into the application, not added at the end.'},
-{title:'Cloud Security',level:'ADVANCED',icon:'☁',definition:'Cloud security protects identities, workloads, data, networks and configurations in cloud environments. Responsibility is shared between the cloud provider and the customer.',slides:[['SHARED RESPONSIBILITY','Providers secure the underlying cloud infrastructure. Customers remain responsible for areas such as identities, configurations, data and workloads according to the service model.'],['CORE CONTROLS','IAM limits access. Encryption protects data. Logging provides visibility. Security groups and network policies control connectivity. Configuration management reduces accidental exposure.'],['ATTACK FLOW','Misconfigured storage or identity → unauthorized discovery or access → data exposure or resource abuse.'],['REAL-LIFE THREAT','Publicly exposed cloud storage has repeatedly led to accidental data disclosure. A secure cloud deployment depends heavily on correct permissions and configuration.'],['DEFENDER CHECK','Use least privilege, deny-by-default policies, secrets management, continuous configuration checks, logging and strong separation of environments.']],takeaway:'Cloud security is often a configuration and identity problem as much as a technology problem.'},
-{title:'Digital Forensics & Incident Response',level:'ADVANCED',icon:'⌕',definition:'Digital forensics examines digital evidence to understand what happened. Incident response is the organized process of detecting, containing, investigating, recovering from and learning from security incidents.',slides:[['FORENSICS BASICS','Evidence can include logs, files, memory captures, network records and timestamps. Investigators preserve evidence and document actions so findings can be trusted.'],['CORE DEFINITIONS','Chain of custody records evidence handling. Timeline analysis reconstructs events. Containment limits damage. Recovery restores safe operations. Lessons learned improve defenses.'],['INVESTIGATION FLOW','Identify scope → preserve evidence → build timeline → contain → remove cause → recover → document findings.'],['REAL-LIFE THREAT','After major breaches, investigators often reconstruct attacker activity from authentication logs, endpoint telemetry and network records to determine initial access and impact.'],['DEFENDER CHECK','Centralize logs, retain useful evidence, synchronize system time, document response decisions and practice incident-response playbooks.']],takeaway:'Good incident response is disciplined, evidence-driven and documented.'},
-{title:'Ethical Hacking Concepts',level:'ADVANCED',icon:'⚔',definition:'Ethical hacking is authorized security testing performed to find weaknesses before criminals exploit them. The defining requirement is explicit permission and a clearly defined scope.',slides:[['WHAT ETHICAL HACKING MEANS','A tester works within an agreed scope, documents findings and avoids unnecessary impact. The goal is to improve security, not to gain unauthorized access.'],['CORE DEFINITIONS','Scope defines what may be tested. Vulnerability is a weakness. Exploitability describes how a weakness could be used. Responsible disclosure communicates findings to the authorized owner.'],['SAFE TESTING FLOW','Plan and authorize → discover → validate carefully → document evidence → report → remediate → retest.'],['REAL-LIFE THREAT','Bug-bounty programs have helped organizations discover real vulnerabilities through authorized researchers before those weaknesses were abused more widely.'],['DEFENDER CHECK','Get written authorization, define targets and limits, protect sensitive findings, avoid destructive actions and report responsibly.']],takeaway:'Authorization is the line between ethical security testing and unauthorized intrusion.'}
-];
-const facts=[['THE CIA TRIAD','Confidentiality, Integrity and Availability are foundational goals of information security.'],['MFA','Multi-factor authentication uses different verification factors, making stolen passwords less useful.'],['HASHING','Hashing creates a fixed-length representation of data and is not the same as encryption.'],['LEAST PRIVILEGE','Give users and systems only the access required for their tasks.'],['PHISHING','Phishing commonly uses urgency, fear or authority to pressure people into unsafe actions.'],['DNS','DNS helps translate domain names into network addresses.']];
-const quizzes=[['Which principle means giving only the access required for a task?',['Least privilege','Open access','Port forwarding','Public access'],0],['What should you do with a suspicious login alert?',['Ignore it','Verify it and follow the security process','Share your password','Delete logs'],1],['What does MFA add to a login?',['More bandwidth','Additional verification factors','A public IP','A backup server'],1]];
-const missions=[['PHISHING','THE URGENT EMAIL','A message says your account will be locked in 10 minutes and asks you to sign in through a link.','What is the safest next move?',['Click before the deadline.','Open it on your phone.','Verify through an official channel and report the message.','Reply asking for the sender password.'],2],['ACCOUNT SECURITY','THE LOGIN ALERT','A login notification shows a device and location you do not recognize.','What should you do first?',['Ignore it.','Verify the alert, secure the account and report if unauthorized.','Post it publicly.','Send your password to support.'],1]];
-let m=missions[new Date().getDate()%missions.length],q=quizzes[new Date().getDate()%quizzes.length],f=facts[new Date().getDate()%facts.length];
-function render(){renderIntelligence();renderRadar();renderRecommendations();renderAnalytics();renderMissions();let r=['CYBER ROOKIE','SECURITY CADET','THREAT HUNTER','CYBER DEFENDER','SECURITY SPECIALIST','CYBER GUARDIAN'][Math.min(Math.floor(state.xp/200),5)];$('xp').textContent=state.xp;$('xpTop').textContent=state.xp;$('streak').textContent=state.streak;$('rank').textContent=r;$('today').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});$('mtype').textContent=m[0];$('mtitle').textContent=m[1];$('mdesc').textContent=m[2];$('factTitle').textContent=f[0];$('fact').textContent=f[1];$('quizQ').textContent=q[0];$('quizChoices').innerHTML=q[1].map((x,i)=>`<button class="choice" onclick="answerQuiz(${i},this)">${x}</button>`).join('');renderProgression();renderZones();renderSessions();renderBoard();renderBadges();renderCertificate()}
-$('startM').onclick=()=>{$('mchallenge').style.display='block';$('mq').textContent=m[3];$('mc').innerHTML=m[4].map((x,i)=>`<button class="choice" onclick="answerM(${i},this)">${x}</button>`).join('');$('mchallenge').scrollIntoView({behavior:'smooth',block:'center'})};
-async function answerM(i,b){document.querySelectorAll('#mc .choice').forEach(x=>x.disabled=true);if(i===m[5]){b.classList.add('correct');$('mf').innerHTML='<div class="feedback">✓ Mission complete • +50 XP</div>';await gain(50,'mission-'+today)}else{b.classList.add('wrong');$('mf').innerHTML='<div class="feedback">✕ Not the safest move. Look for verification before acting.</div>'}}
-async function answerQuiz(i,b){document.querySelectorAll('#quizChoices .choice').forEach(x=>x.disabled=true);if(i===q[2]){b.classList.add('correct');$('quizF').innerHTML='<div class="feedback">✓ Correct • +20 XP</div>';await gain(20,'quiz-'+today)}else{b.classList.add('wrong');$('quizF').innerHTML='<div class="feedback">✕ Review the concept.</div>'}}
-async function gain(x,key){let d=await api('/api/progress',{method:'POST',body:JSON.stringify({xp:x,key})});state=d.progress;render()}
-function zoneCompleted(i){return state.completed.includes('lesson-'+i)}
-function zoneUnlocked(i){return i===0||zoneCompleted(i-1)}
-async function renderRadar(){const el=$('radarPanel');if(!el)return;try{const d=await api('/api/intelligence');const skills=d.skills||[];const max=100,cx=210,cy=210,R=155;const n=skills.length||1;const pt=(v,i,r=R)=>{const a=-Math.PI/2+(i/n)*Math.PI*2;const rr=r*(v/max);return [cx+Math.cos(a)*rr,cy+Math.sin(a)*rr]};const pstr=pts=>pts.map(p=>p.join(',')).join(' ');const rings=[20,40,60,80,100].map(v=>`<polygon points="${pstr(skills.map((_,i)=>pt(v,i,R)))}" class="radarRing"/>`).join('');const axes=skills.map((_,i)=>{const [x,y]=pt(100,i,R);return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" class="radarAxis"/>`}).join('');const values=skills.map((x,i)=>pt(Number(x.score)||0,i,R));const labels=skills.map((x,i)=>{const a=-Math.PI/2+(i/n)*Math.PI*2;const lr=R+34;const xx=cx+Math.cos(a)*lr,yy=cy+Math.sin(a)*lr;const anchor=Math.abs(Math.cos(a))<.2?'middle':Math.cos(a)>0?'start':'end';return `<text x="${xx}" y="${yy}" text-anchor="${anchor}" class="radarLabel">${x.name}<tspan x="${xx}" dy="14">${x.score}%</tspan></text>`}).join('');const dots=values.map(([x,y])=>`<circle cx="${x}" cy="${y}" r="5" class="radarDot"/>`).join('');const rows=skills.map(x=>`<div class="radarSkill"><div><span>${x.name}</span><b>${x.score}%</b></div><div class="radarMini"><span style="width:${x.score}%"></span></div></div>`).join('');el.innerHTML=`<div class="radarGrid"><article class="radarCard"><div class="radarTop"><div><span class="kicker">OVERALL READINESS</span><strong>${d.overall}%</strong></div><span class="radarBadge">● LIVE</span></div><div class="radarCanvas"><svg viewBox="0 0 420 420" role="img" aria-label="Cybersecurity skill radar"><g>${rings}${axes}<polygon points="${pstr(values)}" class="radarArea"/>${dots}${labels}</g></svg></div></article><article class="radarCard"><span class="kicker">SKILL BREAKDOWN</span><h3>YOUR CYBER CAPABILITY MAP</h3>${rows}<div class="radarInsight"><b>Strongest:</b> ${d.strongest.name} <span>${d.strongest.score}%</span></div><div class="radarInsight"><b>Focus next:</b> ${d.weakest.name} <span>${d.weakest.score}%</span></div></article></div>`}catch(e){el.innerHTML='<div class="intelLoading">SKILL RADAR TEMPORARILY UNAVAILABLE</div>'}}
-
-async function renderIntelligence(){const el=$('intelligencePanel');if(!el)return;try{const d=await api('/api/intelligence');const bars=d.skills.map(s=>`<div class="skillRow"><div class="skillHead"><span>${s.name}</span><b>${s.score}%</b></div><div class="skillBar"><span style="width:${s.score}%"></span></div></div>`).join('');el.innerHTML=`<div class="intelHero"><div><span class="kicker">OVERALL CYBER READINESS</span><strong>${d.overall}%</strong><p>Your profile is calculated from completed learning zones, Cyber Sessions and advanced labs.</p></div><div class="intelRecommendation"><span>🧠 NEXT BEST ACTION</span><b>${d.recommendation}</b><small>Weakest signal: ${d.weakest.name} • Strongest signal: ${d.strongest.name}</small></div></div><div class="intelGrid"><article class="intelCard"><span class="kicker">SKILL PROFILE</span><h3>CYBER SKILL SIGNALS</h3>${bars}</article><article class="intelCard"><span class="kicker">LEARNING SIGNALS</span><h3>YOUR ACTIVITY</h3><div class="signalGrid"><div><b>${d.signals.lessons}</b><small>Zones</small></div><div><b>${d.signals.sessions}</b><small>Sessions</small></div><div><b>${d.signals.labs}</b><small>Advanced Labs</small></div></div><div class="intelCallout"><b>Adaptive engine</b><p>Complete more activities to make your recommendations more precise.</p></div></article></div>`}catch(e){el.innerHTML='<div class="intelLoading">INTELLIGENCE ENGINE TEMPORARILY UNAVAILABLE</div>'}}
-async function renderRecommendations(){const el=$('recommendationPanel');if(!el)return;try{const d=await api('/api/recommendations');const esc=x=>String(x||'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m]));const focus=d.focus,strong=d.strong;const action=(item)=>{if(item.action==='openSession')return `openSession(${item.actionArg})`;if(item.action==='advancedLab')return `advancedLab('${item.actionArg}')`;if(item.action==='openForensicsLab')return 'openForensicsLab()';if(item.action==='openWebSecurityLab')return 'openWebSecurityLab()';return "setView('challenges')"};const cards=d.items.map((x,i)=>`<article class="recCard ${i===0?'recPrimary':''}"><div class="recIcon">${x.icon}</div><div class="recBody"><div class="recTop"><span class="kicker">${i===0?'RECOMMENDED NOW':`OPTION ${i+1}`}</span><span class="recScore">${x.score}% SIGNAL</span></div><h3>${esc(x.actionTitle)}</h3><p>${esc(i===0?x.actionDetail:x.reason)}</p><div class="recReason"><b>${esc(x.name)}</b><span>${x.score<50?'Needs foundation':x.score<80?'Ready for focused practice':'Strong skill'}</span></div><button class="btn ${i===0?'primary':''}" onclick="${action(x)}">${esc(x.cta)} →</button></div></article>`).join('');el.innerHTML=`<div class="recHero"><div><span class="kicker">${esc(d.headline)}</span><h3>${esc(focus.icon)} ${esc(focus.name)} is your current focus.</h3><p>${esc(focus.reason)}</p><div class="recHeroMeta"><span>Current signal <b>${focus.score}%</b></span><span>Strongest <b>${esc(strong.name)}</b></span></div></div><div class="recHeroBadge"><strong>${focus.score}%</strong><span>FOCUS SIGNAL</span></div></div><div class="recGrid">${cards}</div><div class="recHow"><span class="kicker">HOW ADAPTIVE LEARNING WORKS</span><div><span>01 Performance</span><b>→</b><span>02 Skill signal</span><b>→</b><span>03 Recommendation</span><b>→</b><span>04 Recalculate</span></div><p>Complete the recommended activity and your next action is recalculated automatically.</p></div>`}catch(e){el.innerHTML='<div class="intelLoading">ADAPTIVE RECOMMENDATIONS TEMPORARILY UNAVAILABLE</div>'}}
-function renderProgression(){let done=lessons.filter((_,i)=>zoneCompleted(i)).length,pct=Math.round(done/lessons.length*100);$('masteryText').textContent=`${done}/12 ZONES`;$('masteryPct').textContent=pct+'%';$('masteryBar').style.width=pct+'%';let next=lessons.findIndex((_,i)=>!zoneCompleted(i));$('nextZone').textContent=next<0?'MASTERED':`ZONE ${String(next+1).padStart(2,'0')}`;$('certStatus').textContent=done===12?'READY':'LOCKED';let groups=[['FOUNDATION DISTRICT','Zones 01–02','foundation','2'],['DEFENSE DISTRICT','Zones 03–08','defense','6'],['ADVANCED DISTRICT','Zones 09–12','advanced','4']];$('districts').innerHTML=groups.map(g=>{let count=lessons.filter(x=>x[1]===g[2]).length,completed=lessons.filter((x,i)=>x[1]===g[2]&&zoneCompleted(i)).length;return `<div class="district"><div><span class="districtIcon">${g[2]==='foundation'?'⌁':g[2]==='defense'?'◉':'⌬'}</span><div><small>${g[1]}</small><b>${g[0]}</b></div></div><span>${completed}/${count}</span></div>`}).join('')}
-function renderZones(){let s=($('search').value||'').toLowerCase();$('zones').innerHTML=lessons.map((x,i)=>[x,i]).filter(([x])=>(x[0]+' '+x[3]+' '+x[4]).toLowerCase().includes(s)).map(([x,i])=>{let done=zoneCompleted(i),open=zoneUnlocked(i);return `<article class="zone ${done?'zoneDone':''} ${!open?'zoneLocked':''}" onclick="lesson(${i})"><div class="zoneTop"><small>ZONE ${String(i+1).padStart(2,'0')} • ${x[1].toUpperCase()}</small><span>${done?'✓ COMPLETE':open?'UNLOCKED':'🔒 LOCKED'}</span></div><h3>${x[2]} ${x[0]}</h3><p>${x[3]}</p>${x[4].map(t=>`<span class="tag">${t}</span>`).join('')}</article>`}).join('')}
-$('search').oninput=renderZones;
-function renderSessions(){let el=$('sessionCards');if(!el)return;el.innerHTML=sessions.map((x,i)=>{let done=state.completed.includes('session-'+i);return `<article class="sessionCard ${done?'sessionDone':''}" onclick="openSession(${i})"><div class="sessionTop"><span class="sessionIcon">${x.icon}</span><small>SESSION ${String(i+1).padStart(2,'0')} • ${x.level}</small><span>${done?'✓ COMPLETE':'READ & EXPLORE →'}</span></div><h3>${x.title}</h3><p>${x.definition}</p><div class="sessionMeta"><b>${x.slides.length} SLIDES</b><b>REAL-LIFE THREAT</b><b>DEFENDER CHECK</b></div></article>`}).join('')}
-function sessionVisual(i,slide){
- const visuals=[
-  ['NETWORK MAP','🖥️','ENDPOINT','ROUTER','SERVER','Data packet','network'],
-  ['CIA TRIAD','🛡️','CONFIDENTIALITY','INTEGRITY','AVAILABILITY','Security goal','triad'],
-  ['PHISHING FLOW','🎣','FAKE MESSAGE','VICTIM','FAKE LOGIN','Credential bait','phish'],
-  ['ACCESS GATE','🔐','IDENTITY','MFA','AUTHORIZED','Access token','auth'],
-  ['MALWARE CHAIN','☣️','EMAIL','MALWARE','FILES','Payload','malware'],
-  ['CRYPTO LAB','🔒','PLAINTEXT','ENCRYPT','CIPHERTEXT','Secret data','crypto'],
-  ['SOC PIPELINE','📡','EVENT','SIEM','ANALYST','Alert','soc'],
-  ['ENDPOINT SHIELD','💻','PROCESS','PERMISSION','KERNEL','Protected action','os'],
-  ['WEB ATTACK PATH','🌐','BROWSER','WEB APP','DATABASE','Request','web'],
-  ['CLOUD CONTROL','☁️','USER','IAM','CLOUD','API request','cloud'],
-  ['FORENSICS TRAIL','🔎','ALERT','EVIDENCE','TIMELINE','Evidence item','forensics'],
-  ['ETHICAL HACK FLOW','⚔️','RECON','TEST','FIX','Finding','hack']
- ][i]||['CYBER FLOW','◈','SOURCE','CONTROL','TARGET','Packet','default'];
- const [title,icon,a,b,c,item,kind]=visuals;
- const labels=[[a,b,c],[a,item,b],[b,item,c],[a,b,'✓ SAFE'],[a,b,c]][slide%5];
- return `<div class="sessionVisual visual-${kind}">
-   <div class="visualHead"><span>${icon}</span><div><b>${title}</b><small>LIVE CONCEPT MAP</small></div><em>● ANIMATED</em></div>
-   <div class="visualCanvas">
-    <div class="visualNode nodeA"><span>${labels[0]}</span></div>
-    <div class="visualLine line1"></div>
-    <div class="visualNode nodeB"><span>${labels[1]}</span></div>
-    <div class="visualLine line2"></div>
-    <div class="visualNode nodeC"><span>${labels[2]}</span></div>
-    <div class="travelDot dot1"></div><div class="travelDot dot2"></div>
-    <div class="visualPulse"></div>
-   </div>
-   <div class="visualCaption"><b>${item}</b><span>${slide===3?'REAL-WORLD THREAT':slide===4?'DEFENDER VIEW':'SEE THE CONCEPT IN ACTION'}</span></div>
- </div>`;
-}
-function openSession(i){let x=sessions[i],slide=0;function draw(){let sl=x.slides[slide];$('modalBody').innerHTML=`<div class="sessionModal"><div class="sessionModalHead"><span class="kicker">CYBER//QUEST SESSION ${String(i+1).padStart(2,'0')} // ${x.level}</span><span class="slideCount">SLIDE ${slide+1}/${x.slides.length}</span></div><h2>${x.icon} ${x.title}</h2><div class="slideProgress"><span style="width:${((slide+1)/x.slides.length)*100}%"></span></div><div class="sessionVisualWrap">${sessionVisual(i,slide)}<div class="sessionSlide"><span class="slideLabel">${sl[0]}</span><p>${sl[1]}</p></div></div><div class="sessionNav"><button class="choice" id="prevSlide" ${slide===0?'disabled':''}>← PREVIOUS</button><button class="btn primary" id="nextSlide">${slide===x.slides.length-1?'FINISH SESSION':'NEXT SLIDE →'}</button></div>${slide===x.slides.length-1?`<div class="sessionTakeaway"><b>DEFENDER TAKEAWAY</b><p>${x.takeaway}</p></div>${state.completed.includes('session-'+i)?'<div class="feedback">✓ Session completed. Your progress is saved.</div>':'<button class="btn primary full" id="completeSession">MARK SESSION COMPLETE +40 XP</button>'}`:''}</div>`;$('modal').style.display='grid';$('prevSlide').onclick=()=>{slide--;draw()};$('nextSlide').onclick=()=>{if(slide<x.slides.length-1){slide++;draw()}else if(!state.completed.includes('session-'+i)){completeSession(i)}};let cs=$('completeSession');if(cs)cs.onclick=()=>completeSession(i)}draw()}
-async function completeSession(i){if(state.completed.includes('session-'+i))return;await gain(40,'session-'+i);openSession(i)}
-function lesson(i){let x=lessons[i];if(!zoneUnlocked(i)){let prev=lessons[i-1];$('modalBody').innerHTML=`<span class="kicker">ACCESS CONTROL // LOCKED ZONE</span><h2>ZONE ${String(i+1).padStart(2,'0')} LOCKED</h2><p>Complete <b>${prev[0]}</b> first. CYBER//QUEST unlocks the next zone after each completed learning mission.</p><div class="lockCard">🔒 <b>PROGRESSION REQUIRED</b><span>Complete Zone ${String(i).padStart(2,'0')} to unlock this zone.</span></div>`;$('modal').style.display='grid';return}$('modalBody').innerHTML=`<span class="kicker">${x[1].toUpperCase()} // LEARNING ZONE ${String(i+1).padStart(2,'0')}</span><h2>${x[0]}</h2><p>${x[3]}</p><h3>CORE CONCEPTS</h3><ul>${x[4].map(t=>`<li>${t}</li>`).join('')}</ul><div class="think"><b>DEFENDER'S QUESTION</b><p>How could misunderstanding this concept create security risk?</p></div>${zoneCompleted(i)?'<div class="feedback">✓ Zone already completed. Your mastery progress is saved.</div>':`<button class="btn primary" onclick="completeLesson(${i})">COMPLETE LESSON +30 XP</button>`}`;$('modal').style.display='grid'}
-async function completeLesson(i){if(zoneCompleted(i))return;await gain(30,'lesson-'+i);closeModal()}
-function closeModal(){$('modal').style.display='none'}
-function resultCard(title,desc,points,key,correct){$('modalBody').insertAdjacentHTML('beforeend',`<div class="simResult ${correct?'success':'failure'}"><b>${correct?'✓':'✕'} ${title}</b><p>${desc}</p>${correct?`<span>+${points} XP</span>`:''}</div>`);if(correct)gain(points,key)}
-function sim(t){let c=$('modalBody');
-if(t==='phish')c.innerHTML=`<span class="kicker">SIM 01 // PHISHING INVESTIGATION</span><h2>SPOT THE PHISH</h2><p class="simIntro">You are the first-line defender. Inspect the message, identify the warning signs, then make the call.</p><div class="emailMock"><div class="emailTop"><span>INBOX // NEW MESSAGE</span><span class="risk">RISK: HIGH</span></div><b>From: it-support@university-help.co</b><h3>URGENT — account suspension</h3><p>Your account will be disabled today. Click the link and sign in immediately.</p><div class="clueRow"><button class="clue" onclick="this.classList.toggle('found');document.getElementById('phishClues').textContent=document.querySelectorAll('.clue.found').length+'/3 clues found'">DOMAIN</button><button class="clue" onclick="this.classList.toggle('found');document.getElementById('phishClues').textContent=document.querySelectorAll('.clue.found').length+'/3 clues found'">URGENCY</button><button class="clue" onclick="this.classList.toggle('found');document.getElementById('phishClues').textContent=document.querySelectorAll('.clue.found').length+'/3 clues found'">LOGIN REQUEST</button></div><small id="phishClues">0/3 clues found</small></div><h3 class="decisionTitle">YOUR DECISION</h3><div class="simChoices"><button class="choice" onclick="phishDecision(false,this)">OPEN THE LINK</button><button class="choice" onclick="phishDecision(true,this)">REPORT PHISHING</button></div>`;
-if(t==='network')c.innerHTML=`<span class="kicker">SIM 02 // NETWORK DEFENSE</span><h2>PACKET PATROL</h2><p class="simIntro">Packets are approaching your firewall. Inspect each one and decide whether policy should ALLOW or BLOCK it.</p><div class="packetStage gameStage"><div class="node client">ENDPOINT</div><div class="fw">FIREWALL</div><div class="node server">SERVER</div><div class="packetGame" id="packetGame"></div></div><div id="packetInfo" class="simInfo">Packet 1 of 3 ready for inspection.</div><div class="simChoices" id="packetChoices"><button class="choice" onclick="packetDecision(true)">ALLOW</button><button class="choice" onclick="packetDecision(false)">BLOCK</button></div>`;
-if(t==='crypto')c.innerHTML=`<span class="kicker">SIM 03 // CRYPTOGRAPHY LAB</span><h2>PROTECT THE MESSAGE</h2><p class="simIntro">Choose the right security technique for each goal. Think about what must be protected.</p><div class="cryptoStage cryptoGame"><div class="cryptoBox"><b>MESSAGE</b><p>EXAM RESULTS: 92%</p></div><div class="cryptoArrow">→</div><div class="cryptoBox activeCrypto"><b>PROTECTED DATA</b><p class="cipher">8F2A • 19C4 • 77BD</p></div></div><div class="cryptoQuestion">A student needs to send confidential results so unauthorized people cannot read them. Which technique is the best fit?</div><div class="simChoices"><button class="choice" onclick="cryptoDecision('hash',this)">HASHING</button><button class="choice" onclick="cryptoDecision('encrypt',this)">ENCRYPTION</button><button class="choice" onclick="cryptoDecision('sign',this)">DIGITAL SIGNATURE</button></div>`;
-if(t==='soc')c.innerHTML=`<span class="kicker">SIM 04 // SOC INCIDENT RESPONSE</span><h2>ALERT → RESPONSE</h2><p class="simIntro">You are the SOC analyst. Investigate the alert, then choose the safest response order.</p><div class="alert liveAlert"><b>⚠ HIGH PRIORITY</b><p>Multiple failed logins followed by a successful login from an unusual location.</p><div class="pulseDot"></div></div><div class="socOrder"><div class="orderStep" data-step="1">01 • DETECT</div><div class="orderStep" data-step="2">02 • TRIAGE</div><div class="orderStep" data-step="3">03 • CONTAIN</div><div class="orderStep" data-step="4">04 • RECOVER</div></div><div id="socInfo" class="simInfo">Choose the next response step.</div><div class="simChoices" id="socChoices"><button class="choice" onclick="socDecision('triage',this)">TRIAGE THE ALERT</button><button class="choice" onclick="socDecision('contain',this)">IMMEDIATELY WIPE THE SERVER</button><button class="choice" onclick="socDecision('post',this)">POST THE ALERT PUBLICLY</button></div>`;
-$('modal').style.display='grid'}
-function phishDecision(ok,b){document.querySelectorAll('.simChoices .choice').forEach(x=>x.disabled=true);b.classList.add(ok?'correct':'wrong');if(ok){b.classList.add('correct');resultCard('PHISH DETECTED','Three red flags: suspicious domain, artificial urgency and an unexpected login request. Verify through an official channel.',60,'sim-phish',true)}else resultCard('PHISHING TRAP','The safe move is to avoid the message link and report it. Always verify through a trusted channel.',0,'sim-phish',false)}
-let packetIndex=0,packetScore=0;const packets=[{label:'HTTPS • university portal',safe:true,reason:'Encrypted web traffic to an expected service matches policy.'},{label:'Unknown host • suspicious port',safe:false,reason:'Unexpected destination/port should be blocked pending investigation.'},{label:'DNS • approved resolver',safe:true,reason:'The approved resolver is part of normal network operations.'}];
-function packetDecision(allow){let p=packets[packetIndex],ok=allow===p.safe;packetScore+=ok?1:0;const g=$('packetGame');g.innerHTML=`<div class="travelPacket ${p.safe?'safe':'danger'}"></div>`;$('packetInfo').innerHTML=`<b>${ok?'✓ Correct':'✕ Incorrect'}</b> — ${p.reason}`;document.querySelectorAll('#packetChoices .choice').forEach(x=>x.disabled=true);setTimeout(()=>{packetIndex++;if(packetIndex<packets.length){$('packetInfo').textContent=`Packet ${packetIndex+1} of 3 ready for inspection.`;document.querySelectorAll('#packetChoices .choice').forEach(x=>x.disabled=false)}else{let okAll=packetScore===3;$('packetInfo').innerHTML=okAll?'✓ Firewall policy handled correctly.':'Review the traffic policy and try the exercise again.';if(okAll)resultCard('NETWORK SECURED','You correctly classified all three packets according to the simulated policy.',70,'sim-network',true)}},900)}
-function cryptoDecision(choice,b){document.querySelectorAll('.cryptoGame~.simChoices .choice').forEach(x=>x.disabled=true);let ok=choice==='encrypt';b.classList.add(ok?'correct':'wrong');if(ok){document.querySelector('.activeCrypto').classList.add('encrypting');resultCard('MESSAGE PROTECTED','Encryption is designed to make readable data unintelligible without the appropriate key.',50,'sim-crypto',true)}else resultCard('NOT THE BEST FIT','Hashing is for integrity-oriented representations; digital signatures help authenticate integrity and origin. Confidentiality here calls for encryption.',0,'sim-crypto',false)}
-let socStep=0;function socDecision(choice,b){let good=choice==='triage'&&socStep===0;document.querySelectorAll('#socChoices .choice').forEach(x=>x.disabled=true);if(good){b.classList.add('correct');socStep=1;$('socInfo').textContent='✓ Triage complete. Now contain the suspected account/session.';$('socChoices').innerHTML='<button class="choice" onclick="socDecision(\'contain\',this)">CONTAIN THE ACCOUNT/SESSION</button><button class="choice" onclick="socDecision(\'ignore\',this)">CLOSE THE ALERT</button>'}else if(choice==='contain'&&socStep===1){b.classList.add('correct');socStep=2;$('socInfo').textContent='✓ Containment complete. Recover only after investigation and credential reset.';$('socChoices').innerHTML='<button class="choice" onclick="socDecision(\'recover\',this)">RECOVER AND VERIFY</button><button class="choice" onclick="socDecision(\'delete\',this)">DELETE THE LOGS</button>'}else if(choice==='recover'&&socStep===2){b.classList.add('correct');socStep=3;document.querySelectorAll('.orderStep').forEach(x=>x.classList.add('done'));resultCard('INCIDENT CONTAINED','You followed a defensible response flow: detect → triage → contain → recover.',80,'sim-soc',true)}else{b.classList.add('wrong');$('socInfo').textContent='✕ That response skips an important investigation step. Follow the incident-response sequence.';setTimeout(()=>document.querySelectorAll('#socChoices .choice').forEach(x=>x.disabled=false),500)}}
-async function renderBoard(){try{let d=await api('/api/leaderboard');$('board').innerHTML=d.students.map((x,i)=>`<div class="row"><b>#${i+1}</b><strong class="${x.id===user.id?'you':''}">${x.name}${x.id===user.id?' (YOU)':''}</strong><span>${x.xp} XP</span><small>${x.xp>=1000?'CYBER GUARDIAN':x.xp>=500?'CYBER DEFENDER':'CYBER CADET'}</small></div>`).join('')}catch(e){}}
-const achievements=[
- {icon:'🛡️',name:'FIRST DEFENSE',desc:'Complete your first learning zone.',test:()=>state.completed.some(x=>x.startsWith('lesson-'))},
- {icon:'🎣',name:'PHISH FINDER',desc:'Complete phishing awareness practice.',test:()=>state.completed.some(x=>x.startsWith('mission-')||x==='sim-phish')},
- {icon:'🧠',name:'QUIZ MASTER',desc:'Complete a daily knowledge quiz.',test:()=>state.completed.some(x=>x.startsWith('quiz-'))},
- {icon:'🔥',name:'STREAK STARTER',desc:'Reach a 3-day learning streak.',test:()=>state.streak>=3},
- {icon:'🌐',name:'NETWORK NAVIGATOR',desc:'Build a foundation in network defense.',test:()=>state.completed.filter(x=>x.startsWith('lesson-')).length>=3||state.completed.includes('sim-network')},
- {icon:'⌬',name:'CRYPTO CADET',desc:'Complete a cryptography activity.',test:()=>state.completed.includes('lesson-5')||state.completed.includes('sim-crypto')},
- {icon:'⚔️',name:'CYBER DEFENDER',desc:'Earn 500 XP.',test:()=>state.xp>=500},
- {icon:'👑',name:'CYBER GUARDIAN',desc:'Earn 1,200 XP.',test:()=>state.xp>=1200},
- {icon:'🧪',name:'LAB INITIATE',desc:'Complete your first advanced investigation.',test:()=>state.completed.some(x=>x.startsWith('advanced-'))},
- {icon:'🚨',name:'SOC ANALYST',desc:'Complete the SOC Incident Response lab.',test:()=>state.completed.includes('advanced-soc-incident-response')},
- {icon:'🦠',name:'RANSOMWARE RESPONDER',desc:'Complete the Ransomware Response lab.',test:()=>state.completed.includes('advanced-ransomware-response')},
- {icon:'🌐',name:'NETWORK INVESTIGATOR',desc:'Complete the Network Attack Investigation lab.',test:()=>state.completed.includes('advanced-network-attack-investigation')},
- {icon:'🔍',name:'FORENSIC INVESTIGATOR',desc:'Complete the Digital Forensics Case.',test:()=>state.completed.includes('advanced-digital-forensics-case')},
- {icon:'🛡️',name:'WEB DEFENDER',desc:'Complete the Web Security lab.',test:()=>state.completed.includes('advanced-web-security-lab')},
- {icon:'🏆',name:'ADVANCED LAB MASTER',desc:'Complete all six advanced investigations.',test:()=>['advanced-phishing-investigation','advanced-soc-incident-response','advanced-ransomware-response','advanced-network-attack-investigation','advanced-digital-forensics-case','advanced-web-security-lab'].every(x=>state.completed.includes(x))},
- {icon:'🔥',name:'CYBER MARATHON',desc:'Reach a 7-day learning streak.',test:()=>state.streak>=7},
- {icon:'💎',name:'CYBER ELITE',desc:'Earn 2,500 XP.',test:()=>state.xp>=2500},
- {icon:'🚀',name:'CYBER LEGEND',desc:'Earn 5,000 XP.',test:()=>state.xp>=5000}
-];
-async function renderAnalytics(){const el=$('analyticsPanel');if(!el)return;try{const d=await api('/api/analytics');const max=Math.max(1,...d.daily.map(x=>x.xp));const bars=d.daily.map(x=>`<div class="analyticsDay"><div class="analyticsBarWrap"><span style="height:${Math.max(4,Math.round((x.xp/max)*100))}%" title="${x.xp} XP"></span></div><small>${x.label}</small></div>`).join('');const completion=d.completion;const completionRows=[['Learning Zones',completion.lessons,12,'📚'],['Cyber Sessions',completion.sessions,12,'◫'],['Advanced Labs',completion.labs,6,'⌬']].map(x=>`<div class="analyticsProgress"><div class="analyticsProgressTop"><span>${x[3]} ${x[0]}</span><b>${x[1]}/${x[2]}</b></div><div class="analyticsTrack"><span style="width:${Math.min(100,Math.round(x[1]/x[2]*100))}%"></span></div></div>`).join('');const activity=d.activity.map(x=>`<div class="analyticsActivity"><span>${x.icon}</span><div><b>${x.label}</b><small>${x.count} completed</small></div></div>`).join('');el.innerHTML=`<div class="analyticsHero"><div><span class="kicker">STUDENT PERFORMANCE</span><strong>${d.xpTotal} XP</strong><p>${d.momentumText}</p></div><div class="analyticsHeroStats"><div><b>${d.weekXp}</b><small>XP • LAST 7 DAYS</small></div><div><b>${d.events7}</b><small>ACTIVITY • LAST 7 DAYS</small></div><div><b>${d.activeDays7}</b><small>ACTIVE DAYS</small></div></div></div><div class="analyticsGrid"><article class="analyticsCard analyticsChart"><div class="analyticsCardHead"><div><span class="kicker">XP MOMENTUM</span><h3>LAST 14 DAYS</h3></div><span class="analyticsLive">● LIVE DATA</span></div><div class="analyticsBars">${bars}</div></article><article class="analyticsCard"><span class="kicker">COMPLETION</span><h3>LEARNING PROGRESS</h3>${completionRows}<div class="analyticsInsight"><b>${d.overall}% overall completion</b><span>${d.completedTotal} core activities completed</span></div></article><article class="analyticsCard"><span class="kicker">ACTIVITY MIX</span><h3>WHAT YOU PRACTICE</h3><div class="analyticsActivityGrid">${activity}</div></article><article class="analyticsCard"><span class="kicker">PERFORMANCE SIGNAL</span><h3>YOUR CURRENT MOMENTUM</h3><div class="analyticsMetric"><strong>${d.weekXp}</strong><span>XP earned this week</span></div><div class="analyticsCompare"><span>Previous 7 days</span><b>${d.prevWeekXp} XP</b></div><div class="analyticsCompare"><span>Change</span><b>${d.weekDelta>=0?'+':''}${d.weekDelta}%</b></div><p class="analyticsNote">Analytics use recorded learning events from your CYBER//QUEST account. No activity is invented when data is unavailable.</p></article></div>`}catch(e){el.innerHTML='<div class="intelLoading">STUDENT ANALYTICS TEMPORARILY UNAVAILABLE</div>'}}
-
-
-const cyberMissions=[
- {id:'mission-01',icon:'🎣',tag:'MISSION 01',title:'THE PHISHING DROP',level:'BEGINNER+',brief:'A finance employee reports an urgent message asking them to verify a payment account. Your SOC team needs a fast, defensible decision.',xp:100,skills:['Phishing Awareness','Identity & Access'],steps:[
-  {title:'TRIAGE THE SIGNAL',text:'The message uses urgency, an unfamiliar sender domain and a sign-in link that does not match the organization.',q:'What should the analyst do first?',choices:['Open the link in the production browser.','Verify the sender and destination through an official channel.','Forward it to the whole team.'],correct:1},
-  {title:'VALIDATE THE EVIDENCE',text:'The destination uses a look-alike domain and requests credentials.',q:'Which finding most strongly supports phishing?',choices:['The message arrived during work hours.','The page requests credentials on an unexpected look-alike domain.','The email contains a company logo.'],correct:1},
-  {title:'DEFEND THE USER',text:'The user has not submitted credentials yet.',q:'What is the safest response?',choices:['Report the message, block the destination and notify the user.','Ask the user to test the link again.','Ignore it because no compromise occurred.'],correct:0}
- ]},
- {id:'mission-02',icon:'🚨',tag:'MISSION 02',title:'SILENT ENDPOINT',level:'INTERMEDIATE',brief:'An endpoint starts making unusual connections after a suspicious login. Your job is to triage the incident without destroying evidence.',xp:120,skills:['SOC & Incident Response','Malware Defense'],steps:[
-  {title:'READ THE ALERT',text:'SIEM telemetry shows a new process followed by an unusual outbound connection from one workstation.',q:'What is the best first action?',choices:['Close the alert to reduce noise.','Confirm scope and correlate endpoint and authentication telemetry.','Delete the suspicious process immediately.'],correct:1},
-  {title:'CONTAIN THE HOST',text:'The activity is confirmed on one workstation and there is no evidence yet of wider spread.',q:'Which containment decision is most defensible?',choices:['Isolate the affected host while preserving evidence.','Disconnect every company device.','Reboot the host and erase temporary files.'],correct:0},
-  {title:'PRESERVE THE TRAIL',text:'Investigators need to understand the sequence of events.',q:'What should be protected for follow-up analysis?',choices:['Only the user’s browser history.','Relevant logs, timestamps and endpoint artifacts.','Nothing; containment is enough.'],correct:1}
- ]},
- {id:'mission-03',icon:'🦠',tag:'MISSION 03',title:'BLACKOUT PROTOCOL',level:'ADVANCED',brief:'Multiple shared folders suddenly become unavailable and a ransom note appears. Coordinate containment, evidence preservation and recovery.',xp:150,skills:['SOC & Incident Response','Digital Forensics','Malware Defense'],steps:[
-  {title:'STOP THE SPREAD',text:'Three workstations show the same file-encryption behavior within minutes.',q:'What is the priority?',choices:['Isolate affected systems and limit further lateral spread.','Restore every backup immediately.','Continue normal operations until the note expires.'],correct:0},
-  {title:'PROTECT EVIDENCE',text:'The incident response lead wants to understand the initial access path.',q:'Which action best supports investigation?',choices:['Delete the ransom note.','Preserve relevant logs, affected files and timestamps.','Wipe every affected endpoint immediately.'],correct:1},
-  {title:'RECOVER SAFELY',text:'Containment is complete and clean recovery sources have been validated.',q:'What comes next?',choices:['Reconnect everything at once.','Recover in a controlled sequence and verify systems before returning them to service.','Ignore the root cause because backups worked.'],correct:1}
- ]},
- {id:'mission-04',icon:'🛡️',tag:'MISSION 04',title:'THE BROKEN GATE',level:'ADVANCED',brief:'A fictional web application exposes records to the wrong user after a new release. Investigate the control failure and choose the remediation.',xp:160,skills:['Web Security','Identity & Access'],steps:[
-  {title:'TRACE THE REQUEST',text:'A user can access an object belonging to another account by changing an identifier in a request.',q:'What security control should be examined first?',choices:['Page color settings.','Server-side authorization and object-level access control.','The user’s screen resolution.'],correct:1},
-  {title:'ASSESS THE IMPACT',text:'The server trusts a client-supplied object identifier without checking ownership.',q:'What is the core weakness?',choices:['Broken access control.','Slow network speed.','Weak image compression.'],correct:0},
-  {title:'FIX THE GATE',text:'The application team is preparing a patch.',q:'Which remediation is strongest?',choices:['Hide the identifier in the interface.','Enforce authorization on the server for every protected object.','Tell users not to change identifiers.'],correct:1}
- ]}
-];
-let activeCyberMission=null,activeCyberStep=0,activeCyberScore=0;
-function missionDone(id){return state.completed.includes(id)}
-function renderMissions(){const el=$('missionCards');if(!el)return;const done=cyberMissions.filter(m=>missionDone(m.id)).length;$('missionCompletedCount').textContent=`${done}/${cyberMissions.length}`;el.innerHTML=cyberMissions.map((m,i)=>{const on=missionDone(m.id);return `<article class="missionCard ${on?'missionCleared':''}"><div class="missionCardTop"><span class="missionIcon">${m.icon}</span><div><span class="kicker">${m.tag}</span><small>${m.level}</small></div><span class="missionState">${on?'✓ CLEARED':`+${m.xp} XP`}</span></div><h3>${m.title}</h3><p>${m.brief}</p><div class="missionSkills">${m.skills.map(x=>`<span>${x}</span>`).join('')}</div><div class="missionCardBottom"><span>3 DECISION PHASES</span><button class="btn ${on?'':'primary'}" onclick="openCyberMission(${i})">${on?'REPLAY MISSION':'DEPLOY →'}</button></div></article>`}).join('')}
-function openCyberMission(i){const m=cyberMissions[i];activeCyberMission=m;activeCyberStep=0;activeCyberScore=0;drawCyberMission();}
-function drawCyberMission(){const m=activeCyberMission;if(!m)return;const step=m.steps[activeCyberStep];const done=missionDone(m.id);$('modalBody').innerHTML=`<div class="missionModal"><div class="missionModalTop"><span class="kicker">${m.tag} // ${m.level}</span><span>PHASE ${activeCyberStep+1}/3</span></div><h2>${m.icon} ${m.title}</h2><p class="missionBrief">${m.brief}</p><div class="missionProgress"><span style="width:${((activeCyberStep+1)/3)*100}%"></span></div><div class="missionEvidence"><span class="kicker">CURRENT OBJECTIVE</span><h3>${step.title}</h3><p>${step.text}</p><strong>${step.q}</strong><div class="missionChoices">${step.choices.map((x,i)=>`<button class="choice" onclick="answerCyberMission(${i},this)">${x}</button>`).join('')}</div><div id="missionFeedback"></div></div>${done?'<div class="feedback">✓ This mission is already cleared. Replay it for practice; XP is not duplicated.</div>':''}</div>`;$('modal').style.display='grid'}
-async function answerCyberMission(i,b){const m=activeCyberMission;if(!m)return;document.querySelectorAll('.missionChoices .choice').forEach(x=>x.disabled=true);const step=m.steps[activeCyberStep];const fb=$('missionFeedback');if(i===step.correct){b.classList.add('correct');activeCyberScore++;fb.innerHTML='<div class="feedback">✓ Correct decision. The incident path is moving forward.</div>';setTimeout(()=>{if(activeCyberStep<m.steps.length-1){activeCyberStep++;drawCyberMission()}else{finishCyberMission()}},550)}else{b.classList.add('wrong');fb.innerHTML='<div class="feedback">✕ Reassess the evidence. Choose the most defensible defensive action.</div>';setTimeout(()=>document.querySelectorAll('.missionChoices .choice').forEach(x=>x.disabled=false),650)}}
-async function finishCyberMission(){const m=activeCyberMission;const already=missionDone(m.id);$('modalBody').innerHTML=`<div class="missionModal missionComplete"><span class="kicker">MISSION COMPLETE</span><div class="missionCompleteIcon">${m.icon}</div><h2>${m.title}</h2><p>All three decision phases were completed. Your defensive reasoning score is <b>${activeCyberScore}/3</b>.</p><div class="missionResult"><span>MISSION XP</span><strong>${already?0:m.xp} XP</strong></div>${already?'<div class="feedback">✓ Replay complete. This mission has already awarded XP.</div>':`<button class="btn primary full" onclick="claimCyberMission()">CLAIM +${m.xp} XP →</button>`}</div>`}
-async function claimCyberMission(){const m=activeCyberMission;if(!m||missionDone(m.id))return;await gain(m.xp,m.id);closeModal();setView('missions');}
-
-function renderBadges(){
- const unlocked=achievements.filter(a=>a.test()).length;
- const html=`<div class="achievementOverview"><div><span class="kicker">ACHIEVEMENT PROGRESS</span><strong>${unlocked}/${achievements.length}</strong><small>unlocked</small></div><div class="achievementTrack"><span style="width:${Math.round(unlocked/achievements.length*100)}%"></span></div><div class="achievementPct">${Math.round(unlocked/achievements.length*100)}%</div></div><div class="achievementGrid">${achievements.map(a=>{const on=a.test();return `<article class="achievementCard ${on?'unlocked':''}"><div class="achievementIcon">${a.icon}</div><div class="achievementCopy"><b>${a.name}</b><p>${a.desc}</p></div><span class="achievementState">${on?'UNLOCKED':'LOCKED'}</span></article>`}).join('')}</div>`;
- $('badges').innerHTML=html;
-}
-async function renderCertificate(){try{let d=await api('/api/certificate');let done=d.completedZones||lessons.filter((_,i)=>zoneCompleted(i)).length;let eligible=d.eligible;let card=$('certificateCard');if(d.issuedAt){card.innerHTML=`<div class="certificateReady"><div class="certSeal">✓</div><div><span class="kicker">VERIFIED ACADEMY CREDENTIAL</span><h3>CYBER//QUEST STUDENT CERTIFICATE</h3><p>This certifies that <b>${user.name}</b> has completed all 12 cybersecurity learning zones.</p><small>Issued ${new Date(d.issuedAt).toLocaleDateString()} • Verification code: <b>${d.code}</b></small></div><button class="btn primary" onclick="printCertificate()">PRINT / SAVE PDF</button></div>`}else if(eligible){card.innerHTML=`<div class="certificateReady"><div class="certSeal">★</div><div><span class="kicker">MASTERY COMPLETE</span><h3>YOUR CERTIFICATE IS READY</h3><p>${user.name}, you completed all 12 learning zones. Issue your certificate and receive a unique verification code.</p></div><button class="btn primary" onclick="issueCertificate()">ISSUE CERTIFICATE</button></div>`}else{card.innerHTML=`<div class="certificateLocked"><div class="certProgress"><b>${done}/12</b><span>zones complete</span></div><div><span class="kicker">CREDENTIAL LOCKED</span><h3>MASTER THE CYBER CITY</h3><p>Complete every learning zone to unlock your certificate.</p><div class="miniTrack"><span style="width:${Math.round(done/12*100)}%"></span></div></div><strong>${Math.round(done/12*100)}%</strong></div>`}}catch(e){}}
-async function issueCertificate(){try{let d=await api('/api/certificate',{method:'POST',body:'{}'});alert(`Certificate issued! Verification code: ${d.code}`);renderCertificate()}catch(e){alert(e.message)}}
-function printCertificate(){window.print()}
-function term(){let a=['Authenticating student session...','Identity verified: '+user.email,'Loading security telemetry...','[OK] Access controls','[OK] Learning zones','[OK] Mission queue','[OK] Interactive simulations','STATUS: READY FOR TODAY\'S CHALLENGE'];$('term').innerHTML=a.map((x,i)=>`<div class="line" style="animation-delay:${i*.35}s">> ${x}</div>`).join('')}
-boot();
-
-// ============================================================
-// PHASE 2 // ADVANCED CYBER LAB ENGINE
-// Safe, fictional training scenarios only.
-// ============================================================
-const advancedLabCatalog={
-  phishing:{
-    title:'PHISHING INVESTIGATION',
-    subtitle:'SOC CASE FILE // PH-1042',
-    xp:100,
-    key:'advanced-phishing-investigation',
-    steps:['EVIDENCE','ANALYZE','DECIDE','REPORT']
-  }
-};
-let activeAdvancedLab=null;
-let phishingEvidence=new Set();
-let phishingDecision=null;
-
-function advancedLab(type){
-  if(type==='ransomware') return openRansomwareLab();
-  if(type!=='phishing') return;
-  activeAdvancedLab=type;
-  phishingEvidence=new Set();
-  phishingDecision=null;
-  const c=$('modalBody');
-  c.innerHTML=`
-    <div class="labModalHead">
-      <div><span class="kicker">PHASE 2 // ADVANCED LAB 01</span><h2>PHISHING INVESTIGATION</h2>
-      <p class="simIntro">A student reported a suspicious account-verification email. You are the analyst. Collect evidence before making your final classification.</p></div>
-      <div class="caseBadge">CASE PH-1042<br><small>OPEN</small></div>
-    </div>
-    <div class="labProgress"><span id="phishLabProgress" style="width:25%"></span></div>
-    <div class="investigationGrid">
-      <aside class="evidencePanel">
-        <div class="panelTitle"><span>CASE FILE</span><b>5 EVIDENCE ITEMS</b></div>
-        <button class="evidenceItem active" onclick="phishLabEvidence('email',this)"><b>01</b><span>EMAIL BODY</span><i>›</i></button>
-        <button class="evidenceItem" onclick="phishLabEvidence('sender',this)"><b>02</b><span>SENDER</span><i>›</i></button>
-        <button class="evidenceItem" onclick="phishLabEvidence('domain',this)"><b>03</b><span>LINK DOMAIN</span><i>›</i></button>
-        <button class="evidenceItem" onclick="phishLabEvidence('header',this)"><b>04</b><span>MESSAGE HEADER</span><i>›</i></button>
-        <button class="evidenceItem" onclick="phishLabEvidence('context',this)"><b>05</b><span>USER CONTEXT</span><i>›</i></button>
-      </aside>
-      <div class="evidenceWorkspace">
-        <div id="phishEvidenceView" class="evidenceView"></div>
-        <div class="evidenceCounter"><span id="phishEvidenceCount">0/5 evidence items reviewed</span><span id="phishLabHint">Review every item before deciding.</span></div>
-      </div>
-    </div>
-    <div class="labDecisionBlock">
-      <div><span class="kicker">FINAL CLASSIFICATION</span><h3>What should the SOC record?</h3></div>
-      <div class="labDecisionChoices">
-        <button class="choice" onclick="phishLabDecision('safe',this)">LEGITIMATE</button>
-        <button class="choice" onclick="phishLabDecision('suspicious',this)">SUSPICIOUS</button>
-        <button class="choice" onclick="phishLabDecision('malicious',this)">MALICIOUS PHISHING</button>
-      </div>
-      <div id="phishLabFeedback"></div>
-    </div>`;
-  $('modal').style.display='grid';
-  phishLabEvidence('email',document.querySelector('.evidenceItem'));
-}
-
-const phishingEvidenceData={
- email:{title:'EMAIL BODY',type:'MESSAGE',html:`<div class="fakeEmail"><div class="fakeEmailBar"><span>INBOX // REPORTED MESSAGE</span><span class="riskHigh">HIGH RISK</span></div><div class="emailRow"><b>Subject</b><span>URGENT: Verify your student account today</span></div><div class="emailRow"><b>Message</b><span>Your account will be suspended within 30 minutes. Use the verification portal below to restore access.</span></div><div class="fakeLink">VERIFY-STUDENT-ACCOUNT</div><small>Reminder: never use a message link to sign in when the request is unexpected.</small></div>`,clue:'Artificial urgency + unexpected login request.'},
- sender:{title:'SENDER',type:'IDENTITY',html:`<div class="forensicCard"><div><span>DISPLAY NAME</span><b>University IT Security</b></div><div><span>ACTUAL ADDRESS</span><b>it-security@univer5ity-support.example</b></div><div class="redFlag">⚠ The domain uses a look-alike spelling and is not the university's official domain.</div></div>`,clue:'Sender identity does not match the trusted organization.'},
- domain:{title:'LINK DOMAIN',type:'URL ANALYSIS',html:`<div class="urlInspect"><span>DESTINATION PREVIEW</span><code>https://login.univer5ity-support.example/verify</code><div class="urlParts"><b>HTTPS</b><b>LOOK-ALIKE DOMAIN</b><b>/verify</b></div><p>The use of HTTPS does not prove a site is trustworthy. The domain itself is the key clue.</p></div>`,clue:'HTTPS can encrypt a connection to a malicious site; the domain remains suspicious.'},
- header:{title:'MESSAGE HEADER',type:'MAIL TRACE',html:`<div class="headerCard"><div><span>RETURN-PATH</span><b>bounce@mailer.univer5ity-support.example</b></div><div><span>REPLY-TO</span><b>verify-team@univer5ity-support.example</b></div><div><span>AUTH STATUS</span><b class="warningText">DOMAIN MISMATCH</b></div><div class="traceLine"><i></i><span>UNKNOWN SENDER → EXTERNAL MAILER → STUDENT INBOX</span></div></div>`,clue:'The message authentication context does not align with the claimed organization.'},
- context:{title:'USER CONTEXT',type:'CORRELATION',html:`<div class="contextCard"><div class="contextSignal"><b>USER REPORT</b><span>“I did not request an account change.”</span></div><div class="contextSignal"><b>KNOWN ACTIVITY</b><span>No scheduled maintenance or account action exists for this student.</span></div><div class="contextSignal"><b>RISK</b><span>Credential theft is plausible if the student follows the link.</span></div></div>`,clue:'The request is unexpected and conflicts with known user activity.'}
-};
-
-function phishLabEvidence(key,button){
-  const d=phishingEvidenceData[key];
-  if(!d)return;
-  phishingEvidence.add(key);
-  document.querySelectorAll('.evidenceItem').forEach(x=>x.classList.remove('active'));
-  if(button)button.classList.add('active');
-  $('phishEvidenceView').innerHTML=`<div class="evidenceViewHead"><span class="kicker">${d.type}</span><h3>${d.title}</h3></div>${d.html}<div class="analystNote">ANALYST CLUE <span>✓ ${d.clue}</span></div>`;
-  $('phishEvidenceCount').textContent=`${phishingEvidence.size}/5 evidence items reviewed`;
-  $('phishLabProgress').style.width=(25+(phishingEvidence.size/5)*35)+'%';
-  $('phishLabHint').textContent=phishingEvidence.size===5?'All evidence reviewed. Make your classification.':'Review the remaining evidence before deciding.';
-}
-
-async function phishLabDecision(choice,b){
-  document.querySelectorAll('.labDecisionChoices .choice').forEach(x=>x.disabled=true);
-  phishingDecision=choice;
-  const complete=phishingEvidence.size===5;
-  const correct=choice==='malicious';
-  if(correct)b.classList.add('correct'); else b.classList.add('wrong');
-  if(!complete){
-    $('phishLabFeedback').innerHTML=`<div class="feedback wrongFeedback">⚠ Classification recorded, but your evidence review is incomplete. A strong analyst documents the available evidence first.</div>`;
-  }else if(correct){
-    $('phishLabFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Correct classification. The evidence strongly supports a malicious phishing attempt.</div>`;
-    setTimeout(()=>completeAdvancedPhishing(),650);
-  }else{
-    $('phishLabFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ Reassess the evidence. Look at the sender, look-alike domain, header mismatch and unexpected request.</div>`;
-    setTimeout(()=>document.querySelectorAll('.labDecisionChoices .choice').forEach(x=>x.disabled=false),650);
-  }
-}
-
-async function completeAdvancedPhishing(){
-  const score=Math.min(1000,650+phishingEvidence.size*70);
-  $('phishLabProgress').style.width='100%';
-  $('phishLabFeedback').innerHTML=`<div class="labResult"><div class="resultIcon">✓</div><div><span class="kicker">CASE CLOSED</span><h3>PHISHING CONFIRMED</h3><p>You collected ${phishingEvidence.size}/5 evidence items and reached the correct classification.</p><b>INVESTIGATION SCORE ${score}/1000</b></div><div class="resultXP">+100 XP</div></div>`;
-  await gain(100,'advanced-phishing-investigation');
-  $('phishLabHint').textContent='Case complete • XP saved to your academy progress.';
-  render();
-}
-
-
-// ============================================================
-// PHASE 2.4 // RANSOMWARE RESPONSE LAB
-// Safe, fictional defensive incident-response training.
-// ============================================================
-let ransomwareEvidence=new Set();
-let ransomwareStage=0;
-
-function openRansomwareLab(){
-  ransomwareEvidence=new Set();
-  ransomwareStage=0;
-  const c=$('modalBody');
-  c.innerHTML=`
-    <div class="labModalHead">
-      <div><span class="kicker">PHASE 2 // ADVANCED LAB 03</span><h2>RANSOMWARE RESPONSE</h2>
-      <p class="simIntro">A finance workstation shows signs of rapid file encryption. You are the incident responder. Review the evidence, contain the host, preserve evidence, then plan safe recovery.</p></div>
-      <div class="caseBadge">CASE RW-3141<br><small>ACTIVE</small></div>
-    </div>
-    <div class="labProgress"><span id="ransomLabProgress" style="width:12%"></span></div>
-    <div class="ransomBanner"><div><span class="kicker">CRITICAL INCIDENT</span><h3>ENCRYPTION ACTIVITY DETECTED</h3></div><div class="ransomStat"><b>1,842</b><span>FILES AFFECTED</span></div><div class="ransomStat"><b>FINANCE-PC-07</b><span>HOST</span></div></div>
-    <div class="investigationGrid">
-      <aside class="evidencePanel">
-        <div class="panelTitle"><span>CASE FILE</span><b>6 EVIDENCE ITEMS</b></div>
-        <button class="evidenceItem active" onclick="ransomEvidenceView('alert',this)"><b>01</b><span>ALERT</span><i>›</i></button>
-        <button class="evidenceItem" onclick="ransomEvidenceView('endpoint',this)"><b>02</b><span>ENDPOINT</span><i>›</i></button>
-        <button class="evidenceItem" onclick="ransomEvidenceView('process',this)"><b>03</b><span>PROCESS</span><i>›</i></button>
-        <button class="evidenceItem" onclick="ransomEvidenceView('files',this)"><b>04</b><span>FILES</span><i>›</i></button>
-        <button class="evidenceItem" onclick="ransomEvidenceView('network',this)"><b>05</b><span>NETWORK</span><i>›</i></button>
-        <button class="evidenceItem" onclick="ransomEvidenceView('timeline',this)"><b>06</b><span>TIMELINE</span><i>›</i></button>
-      </aside>
-      <div class="evidenceWorkspace">
-        <div id="ransomEvidenceView" class="evidenceView"></div>
-        <div class="evidenceCounter"><span id="ransomEvidenceCount">0/6 evidence items reviewed</span><span id="ransomLabHint">Review the full incident before taking action.</span></div>
-      </div>
-    </div>
-    <div class="labDecisionBlock">
-      <div><span class="kicker">RESPONSE STEP 01</span><h3>What is the safest first action?</h3></div>
-      <div class="labDecisionChoices ransomChoices">
-        <button class="choice" onclick="ransomDecision('isolate',this)">ISOLATE THE AFFECTED HOST</button>
-        <button class="choice" onclick="ransomDecision('reboot',this)">REBOOT THE HOST IMMEDIATELY</button>
-        <button class="choice" onclick="ransomDecision('pay',this)">PAY THE RANSOM FIRST</button>
-      </div>
-      <div id="ransomFeedback"></div>
-    </div>`;
-  $('modal').style.display='grid';
-  ransomEvidenceView('alert',document.querySelector('.evidenceItem'));
-}
-
-const ransomwareEvidenceData={
- alert:{title:'SIEM ALERT',type:'DETECTION',html:`<div class="socEvidenceCard"><div class="socMetric critical"><span>SEVERITY</span><b>CRITICAL</b></div><div class="socMetric"><span>RULE</span><b>Mass file modification + suspicious process + outbound connection</b></div><div class="socMetric"><span>HOST</span><b>FINANCE-PC-07</b></div><div class="socMetric"><span>ALERT TIME</span><b>10:42:17 UTC</b></div></div>`,clue:'The alert combines rapid file changes with suspicious execution on one endpoint.'},
- endpoint:{title:'ENDPOINT TELEMETRY',type:'HOST',html:`<div class="socEvidenceCard"><div class="socMetric"><span>USER</span><b>finance.employee</b></div><div class="socMetric"><span>HOST</span><b>FINANCE-PC-07</b></div><div class="socMetric"><span>AGENT</span><b>ONLINE • REPORTING</b></div><div class="redFlag">⚠ The host is still connected. Containment should limit spread while keeping evidence available.</div></div>`,clue:'The affected workstation is still online, creating an opportunity for containment.'},
- process:{title:'PROCESS TREE',type:'EXECUTION',html:`<div class="processTree"><div>explorer.exe</div><span>↓</span><div>invoice-viewer.exe <small>untrusted source</small></div><span>↓</span><div class="dangerProcess">encryptor.exe <small>rapid file operations</small></div></div>`,clue:'An unfamiliar process is performing rapid encryption-like file operations.'},
- files:{title:'FILE ACTIVITY',type:'IMPACT',html:`<div class="forensicCard"><div><span>FILES MODIFIED</span><b>1,842</b></div><div><span>EXTENSION PATTERN</span><b>.locked-demo</b></div><div><span>SHARED DRIVE</span><b>NO EVIDENCE OF ACCESS</b></div><div class="redFlag">⚠ The simulation uses a harmless fictional extension. No real files are modified by CYBER//QUEST.</div></div>`,clue:'The impact is concentrated on the endpoint and uses a fictional training artifact.'},
- network:{title:'NETWORK TELEMETRY',type:'CONNECTION',html:`<div class="networkEvidence"><div class="routeRow"><span>HOST</span><b>FINANCE-PC-07</b></div><div class="routeRow"><span>DESTINATION</span><b>198.51.100.44:443</b></div><div class="routeRow"><span>STATUS</span><b class="warningText">NEW EXTERNAL DESTINATION</b></div><div class="routeRow"><span>BEHAVIOR</span><b>SHORT BURSTS AFTER EXECUTION</b></div><p>198.51.100.0/24 is reserved for documentation and is used here only as a fictional training destination.</p></div>`,clue:'A new outbound destination appears after the suspicious process starts.'},
- timeline:{title:'INCIDENT TIMELINE',type:'CORRELATION',html:`<div class="incidentTimeline"><div><b>10:39</b><span>Employee opens an unexpected invoice attachment</span></div><div><b>10:41</b><span>Untrusted process launches from user context</span></div><div><b>10:42</b><span>Rapid file modifications begin</span></div><div><b>10:42</b><span>SIEM alert + new outbound connection</span></div></div>`,clue:'Execution, file impact and network activity align in one short incident window.'}
-};
-
-function ransomEvidenceView(key,button){
-  const d=ransomwareEvidenceData[key];
-  if(!d)return;
-  ransomwareEvidence.add(key);
-  document.querySelectorAll('.evidenceItem').forEach(x=>x.classList.remove('active'));
-  if(button)button.classList.add('active');
-  $('ransomEvidenceView').innerHTML=`<div class="evidenceViewHead"><span class="kicker">${d.type}</span><h3>${d.title}</h3></div>${d.html}<div class="analystNote">ANALYST CLUE <span>✓ ${d.clue}</span></div>`;
-  $('ransomEvidenceCount').textContent=`${ransomwareEvidence.size}/6 evidence items reviewed`;
-  $('ransomLabProgress').style.width=(12+(ransomwareEvidence.size/6)*43)+'%';
-  $('ransomLabHint').textContent=ransomwareEvidence.size===6?'Evidence correlated. Choose the safest containment action.':'Review the remaining evidence before deciding.';
-}
-
-function ransomDecision(choice,b){
-  document.querySelectorAll('.ransomChoices .choice').forEach(x=>x.disabled=true);
-  if(ransomwareEvidence.size!==6){
-    b.classList.add('wrong');
-    $('ransomFeedback').innerHTML=`<div class="feedback wrongFeedback">⚠ Containment is premature. Review all six evidence items first.</div>`;
-    setTimeout(()=>document.querySelectorAll('.ransomChoices .choice').forEach(x=>x.disabled=false),650);
-    return;
-  }
-  if(choice==='isolate'){
-    b.classList.add('correct');
-    ransomwareStage=1;
-    $('ransomLabProgress').style.width='72%';
-    $('ransomFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Correct. Isolate the affected host to limit spread while preserving evidence.</div>
-      <div class="ransomNext"><span class="kicker">RESPONSE STEP 02</span><h3>What should happen before recovery?</h3>
-      <div class="ransomNextChoices"><button class="choice" onclick="ransomRecovery('preserve',this)">PRESERVE EVIDENCE + VERIFY BACKUPS</button><button class="choice" onclick="ransomRecovery('restore',this)">RESTORE IMMEDIATELY WITHOUT INVESTIGATION</button><button class="choice" onclick="ransomRecovery('reconnect',this)">RECONNECT THE HOST TO TEST IT</button></div><div id="ransomRecoveryFeedback"></div></div>`;
-  }else{
-    b.classList.add('wrong');
-    $('ransomFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ That action can destroy evidence or increase impact. Contain the affected endpoint first.</div>`;
-    setTimeout(()=>document.querySelectorAll('.ransomChoices .choice').forEach(x=>x.disabled=false),650);
-  }
-}
-
-async function ransomRecovery(choice,b){
-  document.querySelectorAll('.ransomNextChoices .choice').forEach(x=>x.disabled=true);
-  if(choice==='preserve'){
-    b.classList.add('correct');
-    ransomwareStage=2;
-    $('ransomLabProgress').style.width='100%';
-    $('ransomRecoveryFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Strong response. Preserve evidence, verify recovery sources, and only restore after the incident is understood.</div>`;
-    setTimeout(()=>completeRansomwareLab(),650);
-  }else{
-    b.classList.add('wrong');
-    $('ransomRecoveryFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ Recovery should follow containment and evidence preservation. Avoid reconnecting or restoring blindly.</div>`;
-    setTimeout(()=>document.querySelectorAll('.ransomNextChoices .choice').forEach(x=>x.disabled=false),650);
-  }
-}
-
-async function completeRansomwareLab(){
-  const score=Math.min(1000,760+ransomwareEvidence.size*40);
-  $('ransomLabProgress').style.width='100%';
-  $('ransomFeedback').insertAdjacentHTML('beforeend',`<div class="labResult"><div class="resultIcon">✓</div><div><span class="kicker">INCIDENT CONTAINED</span><h3>RANSOMWARE RESPONSE COMPLETE</h3><p>You correlated ${ransomwareEvidence.size}/6 evidence items, isolated the affected host and chose evidence-preserving recovery.</p><b>RESPONSE SCORE ${score}/1000</b></div><div class="resultXP">+150 XP</div></div>`);
-  await gain(150,'advanced-ransomware-response');
-  $('ransomLabHint').textContent='Case complete • XP saved to your academy progress.';
-  render();
-}
-
-
-// ============================================================
-// PHASE 2.3 // SOC INCIDENT RESPONSE LAB
-// Safe, fictional defensive training scenario.
-// ============================================================
-let socEvidence=new Set();
-
-function openSocLab(){
-  socEvidence=new Set();
-  socDecision=null;
-  const c=$('modalBody');
-  c.innerHTML=`
-    <div class="labModalHead">
-      <div><span class="kicker">PHASE 2 // ADVANCED LAB 02</span><h2>SOC INCIDENT RESPONSE</h2>
-      <p class="simIntro">A workstation has triggered a high-confidence alert. You are the Tier-1 analyst. Correlate the evidence, identify the incident, then choose the safest containment sequence.</p></div>
-      <div class="caseBadge">CASE SOC-2077<br><small>ACTIVE</small></div>
-    </div>
-    <div class="labProgress"><span id="socLabProgress" style="width:15%"></span></div>
-    <div class="investigationGrid">
-      <aside class="evidencePanel">
-        <div class="panelTitle"><span>CASE FILE</span><b>6 EVIDENCE ITEMS</b></div>
-        <button class="evidenceItem active" onclick="socLabEvidence('alert',this)"><b>01</b><span>SIEM ALERT</span><i>›</i></button>
-        <button class="evidenceItem" onclick="socLabEvidence('endpoint',this)"><b>02</b><span>ENDPOINT</span><i>›</i></button>
-        <button class="evidenceItem" onclick="socLabEvidence('auth',this)"><b>03</b><span>AUTH LOG</span><i>›</i></button>
-        <button class="evidenceItem" onclick="socLabEvidence('process',this)"><b>04</b><span>PROCESS</span><i>›</i></button>
-        <button class="evidenceItem" onclick="socLabEvidence('network',this)"><b>05</b><span>NETWORK</span><i>›</i></button>
-        <button class="evidenceItem" onclick="socLabEvidence('timeline',this)"><b>06</b><span>TIMELINE</span><i>›</i></button>
-      </aside>
-      <div class="evidenceWorkspace">
-        <div id="socEvidenceView" class="evidenceView"></div>
-        <div class="evidenceCounter"><span id="socEvidenceCount">0/6 evidence items reviewed</span><span id="socLabHint">Correlate the evidence before containment.</span></div>
-      </div>
-    </div>
-    <div class="labDecisionBlock">
-      <div><span class="kicker">INCIDENT TRIAGE</span><h3>What is the most likely incident?</h3></div>
-      <div class="labDecisionChoices socChoices">
-        <button class="choice" onclick="socLabDecision('benign',this)">BENIGN ADMIN ACTIVITY</button>
-        <button class="choice" onclick="socLabDecision('phishing',this)">PHISHING ONLY</button>
-        <button class="choice" onclick="socLabDecision('compromise',this)">ENDPOINT COMPROMISE</button>
-      </div>
-      <div id="socLabFeedback"></div>
-    </div>`;
-  $('modal').style.display='grid';
-  socLabEvidence('alert',document.querySelector('.evidenceItem'));
-}
-
-const socEvidenceData={
- alert:{title:'SIEM ALERT',type:'DETECTION',html:`<div class="socEvidenceCard"><div class="socMetric critical"><span>SEVERITY</span><b>CRITICAL</b></div><div class="socMetric"><span>RULE</span><b>Credential access + unusual process + outbound connection</b></div><div class="socMetric"><span>HOST</span><b>STUDENT-LT-042</b></div><div class="socMetric"><span>ALERT TIME</span><b>10:14:22 UTC</b></div></div>`,clue:'Multiple signals fired on the same endpoint within a short window.'},
- endpoint:{title:'ENDPOINT',type:'HOST TELEMETRY',html:`<div class="socEvidenceCard"><div class="socMetric"><span>USER</span><b>student01</b></div><div class="socMetric"><span>HOST</span><b>STUDENT-LT-042</b></div><div class="socMetric"><span>SECURITY AGENT</span><b>ONLINE • REPORTING</b></div><div class="redFlag">⚠ The alert is tied to a real user workstation, so containment should protect the account and host.</div></div>`,clue:'The affected asset is an active student workstation, not a test server.'},
- auth:{title:'AUTH LOG',type:'IDENTITY',html:`<div class="logTable"><div><span>10:11:04</span><b>student01</b><em>LOGIN SUCCESS</em></div><div><span>10:12:17</span><b>student01</b><em>PRIVILEGE REQUEST</em></div><div><span>10:13:51</span><b>student01</b><em>NEW SESSION • UNUSUAL</em></div><div><span>10:14:02</span><b>student01</b><em>AUTH FAILURE ×3</em></div></div>`,clue:'The identity shows an unusual session followed by repeated authentication failures.'},
- process:{title:'PROCESS TREE',type:'ENDPOINT',html:`<div class="processTree"><div>explorer.exe</div><span>↓</span><div>powershell.exe <small>encoded command</small></div><span>↓</span><div class="dangerProcess">rundll32.exe <small>unexpected child</small></div></div>`,clue:'An encoded PowerShell process spawned an unusual child process.'},
- network:{title:'NETWORK TELEMETRY',type:'CONNECTION',html:`<div class="networkEvidence"><div class="routeRow"><span>HOST</span><b>STUDENT-LT-042</b></div><div class="routeRow"><span>DESTINATION</span><b>203.0.113.77:443</b></div><div class="routeRow"><span>STATUS</span><b class="warningText">NEW EXTERNAL DESTINATION</b></div><div class="routeRow"><span>VOLUME</span><b>PERIODIC OUTBOUND BEACON</b></div><p>203.0.113.0/24 is reserved for documentation and is used here as a fictional training destination.</p></div>`,clue:'The endpoint is making a new periodic outbound connection after the suspicious process activity.'},
- timeline:{title:'CORRELATED TIMELINE',type:'CORRELATION',html:`<div class="incidentTimeline"><div><b>10:12</b><span>Unusual authentication session</span></div><div><b>10:13</b><span>Encoded PowerShell launches</span></div><div><b>10:14</b><span>Credential failures + SIEM alert</span></div><div><b>10:14</b><span>New outbound beacon observed</span></div></div>`,clue:'Identity, process and network signals align into one incident window.'}
-};
-
-function socLabEvidence(key,button){
-  const d=socEvidenceData[key];
-  if(!d)return;
-  socEvidence.add(key);
-  document.querySelectorAll('.evidenceItem').forEach(x=>x.classList.remove('active'));
-  if(button)button.classList.add('active');
-  $('socEvidenceView').innerHTML=`<div class="evidenceViewHead"><span class="kicker">${d.type}</span><h3>${d.title}</h3></div>${d.html}<div class="analystNote">ANALYST CLUE <span>✓ ${d.clue}</span></div>`;
-  $('socEvidenceCount').textContent=`${socEvidence.size}/6 evidence items reviewed`;
-  $('socLabProgress').style.width=(15+(socEvidence.size/6)*45)+'%';
-  $('socLabHint').textContent=socEvidence.size===6?'Evidence correlated. Choose the incident classification.':'Review the remaining evidence before deciding.';
-}
-
-async function socLabDecision(choice,b){
-  document.querySelectorAll('.socChoices .choice').forEach(x=>x.disabled=true);
-  socDecision=choice;
-  const complete=socEvidence.size===6;
-  const correct=choice==='compromise';
-  if(correct)b.classList.add('correct'); else b.classList.add('wrong');
-  if(!complete){
-    $('socLabFeedback').innerHTML=`<div class="feedback wrongFeedback">⚠ Triage is premature. Review all six evidence items before recording the incident.</div>`;
-  }else if(correct){
-    $('socLabFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Correct. The correlated signals indicate an endpoint compromise requiring containment.</div>
-      <div class="socContainment"><span class="kicker">CONTAINMENT DECISION</span><h3>Choose the safest first response</h3>
-      <div class="containChoices">
-        <button class="choice" onclick="socContainment('isolate',this)">ISOLATE HOST + PRESERVE EVIDENCE</button>
-        <button class="choice" onclick="socContainment('reboot',this)">REBOOT HOST IMMEDIATELY</button>
-        <button class="choice" onclick="socContainment('delete',this)">DELETE SUSPICIOUS FILES FIRST</button>
-      </div><div id="socContainFeedback"></div></div>`;
-  }else{
-    $('socLabFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ Reassess the correlation. The process, identity and network signals point beyond a simple phishing event.</div>`;
-    setTimeout(()=>document.querySelectorAll('.socChoices .choice').forEach(x=>x.disabled=false),650);
-  }
-}
-
-async function socContainment(choice,b){
-  document.querySelectorAll('.containChoices .choice').forEach(x=>x.disabled=true);
-  if(choice==='isolate'){
-    b.classList.add('correct');
-    $('socContainFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Defensible response. Isolate the affected host while preserving evidence for investigation.</div>`;
-    setTimeout(()=>completeSocLab(),650);
-  }else{
-    b.classList.add('wrong');
-    $('socContainFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ Not the safest first action. Preserve evidence and stop further activity before destructive cleanup.</div>`;
-    setTimeout(()=>document.querySelectorAll('.containChoices .choice').forEach(x=>x.disabled=false),650);
-  }
-}
-
-async function completeSocLab(){
-  const score=Math.min(1000,700+socEvidence.size*45);
-  $('socLabProgress').style.width='100%';
-  $('socLabFeedback').innerHTML=`<div class="labResult"><div class="resultIcon">✓</div><div><span class="kicker">INCIDENT CONTAINED</span><h3>SOC CASE CLOSED</h3><p>You correlated ${socEvidence.size}/6 evidence items and selected a defensible containment action.</p><b>RESPONSE SCORE ${score}/1000</b></div><div class="resultXP">+120 XP</div></div>`;
-  await gain(120,'advanced-soc-incident-response');
-  $('socLabHint').textContent='Case complete • XP saved to your academy progress.';
-  render();
-}
-
-// Extend the Phase 2 lab launcher without replacing the existing phishing lab.
-const _originalAdvancedLab=advancedLab;
-advancedLab=function(type){
-  if(type==='soc') return openSocLab();
-  return _originalAdvancedLab(type);
-};
-
-
-// ============================================================
-// PHASE 2.5 // NETWORK ATTACK INVESTIGATION LAB
-// Safe, fictional defensive training scenario using documentation IPs.
-// ============================================================
-let networkEvidenceReviewed=new Set();
-let networkStage=0;
-
-function openNetworkLab(){
-  networkEvidenceReviewed=new Set();
-  networkStage=0;
-  const c=$('modalBody');
-  c.innerHTML=`
-    <div class="labModalHead">
-      <div><span class="kicker">PHASE 2 // ADVANCED LAB 04</span><h2>NETWORK ATTACK INVESTIGATION</h2>
-      <p class="simIntro">A monitoring sensor has flagged unusual traffic from a workstation. You are the network analyst. Correlate the traffic evidence before identifying the attack and selecting a defensive response.</p></div>
-      <div class="caseBadge">CASE NET-3141<br><small>ACTIVE</small></div>
-    </div>
-    <div class="labProgress"><span id="networkLabProgress" style="width:15%"></span></div>
-    <div class="investigationGrid">
-      <aside class="evidencePanel">
-        <div class="panelTitle"><span>CASE FILE</span><b>6 EVIDENCE ITEMS</b></div>
-        <button class="evidenceItem active" onclick="networkLabEvidence('alert',this)"><b>01</b><span>IDS ALERT</span><i>›</i></button>
-        <button class="evidenceItem" onclick="networkLabEvidence('ports',this)"><b>02</b><span>PORT ACTIVITY</span><i>›</i></button>
-        <button class="evidenceItem" onclick="networkLabEvidence('dns',this)"><b>03</b><span>DNS LOG</span><i>›</i></button>
-        <button class="evidenceItem" onclick="networkLabEvidence('flows',this)"><b>04</b><span>FLOW DATA</span><i>›</i></button>
-        <button class="evidenceItem" onclick="networkLabEvidence('firewall',this)"><b>05</b><span>FIREWALL</span><i>›</i></button>
-        <button class="evidenceItem" onclick="networkLabEvidence('timeline',this)"><b>06</b><span>TIMELINE</span><i>›</i></button>
-      </aside>
-      <div class="evidenceWorkspace">
-        <div id="networkEvidenceView" class="evidenceView"></div>
-        <div class="evidenceCounter"><span id="networkEvidenceCount">0/6 evidence items reviewed</span><span id="networkLabHint">Correlate traffic, ports and destinations before deciding.</span></div>
-      </div>
-    </div>
-    <div class="labDecisionBlock">
-      <div><span class="kicker">ATTACK IDENTIFICATION</span><h3>What is the most likely attack?</h3></div>
-      <div class="labDecisionChoices networkChoices">
-        <button class="choice" onclick="networkAttackDecision('portscan',this)">PORT SCANNING / RECONNAISSANCE</button>
-        <button class="choice" onclick="networkAttackDecision('beacon',this)">COMMAND-AND-CONTROL BEACONING</button>
-        <button class="choice" onclick="networkAttackDecision('dns',this)">DNS MISCONFIGURATION</button>
-      </div>
-      <div id="networkLabFeedback"></div>
-    </div>`;
-  $('modal').style.display='grid';
-  networkLabEvidence('alert',document.querySelector('.evidenceItem'));
-}
-
-const networkEvidenceData={
- alert:{title:'IDS ALERT',type:'DETECTION',html:`<div class="networkEvidenceCard"><div class="networkMetric critical"><span>SEVERITY</span><b>HIGH</b></div><div class="networkMetric"><span>SIGNATURE</span><b>Horizontal connection sweep</b></div><div class="networkMetric"><span>SOURCE</span><b>10.20.4.17</b></div><div class="networkMetric"><span>WINDOW</span><b>14:02:11–14:02:29 UTC</b></div></div>`,clue:'The sensor detected many connection attempts from one internal workstation in a short window.'},
- ports:{title:'PORT ACTIVITY',type:'TRAFFIC',html:`<div class="portMatrix"><div><span>DESTINATION</span><b>10.20.8.21</b><em>22 / CLOSED</em></div><div><span>DESTINATION</span><b>10.20.8.22</b><em>80 / CLOSED</em></div><div><span>DESTINATION</span><b>10.20.8.23</b><em>443 / CLOSED</em></div><div><span>DESTINATION</span><b>10.20.8.24</b><em>3389 / OPEN</em></div><div><span>DESTINATION</span><b>10.20.8.25</b><em>445 / CLOSED</em></div></div>`,clue:'The same source tests multiple hosts and ports, with one reachable service.'},
- dns:{title:'DNS LOG',type:'NAME RESOLUTION',html:`<div class="networkEvidenceCard"><div class="networkMetric"><span>CLIENT</span><b>10.20.4.17</b></div><div class="networkMetric"><span>QUERY</span><b>fileserver.training.internal</b></div><div class="networkMetric"><span>RESULT</span><b>10.20.8.24</b></div><div class="networkMetric"><span>RATE</span><b>1 QUERY • NORMAL</b></div><p class="networkMuted">No suspicious external domain resolution appears in this case.</p></div>`,clue:'DNS is normal, making a name-resolution failure less likely than a network discovery event.'},
- flows:{title:'FLOW DATA',type:'NETFLOW',html:`<div class="flowTable"><div><span>14:02:11</span><b>10.20.4.17 → 10.20.8.21:22</b><em>REJECT</em></div><div><span>14:02:15</span><b>10.20.4.17 → 10.20.8.22:80</b><em>REJECT</em></div><div><span>14:02:19</span><b>10.20.4.17 → 10.20.8.23:443</b><em>REJECT</em></div><div><span>14:02:24</span><b>10.20.4.17 → 10.20.8.24:3389</b><em>ACCEPT</em></div><div><span>14:02:29</span><b>10.20.4.17 → 10.20.8.25:445</b><em>REJECT</em></div></div>`,clue:'Sequential attempts across multiple hosts and ports form a clear horizontal scan pattern.'},
- firewall:{title:'FIREWALL DECISION',type:'CONTROL',html:`<div class="networkEvidenceCard"><div class="networkMetric"><span>RULE</span><b>INTERNAL EAST-WEST TRAFFIC</b></div><div class="networkMetric"><span>DEFAULT</span><b>ALLOW WITH INSPECTION</b></div><div class="networkMetric"><span>ANOMALY ACTION</span><b>ALERT • NO AUTO-BLOCK</b></div><div class="redFlag">⚠ The source host remains online. A defensive response should limit further reconnaissance without destroying investigation evidence.</div></div>`,clue:'The network control has alerted but has not automatically contained the source workstation.'},
- timeline:{title:'CORRELATED TIMELINE',type:'CORRELATION',html:`<div class="incidentTimeline networkTimeline"><div><b>14:02:11</b><span>First connection attempt from 10.20.4.17</span></div><div><b>14:02:15</b><span>Second destination probed</span></div><div><b>14:02:19</b><span>Third destination probed</span></div><div><b>14:02:24</b><span>RDP service responds on 10.20.8.24</span></div><div><b>14:02:29</b><span>Additional SMB probe observed</span></div></div>`,clue:'The sequence is broad, fast and sequential — consistent with reconnaissance across the internal network.'}
-};
-
-function networkLabEvidence(key,button){
-  const d=networkEvidenceData[key];
-  if(!d)return;
-  networkEvidenceReviewed.add(key);
-  document.querySelectorAll('.evidenceItem').forEach(x=>x.classList.remove('active'));
-  if(button)button.classList.add('active');
-  $('networkEvidenceView').innerHTML=`<div class="evidenceViewHead"><span class="kicker">${d.type}</span><h3>${d.title}</h3></div>${d.html}<div class="analystNote">ANALYST CLUE <span>✓ ${d.clue}</span></div>`;
-  $('networkEvidenceCount').textContent=`${networkEvidenceReviewed.size}/6 evidence items reviewed`;
-  $('networkLabProgress').style.width=(15+(networkEvidenceReviewed.size/6)*45)+'%';
-  $('networkLabHint').textContent=networkEvidenceReviewed.size===6?'Traffic correlated. Identify the attack pattern.':'Review the remaining evidence before deciding.';
-}
-
-async function networkAttackDecision(choice,b){
-  document.querySelectorAll('.networkChoices .choice').forEach(x=>x.disabled=true);
-  if(networkEvidenceReviewed.size!==6){
-    b.classList.add('wrong');
-    $('networkLabFeedback').innerHTML=`<div class="feedback wrongFeedback">⚠ Identification is premature. Review all six network evidence items first.</div>`;
-    setTimeout(()=>document.querySelectorAll('.networkChoices .choice').forEach(x=>x.disabled=false),650);
-    return;
-  }
-  if(choice==='portscan'){
-    b.classList.add('correct');
-    networkStage=1;
-    $('networkLabProgress').style.width='72%';
-    $('networkLabFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Correct. The sequential probes across multiple internal hosts and ports indicate network reconnaissance / port scanning.</div>
-      <div class="networkContainment"><span class="kicker">DEFENSIVE RESPONSE</span><h3>What is the safest first action?</h3>
-      <div class="containChoices networkContainChoices">
-        <button class="choice" onclick="networkContainment('isolate',this)">ISOLATE SOURCE HOST + PRESERVE TRAFFIC EVIDENCE</button>
-        <button class="choice" onclick="networkContainment('flush',this)">FLUSH ALL FIREWALL RULES</button>
-        <button class="choice" onclick="networkContainment('shutdown',this)">SHUT DOWN THE ENTIRE NETWORK</button>
-      </div><div id="networkContainFeedback"></div></div>`;
-  }else{
-    b.classList.add('wrong');
-    $('networkLabFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ Reassess the sequence. The evidence shows many short-lived probes across multiple internal destinations, not normal DNS behavior or a periodic beacon.</div>`;
-    setTimeout(()=>document.querySelectorAll('.networkChoices .choice').forEach(x=>x.disabled=false),650);
-  }
-}
-
-async function networkContainment(choice,b){
-  document.querySelectorAll('.networkContainChoices .choice').forEach(x=>x.disabled=true);
-  if(choice==='isolate'){
-    b.classList.add('correct');
-    networkStage=2;
-    $('networkLabProgress').style.width='100%';
-    $('networkContainFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Defensible response. Isolate the source workstation and preserve the network evidence for follow-up analysis.</div>`;
-    setTimeout(()=>completeNetworkLab(),650);
-  }else{
-    b.classList.add('wrong');
-    $('networkContainFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ That response is unnecessarily destructive or too broad. Contain the source host while preserving evidence.</div>`;
-    setTimeout(()=>document.querySelectorAll('.networkContainChoices .choice').forEach(x=>x.disabled=false),650);
-  }
-}
-
-async function completeNetworkLab(){
-  const score=Math.min(1000,730+networkEvidenceReviewed.size*45);
-  $('networkLabProgress').style.width='100%';
-  $('networkLabFeedback').insertAdjacentHTML('beforeend',`<div class="labResult"><div class="resultIcon">✓</div><div><span class="kicker">NETWORK CONTAINED</span><h3>INVESTIGATION COMPLETE</h3><p>You correlated ${networkEvidenceReviewed.size}/6 evidence items, identified the reconnaissance pattern and selected a targeted containment response.</p><b>NETWORK ANALYSIS SCORE ${score}/1000</b></div><div class="resultXP">+120 XP</div></div>`);
-  await gain(120,'advanced-network-attack-investigation');
-  $('networkLabHint').textContent='Case complete • XP saved to your academy progress.';
-  render();
-}
-
-// Extend the advanced lab launcher for Lab 04 without replacing earlier labs.
-const _advancedLabWithNetwork=advancedLab;
-advancedLab=function(type){
-  if(type==='network') return openNetworkLab();
-  return _advancedLabWithNetwork(type);
-};
-
-
-// ============================================================
-// PHASE 2.6 // DIGITAL FORENSICS CASE
-// Safe, fictional evidence only. No real files or systems are touched.
-// ============================================================
-let forensicsEvidenceReviewed=new Set();
-let forensicsStage=0;
-
-function openForensicsLab(){
-  forensicsEvidenceReviewed=new Set();
-  forensicsStage=0;
-  const c=$('modalBody');
-  c.innerHTML=`
-    <div class="labModalHead">
-      <div><span class="kicker">PHASE 2 // ADVANCED LAB 05</span><h2>DIGITAL FORENSICS CASE</h2>
-      <p class="simIntro">A fictional workstation was flagged after suspicious activity. Reconstruct the incident from simulated forensic artifacts, establish the timeline, and identify the evidence that supports your conclusion.</p></div>
-      <div class="caseBadge">CASE DF-2047<br><small>ACTIVE</small></div>
-    </div>
-    <div class="labProgress"><span id="forensicsLabProgress" style="width:14%"></span></div>
-    <div class="investigationGrid">
-      <aside class="evidencePanel">
-        <div class="panelTitle"><span>CASE FILE</span><b>7 EVIDENCE ITEMS</b></div>
-        <button class="evidenceItem active" onclick="forensicsEvidence('alert',this)"><b>01</b><span>CASE ALERT</span><i>›</i></button>
-        <button class="evidenceItem" onclick="forensicsEvidence('timeline',this)"><b>02</b><span>EVENT TIMELINE</span><i>›</i></button>
-        <button class="evidenceItem" onclick="forensicsEvidence('auth',this)"><b>03</b><span>AUTH LOG</span><i>›</i></button>
-        <button class="evidenceItem" onclick="forensicsEvidence('browser',this)"><b>04</b><span>BROWSER ARTIFACT</span><i>›</i></button>
-        <button class="evidenceItem" onclick="forensicsEvidence('process',this)"><b>05</b><span>PROCESS ARTIFACT</span><i>›</i></button>
-        <button class="evidenceItem" onclick="forensicsEvidence('persistence',this)"><b>06</b><span>PERSISTENCE CLUE</span><i>›</i></button>
-        <button class="evidenceItem" onclick="forensicsEvidence('network',this)"><b>07</b><span>NETWORK ARTIFACT</span><i>›</i></button>
-      </aside>
-      <div class="evidenceWorkspace">
-        <div id="forensicsEvidenceView" class="evidenceView"></div>
-        <div class="evidenceCounter"><span id="forensicsEvidenceCount">0/7 evidence items reviewed</span><span id="forensicsLabHint">Review every artifact before writing your conclusion.</span></div>
-        <div id="forensicsLabFeedback"></div>
-      </div>
-    </div>`;
-  $('modal').style.display='grid';
-  forensicsEvidence('alert',document.querySelector('.evidencePanel .evidenceItem'));
-}
-
-function forensicsEvidence(type,b){
-  if(b){document.querySelectorAll('.evidencePanel .evidenceItem').forEach(x=>x.classList.remove('active'));b.classList.add('active');}
-  forensicsEvidenceReviewed.add(type);
-  const views={
-    alert:`<div class="networkEvidence"><span class="kicker">CASE ALERT</span><h3>WORKSTATION ANOMALY DETECTED</h3><div class="socMetric"><span>HOST</span><b>ENG-LT-07</b></div><div class="socMetric"><span>USER</span><b>analyst01</b></div><div class="socMetric"><span>FIRST ALERT</span><b>09:14:22</b></div><div class="socMetric critical"><span>SEVERITY</span><b>HIGH</b></div><div class="analystNote">Start with the timeline. Your goal is to determine what happened, not simply what was detected.</div></div>`,
-    timeline:`<div class="logTable"><div><span>09:07:11</span><b>browser.exe</b><em>Opened shortened URL</em></div><div><span>09:08:03</span><b>powershell.exe</b><em>Started by browser child process</em></div><div><span>09:08:19</span><b>script-host</b><em>Executed encoded command</em></div><div><span>09:09:02</span><b>reg.exe</b><em>Modified user startup entry</em></div><div><span>09:14:22</span><b>EDR</b><em>Persistence behavior alerted</em></div></div><div class="analystNote">The sequence matters: browser activity precedes script execution and a startup modification.</div>`,
-    auth:`<div class="networkEvidence"><span class="kicker">AUTHENTICATION ARTIFACT</span><h3>ACCOUNT ACTIVITY</h3><div class="socMetric"><span>08:56:44</span><b>Local interactive logon — analyst01</b></div><div class="socMetric"><span>09:06:51</span><b>Browser session — analyst01</b></div><div class="socMetric"><span>09:17:05</span><b>Remote logon — NOT OBSERVED</b></div><div class="socMetric"><span>PRIVILEGE</span><b>STANDARD USER</b></div><div class="analystNote">No evidence suggests a separate remote account was used during the incident window.</div></div>`,
-    browser:`<div class="networkEvidence"><span class="kicker">BROWSER ARTIFACT</span><h3>VISITED RESOURCE</h3><div class="socMetric"><span>09:07:11</span><b>https://training-example.invalid/update</b></div><div class="socMetric"><span>REFERRER</span><b>EMAIL LINK</b></div><div class="socMetric"><span>DOWNLOAD</span><b>update-check.js</b></div><div class="analystNote">This is a fictional training domain. The artifact establishes the likely initial access vector.</div></div>`,
-    process:`<div class="processTree"><div><b>browser.exe</b><span> user session</span></div><div>↓</div><div><b>powershell.exe</b><span> suspicious encoded command</span></div><div>↓</div><div><b>script-host</b><span> created startup modification</span></div></div>`,
-    persistence:`<div class="networkEvidence"><span class="kicker">PERSISTENCE ARTIFACT</span><h3>STARTUP ENTRY</h3><div class="socMetric"><span>LOCATION</span><b>SIMULATED USER STARTUP KEY</b></div><div class="socMetric"><span>VALUE</span><b>script-host --profile</b></div><div class="socMetric critical"><span>ASSESSMENT</span><b>UNEXPECTED PERSISTENCE</b></div><div class="analystNote">The artifact shows an attempt to run a suspicious process automatically at user sign-in.</div></div>`,
-    network:`<div class="networkEvidence"><span class="kicker">NETWORK ARTIFACT</span><h3>OUTBOUND CONNECTION</h3><div class="socMetric"><span>09:08:21</span><b>ENG-LT-07 → 192.0.2.44:443</b></div><div class="socMetric"><span>TRAFFIC</span><b>SMALL PERIODIC HTTPS REQUESTS</b></div><div class="socMetric"><span>DESTINATION</span><b>DOCUMENTATION ADDRESS</b></div><div class="analystNote">The address is reserved for documentation. In this fictional case, the pattern is a simulated command-and-control clue.</div></div>`
+  const VIEW_META = {
+    dashboard: ['Command Hub', 'Live club telemetry, awareness broadcasts, and skill progression.'],
+    lessons: ['Video Lessons & Classes', 'Recorded lectures, lab walkthroughs, and cyber awareness broadcasts.'],
+    intel: ['News & Research Reports', 'Verified intelligence uploaded by the News Team and Research Team.'],
+    quizzes: ['Assessments & Quizzes', 'Test your mastery on club reports and boost your ability radar.'],
+    abilities: ['Student Abilities & Scores', 'Domain proficiency radar and club-wide operator rankings.'],
+    meetings: ['Live Lectures & Meetings', 'Interactive sessions hosted by your Professor and Club Admin.'],
+    'team-studio': ['Team Report Upload Studio', 'Publish News Bulletins or Research Advisories to the student feed.'],
+    'admin-panel': ['Admin & Professor Console', 'Full club governance: lessons, quizzes, meetings, keys, and scores.'],
   };
-  $('forensicsEvidenceView').innerHTML=views[type];
-  $('forensicsEvidenceCount').textContent=`${forensicsEvidenceReviewed.size}/7 evidence items reviewed`;
-  $('forensicsLabProgress').style.width=`${Math.max(14,Math.round(forensicsEvidenceReviewed.size/7*58))}%`;
-  if(forensicsEvidenceReviewed.size===7) showForensicsDecision();
-}
 
-function showForensicsDecision(){
-  if($('forensicsDecisionBlock')) return;
-  $('forensicsLabFeedback').innerHTML=`<div id="forensicsDecisionBlock" class="labDecisionBlock"><span class="kicker">FINAL ANALYSIS</span><h3>What is the best-supported conclusion?</h3><div class="labDecisionChoices"><button class="choice" onclick="forensicsDecision('malicious',this)">MALICIOUS EXECUTION WITH PERSISTENCE</button><button class="choice" onclick="forensicsDecision('benign',this)">NORMAL SOFTWARE UPDATE</button><button class="choice" onclick="forensicsDecision('hardware',this)">HARDWARE FAILURE</button></div><div id="forensicsDecisionFeedback"></div></div>`;
-  $('forensicsLabHint').textContent='All evidence reviewed. Build the most defensible conclusion.';
-  $('forensicsLabProgress').style.width='72%';
-}
+  function enterSession(user) {
+    currentUser = user;
+    authGate.classList.add('hidden');
+    appShell.classList.remove('hidden');
 
-function forensicsDecision(choice,b){
-  document.querySelectorAll('#forensicsDecisionBlock .choice').forEach(x=>x.disabled=true);
-  if(choice==='malicious'){
-    b.classList.add('correct');
-    $('forensicsDecisionFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Correct. The evidence supports a browser-led execution chain followed by persistence and simulated outbound beaconing.</div><div class="labDecisionBlock"><span class="kicker">EVIDENCE PRESERVATION</span><h3>What should the analyst do next?</h3><div class="labDecisionChoices"><button class="choice" onclick="forensicsContainment('preserve',this)">PRESERVE THE IMAGE + TIMELINE AND ESCALATE</button><button class="choice" onclick="forensicsContainment('delete',this)">DELETE THE ARTIFACTS IMMEDIATELY</button><button class="choice" onclick="forensicsContainment('reconnect',this)">RECONNECT THE HOST TO NORMAL TRAFFIC</button></div><div id="forensicsContainFeedback"></div></div>`;
-  }else{
-    b.classList.add('wrong');
-    $('forensicsDecisionFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ Reassess the evidence. The sequence includes script execution, persistence, and a simulated periodic outbound connection.</div>`;
-    setTimeout(()=>document.querySelectorAll('#forensicsDecisionBlock .choice').forEach(x=>x.disabled=false),650);
-  }
-}
+    document.getElementById('sidebarRoleTag').textContent = `${user.role.toUpperCase()} CLEARANCE`;
+    document.getElementById('sidebarUserName').textContent = user.name;
+    document.getElementById('sidebarUserId').textContent = `ID: ${user.id}`;
 
-async function forensicsContainment(choice,b){
-  document.querySelectorAll('#forensicsDecisionBlock .choice').forEach(x=>x.disabled=true);
-  if(choice==='preserve'){
-    b.classList.add('correct');
-    forensicsStage=2;
-    $('forensicsLabProgress').style.width='100%';
-    $('forensicsContainFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Correct forensic practice. Preserve the evidence and timeline, document findings, and escalate for response.</div>`;
-    setTimeout(()=>completeForensicsLab(),650);
-  }else{
-    b.classList.add('wrong');
-    $('forensicsContainFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ That could destroy evidence or increase risk. Preserve the artifacts and timeline before remediation.</div>`;
-    setTimeout(()=>document.querySelectorAll('#forensicsDecisionBlock .choice').forEach(x=>x.disabled=false),650);
-  }
-}
+    const clearanceLevels = {
+      student: 'TIER 1 // STUDENT',
+      news: 'TIER 2 // NEWS TEAM',
+      research: 'TIER 2 // RESEARCH TEAM',
+      professor: 'TIER 4 // PROFESSOR FULL ACCESS',
+      admin: 'TIER 5 // ADMIN FULL ACCESS',
+    };
+    document.getElementById('topClearance').textContent = clearanceLevels[user.role];
 
-async function completeForensicsLab(){
-  const score=Math.min(1000,760+forensicsEvidenceReviewed.size*34);
-  $('forensicsLabFeedback').insertAdjacentHTML('beforeend',`<div class="labResult"><div class="resultIcon">✓</div><div><span class="kicker">CASE RECONSTRUCTED</span><h3>INVESTIGATION COMPLETE</h3><p>You reconstructed the browser-to-script sequence, identified persistence, and preserved the simulated evidence.</p><b>FORENSIC ANALYSIS SCORE ${score}/1000</b></div><div class="resultXP">+150 XP</div></div>`);
-  await gain(150,'advanced-digital-forensics-case');
-  $('forensicsLabHint').textContent='Case complete • XP saved to your academy progress.';
-  render();
-}
+    // Enforce RBAC visibility on navigation items
+    document.querySelectorAll('.role-restricted').forEach((el) => {
+      const allowedRoles = el.dataset.roles.split(',');
+      el.classList.toggle('hidden', !allowedRoles.includes(user.role));
+    });
 
-// Extend the advanced lab launcher for Lab 05 without replacing earlier labs.
-const _advancedLabWithForensics=advancedLab;
-advancedLab=function(type){
-  if(type==='forensics') return openForensicsLab();
-  return _advancedLabWithForensics(type);
-};
-
-
-// ============================================================
-// PHASE 2.7 // WEB SECURITY LAB
-// Safe, fictional application-security training environment.
-// ============================================================
-let webEvidenceReviewed=new Set();
-let webStage=0;
-
-function openWebSecurityLab(){
-  webEvidenceReviewed=new Set();
-  webStage=0;
-  const c=$('modalBody');
-  c.innerHTML=`
-    <div class="labModalHead">
-      <div><span class="kicker">PHASE 2 // ADVANCED LAB 06</span><h2>WEB SECURITY LAB</h2>
-      <p class="simIntro">You are reviewing a fictional student portal after unusual application activity. Inspect the evidence, identify the weaknesses, then select the safest remediation sequence.</p></div>
-      <div class="caseBadge">CASE WEB-3014<br><small>ACTIVE</small></div>
-    </div>
-    <div class="labProgress"><span id="webLabProgress" style="width:14%"></span></div>
-    <div class="investigationGrid">
-      <aside class="evidencePanel">
-        <div class="panelTitle"><span>APPLICATION CASE FILE</span><b>6 EVIDENCE ITEMS</b></div>
-        <button class="evidenceItem active" onclick="webSecurityEvidence('alert',this)"><b>01</b><span>ALERT</span><i>›</i></button>
-        <button class="evidenceItem" onclick="webSecurityEvidence('request',this)"><b>02</b><span>REQUEST TRACE</span><i>›</i></button>
-        <button class="evidenceItem" onclick="webSecurityEvidence('auth',this)"><b>03</b><span>AUTH SESSION</span><i>›</i></button>
-        <button class="evidenceItem" onclick="webSecurityEvidence('access',this)"><b>04</b><span>ACCESS CONTROL</span><i>›</i></button>
-        <button class="evidenceItem" onclick="webSecurityEvidence('input',this)"><b>05</b><span>INPUT VALIDATION</span><i>›</i></button>
-        <button class="evidenceItem" onclick="webSecurityEvidence('logs',this)"><b>06</b><span>APP LOGS</span><i>›</i></button>
-      </aside>
-      <div class="evidenceWorkspace">
-        <div id="webEvidenceView" class="evidenceView"></div>
-        <div class="evidenceCounter"><span id="webEvidenceCount">0/6 evidence items reviewed</span><span id="webLabHint">Review every artifact before selecting a remediation.</span></div>
-      </div>
-    </div>
-    <div class="labDecisionBlock">
-      <div><span class="kicker">VULNERABILITY ASSESSMENT</span><h3>What is the best-supported primary finding?</h3></div>
-      <div class="labDecisionChoices webChoices">
-        <button class="choice" onclick="webSecurityDecision('cosmetic',this)">COSMETIC UI ISSUE</button>
-        <button class="choice" onclick="webSecurityDecision('access',this)">ACCESS CONTROL + INPUT VALIDATION WEAKNESS</button>
-        <button class="choice" onclick="webSecurityDecision('hardware',this)">HARDWARE FAILURE</button>
-      </div>
-      <div id="webLabFeedback"></div>
-    </div>`;
-  $('modal').style.display='grid';
-  webSecurityEvidence('alert',document.querySelector('.evidenceItem'));
-}
-
-const webSecurityEvidenceData={
- alert:{title:'APPLICATION ALERT',type:'DETECTION',html:`<div class="webEvidenceCard"><div class="webMetric critical"><span>SEVERITY</span><b>HIGH</b></div><div class="webMetric"><span>RULE</span><b>Unexpected account access + invalid object requests</b></div><div class="webMetric"><span>APP</span><b>STUDENT PORTAL // SIMULATED</b></div><div class="webMetric"><span>TIME WINDOW</span><b>14:22:10–14:24:41 UTC</b></div></div>`,clue:'The alert combines identity and object-access anomalies in one application session.'},
- request:{title:'REQUEST TRACE',type:'HTTP TELEMETRY',html:`<div class="webEvidenceCard"><div class="webMetric"><span>METHOD</span><b>GET</b></div><div class="webMetric"><span>ROUTE</span><b>/api/profile?id=student-104</b></div><div class="webMetric"><span>RESPONSE</span><b class="warningText">200 • UNEXPECTED OBJECT</b></div><div class="webMetric"><span>NOTE</span><b>SIMULATED TRACE</b></div><div class="redFlag">⚠ The fictional endpoint returns another student's profile when the object identifier is changed.</div></div>`,clue:'The application should verify authorization for the requested object, not rely only on a client-supplied identifier.'},
- auth:{title:'AUTH SESSION',type:'SESSION SECURITY',html:`<div class="webEvidenceCard"><div class="webMetric"><span>SESSION</span><b>WEB-7F31</b></div><div class="webMetric"><span>USER</span><b>student01</b></div><div class="webMetric"><span>STATUS</span><b>AUTHENTICATED</b></div><div class="webMetric"><span>COOKIE</span><b>SIMULATED • SECURE</b></div><div class="analystNote">The session itself is valid. The weakness is what the application permits the authenticated user to access.</div></div>`,clue:'A valid login does not grant access to every object. Authorization must be checked server-side.'},
- access:{title:'ACCESS CONTROL',type:'AUTHORIZATION',html:`<div class="webEvidenceCard"><div class="accessMatrix"><div><span>student01</span><b>OWN PROFILE</b><em>ALLOW</em></div><div class="badRow"><span>student01</span><b>student-104 PROFILE</b><em>ALLOW ⚠</em></div><div><span>student01</span><b>ADMIN SETTINGS</b><em>DENY</em></div></div><p class="webMuted">The fictional application correctly blocks an admin-only route but fails to enforce ownership on one profile object.</p></div>`,clue:'Authorization is partially enforced; object ownership must be checked on every protected request.'},
- input:{title:'INPUT VALIDATION',type:'APPLICATION INPUT',html:`<div class="webEvidenceCard"><div class="inputFlow"><div>USER INPUT <b>profileId</b></div><span>↓</span><div class="badRow">DIRECT OBJECT LOOKUP <b>NO SERVER-SIDE OWNERSHIP CHECK</b></div><span>↓</span><div>PROFILE RESPONSE</div></div><div class="redFlag">⚠ Treat identifiers as untrusted input. Validate format and authorization on the server before returning data.</div></div>`,clue:'Input validation and authorization belong on the server and should be enforced before sensitive data is returned.'},
- logs:{title:'APPLICATION LOGS',type:'CORRELATION',html:`<div class="webLogTable"><div><span>14:22:10</span><b>LOGIN</b><em>student01</em></div><div><span>14:23:04</span><b>GET /api/profile?id=student-104</b><em>200</em></div><div><span>14:23:16</span><b>GET /api/profile?id=student-104</b><em>200</em></div><div><span>14:24:41</span><b>ALERT CORRELATED</b><em>REVIEW</em></div></div>`,clue:'Repeated cross-object requests after a valid login provide the strongest correlation for the access-control finding.'}
-};
-
-function webSecurityEvidence(key,button){
-  const d=webSecurityEvidenceData[key];
-  if(!d)return;
-  webEvidenceReviewed.add(key);
-  document.querySelectorAll('.evidencePanel .evidenceItem').forEach(x=>x.classList.remove('active'));
-  if(button)button.classList.add('active');
-  $('webEvidenceView').innerHTML=`<div class="evidenceViewHead"><span class="kicker">${d.type}</span><h3>${d.title}</h3></div>${d.html}<div class="analystNote">ANALYST CLUE <span>✓ ${d.clue}</span></div>`;
-  $('webEvidenceCount').textContent=`${webEvidenceReviewed.size}/6 evidence items reviewed`;
-  $('webLabProgress').style.width=(14+(webEvidenceReviewed.size/6)*52)+'%';
-  $('webLabHint').textContent=webEvidenceReviewed.size===6?'Evidence correlated. Select the primary finding.':'Review the remaining evidence before deciding.';
-}
-
-function webSecurityDecision(choice,b){
-  document.querySelectorAll('.webChoices .choice').forEach(x=>x.disabled=true);
-  const complete=webEvidenceReviewed.size===6;
-  const correct=choice==='access';
-  if(correct)b.classList.add('correct'); else b.classList.add('wrong');
-  if(!complete){
-    $('webLabFeedback').innerHTML=`<div class="feedback wrongFeedback">⚠ Assessment is premature. Review all six evidence items before recording the finding.</div>`;
-    setTimeout(()=>document.querySelectorAll('.webChoices .choice').forEach(x=>x.disabled=false),650);
-    return;
-  }
-  if(correct){
-    $('webLabFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Correct. The evidence supports an object-level authorization weakness combined with insufficient server-side input validation.</div><div class="webRemediation"><span class="kicker">REMEDIATION</span><h3>What should the development team implement?</h3><div class="webRemediationChoices"><button class="choice" onclick="webSecurityRemediation('server',this)">ENFORCE SERVER-SIDE AUTHORIZATION + INPUT VALIDATION</button><button class="choice" onclick="webSecurityRemediation('client',this)">HIDE THE ID FIELD IN THE UI</button><button class="choice" onclick="webSecurityRemediation('disable',this)">DISABLE ALL USER PROFILES</button></div><div id="webRemediationFeedback"></div></div>`;
-    $('webLabProgress').style.width='82%';
-  }else{
-    $('webLabFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ Reassess the evidence. The application is authenticating the user but not consistently authorizing access to the requested object.</div>`;
-    setTimeout(()=>document.querySelectorAll('.webChoices .choice').forEach(x=>x.disabled=false),650);
-  }
-}
-
-async function webSecurityRemediation(choice,b){
-  document.querySelectorAll('.webRemediationChoices .choice').forEach(x=>x.disabled=true);
-  if(choice==='server'){
-    b.classList.add('correct');
-    $('webLabProgress').style.width='100%';
-    $('webRemediationFeedback').innerHTML=`<div class="feedback correctFeedback">✓ Correct remediation. Validate untrusted input and enforce object ownership on the server before returning sensitive data.</div>`;
-    setTimeout(()=>completeWebSecurityLab(),650);
-  }else{
-    b.classList.add('wrong');
-    $('webRemediationFeedback').innerHTML=`<div class="feedback wrongFeedback">✕ This does not address the server-side authorization weakness. Client-side hiding or disabling the feature is not sufficient.</div>`;
-    setTimeout(()=>document.querySelectorAll('.webRemediationChoices .choice').forEach(x=>x.disabled=false),650);
-  }
-}
-
-async function completeWebSecurityLab(){
-  const score=Math.min(1000,760+webEvidenceReviewed.size*40);
-  $('webLabFeedback').insertAdjacentHTML('beforeend',`<div class="labResult"><div class="resultIcon">✓</div><div><span class="kicker">APPLICATION SECURED</span><h3>WEB SECURITY LAB COMPLETE</h3><p>You correlated the simulated request trail, identified the authorization weakness, and selected a server-side remediation.</p><b>SECURITY ANALYSIS SCORE ${score}/1000</b></div><div class="resultXP">+130 XP</div></div>`);
-  await gain(130,'advanced-web-security-lab');
-  $('webLabHint').textContent='Lab complete • XP saved to your academy progress.';
-  render();
-}
-
-const _advancedLabWithWeb=_advancedLabWithForensics;
-advancedLab=function(type){
-  if(type==='web') return openWebSecurityLab();
-  return _advancedLabWithWeb(type);
-};
-
-
-const cyberPuzzles = {
-  cipher: {
-    title: "CRACK THE CIPHER",
-    category: "CRYPTOGRAPHY",
-    question: "Shift each letter three places backward to decode KHOOR.",
-    answer: "HELLO",
-    hint: "K becomes H when shifted three places backward."
-  },
-  evidence: {
-    title: "DIGITAL EVIDENCE",
-    category: "DIGITAL FORENSICS",
-    question: "A log shows successful logins at 10:00 AM and 10:02 AM. Which event is suspicious: a failed login at 10:01 AM or a normal logout at 10:05 AM?",
-    answer: "FAILED LOGIN",
-    hint: "Look for the event that may indicate an unauthorized access attempt."
-  },
-  network: {
-    title: "TRACE THE ATTACK",
-    category: "NETWORK SECURITY",
-    question: "Which source IP appears in the most suspicious requests: 192.168.1.10 (2 requests), 203.0.113.42 (8 requests), or 10.0.0.5 (1 request)?",
-    answer: "203.0.113.42",
-    hint: "Compare the number of suspicious requests from each address."
-  },
-  logic: {
-    title: "SECURITY LOGIC",
-    category: "ACCESS CONTROL",
-    question: "A secure file requires BOTH a valid password AND an approved access card. The password is valid, but the card is not approved. Is access granted?",
-    answer: "NO",
-    hint: "Both conditions must be true."
-  }
-};
-
-let activePuzzleId = null;
-
-function startPuzzle(id = "cipher") {
-  const puzzle = cyberPuzzles[id];
-  const workspace = document.getElementById("puzzleWorkspace");
-
-  if (!puzzle || !workspace) return;
-
-  activePuzzleId = id;
-  workspace.hidden = false;
-  workspace.innerHTML = `
-    <article class="puzzleCard">
-      <span class="kicker">${puzzle.category}</span>
-      <h2>${puzzle.title}</h2>
-      <p>${puzzle.question}</p>
-
-      <input id="puzzleAnswer"
-        type="text"
-        placeholder="Enter your answer"
-        autocomplete="off" />
-
-      <button class="btn primary" onclick="checkCipher()">
-        VERIFY ANSWER →
-      </button>
-
-      <button class="btn" onclick="showPuzzleHint()">
-        SHOW HINT
-      </button>
-
-      <p id="puzzleFeedback" aria-live="polite"></p>
-    </article>
-  `;
-
-  workspace.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-
-async function checkCipher() {
-  const puzzle = cyberPuzzles[activePuzzleId];
-  const input = document.getElementById("puzzleAnswer");
-  const feedback = document.getElementById("puzzleFeedback");
-
-  if (!puzzle || !input || !feedback) return;
-
-  if (input.value.trim().toUpperCase() !== puzzle.answer) {
-    feedback.textContent = "Not quite. Try again or use the hint.";
-    feedback.style.color = "#ff7272";
-    return;
-  }
-
-  const rewardKey = "puzzle-" + activePuzzleId;
-
-  try {
-    feedback.textContent = "Answer correct! Saving your reward...";
-
-    await gain(50, rewardKey);
-
-    feedback.textContent =
-      "CORRECT! Puzzle solved. XP reward processed: +50 XP if this is your first completion.";
-    feedback.style.color = "#20d9a0";
-
-    input.disabled = true;
-  } catch (error) {
-    feedback.textContent =
-      "Correct answer, but the reward could not be saved. Please try again.";
-    feedback.style.color = "#ff7272";
-  }
-}
-
-
-function showPuzzleHint() {
-  const puzzle = cyberPuzzles[activePuzzleId];
-  const feedback = document.getElementById("puzzleFeedback");
-
-  if (puzzle && feedback) {
-    feedback.textContent = "HINT: " + puzzle.hint;
-    feedback.style.color = "#f0c674";
-  }
-}
-// CYBER//QUEST Sidebar Toggle
-document.addEventListener('DOMContentLoaded', () => {
-  const sidebar = document.querySelector('.sidebar');
-  const toggle = document.getElementById('sidebarToggle');
-
-  if (!sidebar || !toggle) return;
-
-  // Close sidebar automatically on startup
-  sidebar.classList.add('is-closed');
-
-  // Show the separate sidebar button
-  toggle.style.display = 'grid';
-
-  toggle.addEventListener('click', () => {
-    const isClosed = sidebar.classList.toggle('is-closed');
-
-    toggle.textContent = isClosed ? '☰' : '×';
-    toggle.setAttribute(
-      'aria-label',
-      isClosed ? 'Open sidebar' : 'Close sidebar'
-    );
-  });
-});
-
-// =================================
-// STUDENT VIDEO LESSONS
-// =================================
-
-async function loadStudentVideos() {
-  const list = document.getElementById('studentVideosList');
-  const message = document.getElementById('studentVideosMessage');
-  const player = document.getElementById('studentVideoPlayer');
-
-  if (!list || !message || !player) return;
-
-  list.replaceChildren();
-  message.textContent = 'Loading published lessons...';
-  player.replaceChildren();
-
-  try {
-    const data = await api('/api/videos');
-
-    if (!data.videos || data.videos.length === 0) {
-      message.textContent = 'No published lessons are available yet.';
-      return;
+    // Configure Team Upload Studio lock based on role
+    const repCategory = document.getElementById('repCategory');
+    if (user.role === 'news') {
+      repCategory.value = 'NEWS';
+      repCategory.disabled = true;
+    } else if (user.role === 'research') {
+      repCategory.value = 'RESEARCH';
+      repCategory.disabled = true;
+    } else {
+      repCategory.disabled = false;
     }
 
-    message.textContent = `${data.videos.length} published lesson(s) available.`;
+    switchView('dashboard');
+    refreshAllUI();
+  }
 
-    data.videos.forEach(video => {
-      const card = document.createElement('article');
-      card.className = 'card studentVideoCard';
+  function switchView(viewName) {
+    document.querySelectorAll('.nav-item').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.view === viewName);
+    });
+    document.querySelectorAll('.view-section').forEach((sec) => {
+      sec.classList.toggle('active', sec.id === `view-${viewName}`);
+    });
+    const meta = VIEW_META[viewName] || VIEW_META.dashboard;
+    document.getElementById('viewHeading').textContent = meta[0];
+    document.getElementById('viewSubheading').textContent = meta[1];
+  }
 
-      const title = document.createElement('h3');
-      title.textContent = video.title;
+  document.querySelectorAll('.nav-item').forEach((btn) => {
+    btn.addEventListener('click', () => switchView(btn.dataset.view));
+  });
 
-      const category = document.createElement('span');
-      category.className = 'status';
-      category.textContent = video.category;
+  document.querySelectorAll('[data-jump]').forEach((btn) => {
+    btn.addEventListener('click', () => switchView(btn.dataset.jump));
+  });
 
-      const description = document.createElement('p');
-      description.textContent = video.description || 'No description available.';
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    currentUser = null;
+    appShell.classList.add('hidden');
+    authGate.classList.remove('hidden');
+    document.getElementById('authForm').reset();
+  });
 
-      const watchButton = document.createElement('button');
-      watchButton.className = 'btn primary';
-      watchButton.textContent = '▶ WATCH LESSON';
+  document.querySelectorAll('.bg-mode-btn').forEach((btn) => {
+    btn.addEventListener('click', () => bgEngine.setMode(btn.dataset.bg));
+  });
 
-      watchButton.addEventListener('click', () => {
-        playStudentVideo(video.id, video.title, watchButton);
+  /* ============================================================================
+     6. RENDERING VIEWS (DASHBOARD, LESSONS, INTEL, QUIZZES, ABILITIES, ADMIN)
+     ============================================================================ */
+  let lessonFilter = 'ALL';
+  let intelFilter = 'ALL';
+
+  function refreshAllUI() {
+    if (!currentUser) return;
+
+    // Sync live student record if logged in as student
+    if (currentUser.role === 'student') {
+      const fresh = db.users.find((u) => u.id === currentUser.id);
+      if (fresh) currentUser = fresh;
+    }
+
+    document.getElementById('topXp').textContent = `${currentUser.xp || 0} XP`;
+
+    // Ticker
+    const latestNews = db.reports[0];
+    document.getElementById('tickerText').textContent = latestNews
+      ? `[${latestNews.category}] ${latestNews.title} — Uploaded by ${latestNews.author}`
+      : 'Welcome to CYBER//QUEST Private Cybersecurity Club.';
+
+    renderDashboard();
+    renderLessons();
+    renderIntel();
+    renderQuizzes();
+    renderAbilitiesAndLeaderboard();
+    renderMeetings();
+    renderTeamStudioReports();
+    renderAdminConsole();
+  }
+
+  function renderDashboard() {
+    const completedCount = currentUser.completedQuizzes ? currentUser.completedQuizzes.length : 0;
+    const scores = Object.values(currentUser.domainScores || {});
+    const avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+
+    document.getElementById('kpiQuizzes').textContent = completedCount;
+    document.getElementById('kpiAvgScore').textContent = `${avg}%`;
+    document.getElementById('kpiReports').textContent = db.reports.length;
+    document.getElementById('kpiMeetings').textContent = db.meetings.length;
+
+    const dashIntel = document.getElementById('dashIntelList');
+    dashIntel.innerHTML = db.reports
+      .slice(0, 3)
+      .map(
+        (r) => `
+      <div class="list-item">
+        <div style="display:flex;justify-content:space-between;margin-bottom:0.35rem;">
+          <span class="pill ${r.category === 'NEWS' ? 'pill-cyan' : 'pill-purple'}">${r.category}</span>
+          <span class="mono muted" style="font-size:0.75rem;">${r.createdAt}</span>
+        </div>
+        <strong>${escapeHtml(r.title)}</strong>
+        <p class="muted" style="margin-top:0.3rem;">${escapeHtml(r.summary)}</p>
+      </div>`
+      )
+      .join('');
+
+    const dashMeetings = document.getElementById('dashMeetingsList');
+    dashMeetings.innerHTML = db.meetings
+      .slice(0, 3)
+      .map(
+        (m) => `
+      <div class="list-item">
+        <div style="display:flex;justify-content:space-between;margin-bottom:0.35rem;">
+          <span class="pill pill-green">LIVE SESSION</span>
+          <span class="mono" style="font-size:0.75rem;color:var(--cyan);">${m.date.replace('T', ' ')}</span>
+        </div>
+        <strong>${escapeHtml(m.title)}</strong>
+        <p class="muted" style="margin:0.3rem 0 0.6rem;">Host: ${escapeHtml(m.host)}</p>
+        <a href="${escapeAttr(m.link)}" target="_blank" rel="noopener" class="btn btn-primary btn-sm">JOIN ROOM</a>
+      </div>`
+      )
+      .join('');
+  }
+
+  function toEmbedUrl(url) {
+    if (!url) return '';
+    if (url.includes('youtube.com/watch?v=')) {
+      const id = url.split('v=')[1].split('&')[0];
+      return `https://www.youtube.com/embed/${id}`;
+    }
+    if (url.includes('youtu.be/')) {
+      const id = url.split('youtu.be/')[1].split('?')[0];
+      return `https://www.youtube.com/embed/${id}`;
+    }
+    return url;
+  }
+
+  function renderLessons() {
+    const grid = document.getElementById('lessonsGrid');
+    const items = lessonFilter === 'ALL' ? db.lessons : db.lessons.filter((l) => l.type === lessonFilter);
+
+    grid.innerHTML = items
+      .map(
+        (l) => `
+      <article class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+          <span class="pill pill-cyan">${escapeHtml(l.type)}</span>
+          <span class="mono muted" style="font-size:0.74rem;">${escapeHtml(l.domain)}</span>
+        </div>
+        <h3>${escapeHtml(l.title)}</h3>
+        <div class="video-frame">
+          <iframe src="${escapeAttr(toEmbedUrl(l.url))}" title="${escapeAttr(l.title)}" allowfullscreen></iframe>
+        </div>
+        <p class="muted">${escapeHtml(l.desc)}</p>
+        <div class="mono" style="font-size:0.75rem;margin-top:0.65rem;color:var(--cyan);">Instructor: ${escapeHtml(l.instructor)}</div>
+      </article>`
+      )
+      .join('');
+  }
+
+  document.querySelectorAll('[data-lesson-filter]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-lesson-filter]').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      lessonFilter = btn.dataset.lessonFilter;
+      renderLessons();
+    });
+  });
+
+  function renderIntel() {
+    const grid = document.getElementById('intelGrid');
+    const items = intelFilter === 'ALL' ? db.reports : db.reports.filter((r) => r.category === intelFilter);
+
+    grid.innerHTML = items
+      .map(
+        (r) => `
+      <article class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.6rem;">
+          <div>
+            <span class="pill ${r.category === 'NEWS' ? 'pill-cyan' : 'pill-purple'}">${r.category} REPORT</span>
+            <span class="pill pill-green" style="margin-left:0.4rem;">${escapeHtml(r.domain)}</span>
+          </div>
+          <span class="mono muted" style="font-size:0.76rem;">By ${escapeHtml(r.author)} • ${r.createdAt}</span>
+        </div>
+        <h3>${escapeHtml(r.title)}</h3>
+        <p style="margin:0.65rem 0;line-height:1.6;color:#d6e4ff;">${escapeHtml(r.content)}</p>
+        <div style="display:flex;gap:0.75rem;align-items:center;margin-top:0.85rem;">
+          ${r.refLink ? `<a href="${escapeAttr(r.refLink)}" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">OPEN REFERENCE</a>` : ''}
+          <button type="button" class="btn btn-primary btn-sm" data-jump-quiz="true">ATTEMPT RELATED QUIZ &rarr;</button>
+        </div>
+      </article>`
+      )
+      .join('');
+
+    grid.querySelectorAll('[data-jump-quiz]').forEach((btn) => {
+      btn.addEventListener('click', () => switchView('quizzes'));
+    });
+  }
+
+  document.querySelectorAll('[data-intel-filter]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-intel-filter]').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      intelFilter = btn.dataset.intelFilter;
+      renderIntel();
+    });
+  });
+
+  /* ============================================================================
+     7. INTERACTIVE STUDENT QUIZ ENGINE
+     ============================================================================ */
+  function renderQuizzes() {
+    const catalog = document.getElementById('quizCatalog');
+    const activeBox = document.getElementById('activeQuizBox');
+    catalog.classList.remove('hidden');
+    activeBox.classList.add('hidden');
+
+    catalog.innerHTML = db.quizzes
+      .map((q) => {
+        const done = currentUser.completedQuizzes && currentUser.completedQuizzes.includes(q.id);
+        return `
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
+            <span class="pill pill-purple">${escapeHtml(q.domain)}</span>
+            <span class="mono" style="color:var(--emerald);font-size:0.78rem;">+${q.xp} XP</span>
+          </div>
+          <h3>${escapeHtml(q.title)}</h3>
+          <p class="muted" style="margin:0.5rem 0 1rem;">${q.questions.length} Question(s) • Verifies ${escapeHtml(q.domain)} ability</p>
+          <button type="button" class="btn ${done ? 'btn-ghost' : 'btn-primary'} full-width" data-start-quiz="${q.id}">
+            ${done ? 'RETAKE ASSESSMENT' : 'START QUIZ'}
+          </button>
+        </div>`;
+      })
+      .join('');
+
+    catalog.querySelectorAll('[data-start-quiz]').forEach((btn) => {
+      btn.addEventListener('click', () => startQuiz(btn.dataset.startQuiz));
+    });
+  }
+
+  function startQuiz(quizId) {
+    const quiz = db.quizzes.find((q) => q.id === quizId);
+    if (!quiz) return;
+
+    const catalog = document.getElementById('quizCatalog');
+    const activeBox = document.getElementById('activeQuizBox');
+    catalog.classList.add('hidden');
+    activeBox.classList.remove('hidden');
+
+    let qIndex = 0;
+    let correctCount = 0;
+
+    function renderQuestion() {
+      const item = quiz.questions[qIndex];
+      activeBox.innerHTML = `
+        <div class="card-header">
+          <div>
+            <span class="pill pill-cyan">QUESTION ${qIndex + 1} OF ${quiz.questions.length}</span>
+            <h3 style="margin-top:0.5rem;">${escapeHtml(item.q)}</h3>
+          </div>
+          <button type="button" id="abortQuizBtn" class="btn btn-ghost btn-sm">EXIT</button>
+        </div>
+        <div>
+          ${item.options
+            .map(
+              (opt, i) =>
+                `<button type="button" class="quiz-option" data-opt="${i}"><strong>${String.fromCharCode(65 + i)}.</strong> ${escapeHtml(opt)}</button>`
+            )
+            .join('')}
+        </div>`;
+
+      document.getElementById('abortQuizBtn').addEventListener('click', renderQuizzes);
+      activeBox.querySelectorAll('.quiz-option').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (Number(btn.dataset.opt) === item.correct) correctCount++;
+          qIndex++;
+          if (qIndex < quiz.questions.length) {
+            renderQuestion();
+          } else {
+            finishQuiz();
+          }
+        });
       });
-
-      card.append(title, category, description, watchButton);
-      list.appendChild(card);
-    });
-
-  } catch (error) {
-    message.textContent = error.message;
-  }
-}
-
-
-// Play an individual published lesson
-async function playStudentVideo(id, title, button) {
-  const player = document.getElementById('studentVideoPlayer');
-
-  if (!player) return;
-
-  player.replaceChildren();
-
-  const heading = document.createElement('h3');
-  heading.textContent = title;
-
-  const message = document.createElement('p');
-  message.textContent = 'Authorizing secure video playback...';
-
-  player.append(heading, message);
-
-  button.disabled = true;
-
-  try {
-    const data = await api(
-      `/api/videos/${encodeURIComponent(id)}/access`,
-      {
-        method: 'POST',
-        body: JSON.stringify({})
-      }
-    );
-
-    const video = document.createElement('video');
-
-    video.controls = true;
-    video.preload = 'metadata';
-    video.playsInline = true;
-    video.style.width = '100%';
-    video.style.maxWidth = '900px';
-    video.style.borderRadius = '12px';
-    video.style.background = '#000';
-    video.src = data.videoUrl;
-
-    message.textContent = 'Your lesson is ready.';
-
-    player.appendChild(video);
-    video.load();
-
-    player.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-    });
-
-  } catch (error) {
-    message.textContent = error.message;
-  } finally {
-    button.disabled = false;
-  }
-}
-
-
-// Navigation and refresh
-document.querySelector('[data-view="videos"]')
-  ?.addEventListener('click', loadStudentVideos);
-
-document.getElementById('refreshStudentVideos')
-  ?.addEventListener('click', loadStudentVideos);
-
-
-// =================================
-// STUDENT MEETING CENTER
-// =================================
-
-const studentMeetingsList =
-  document.getElementById('studentMeetingsList');
-
-const studentMeetingsMessage =
-  document.getElementById('studentMeetingsMessage');
-
-const studentNotificationsList =
-  document.getElementById('studentNotificationsList');
-
-const studentNotificationsMessage =
-  document.getElementById('studentNotificationsMessage');
-
-
-// Load student meeting invitations
-async function loadStudentMeetings() {
-  if (!studentMeetingsList) return;
-
-  studentMeetingsList.replaceChildren();
-  studentMeetingsMessage.textContent =
-    'Loading your meeting invitations...';
-
-  try {
-    const data = await api('/api/student/meetings');
-
-    if (!data.meetings || data.meetings.length === 0) {
-      studentMeetingsMessage.textContent =
-        'You have no meeting invitations yet.';
-      return;
     }
 
-    studentMeetingsMessage.textContent =
-      `${data.meetings.length} meeting(s) found.`;
-
-    data.meetings.forEach(meeting => {
-      const card = document.createElement('article');
-      card.className = 'card studentMeetingCard';
-
-      const title = document.createElement('h3');
-      title.textContent = meeting.title;
-
-      const description = document.createElement('p');
-      description.textContent =
-        meeting.description || 'No description available.';
-
-      const date = document.createElement('p');
-      date.textContent =
-        new Date(meeting.scheduled_at).toLocaleString();
-
-      const duration = document.createElement('p');
-      duration.textContent =
-        `${meeting.duration_minutes} minutes`;
-
-      const status = document.createElement('span');
-      status.className = 'status';
-      status.textContent =
-        `MEETING: ${meeting.meeting_status.toUpperCase()} · ` +
-        `INVITATION: ${meeting.invitation_status.toUpperCase()}`;
-
-      card.append(title, description, date, duration, status);
-
-      if (meeting.meeting_url &&
-          meeting.meeting_status === 'scheduled') {
-        const link = document.createElement('a');
-
-        link.href = meeting.meeting_url;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.textContent = 'OPEN MEETING LINK';
-
-        card.appendChild(link);
-      }
-
-      if (
-        meeting.meeting_status === 'scheduled' &&
-        meeting.invitation_status === 'pending'
-      ) {
-        const actions = document.createElement('div');
-        actions.className = 'meetingResponseActions';
-
-        ['accepted', 'declined'].forEach(response => {
-          const button = document.createElement('button');
-
-          button.className = 'btn';
-          button.textContent =
-            response === 'accepted' ? 'ACCEPT' : 'DECLINE';
-
-          button.addEventListener('click', async () => {
-            if (
-              response === 'declined' &&
-              !confirm('Decline this meeting invitation?')
-            ) {
-              return;
-            }
-
-            button.disabled = true;
-
-            try {
-              await api(
-                `/api/student/meetings/${encodeURIComponent(meeting.id)}/respond`,
-                {
-                  method: 'PATCH',
-                  body: JSON.stringify({ status: response })
-                }
-              );
-
-              await loadStudentMeetings();
-
-            } catch (error) {
-              alert(error.message);
-              button.disabled = false;
-            }
-          });
-
-          actions.appendChild(button);
-        });
-
-        card.appendChild(actions);
-      }
-
-      studentMeetingsList.appendChild(card);
-    });
-
-  } catch (error) {
-    studentMeetingsMessage.textContent = error.message;
-  }
-}
-
-
-// Load in-app meeting notifications
-async function loadStudentMeetingNotifications() {
-  if (!studentNotificationsList) return;
-
-  studentNotificationsList.replaceChildren();
-
-  studentNotificationsMessage.textContent =
-    'Loading notifications...';
-
-  try {
-    const data = await api('/api/student/notifications');
-
-    if (!data.notifications || data.notifications.length === 0) {
-      studentNotificationsMessage.textContent =
-        'No notifications available.';
-      return;
-    }
-
-    studentNotificationsMessage.textContent =
-      `${data.notifications.length} notification(s).`;
-
-    data.notifications.forEach(notification => {
-      const card = document.createElement('article');
-      card.className = 'card studentNotificationCard';
-
-      const title = document.createElement('h4');
-      title.textContent = notification.title;
-
-      const message = document.createElement('p');
-      message.textContent = notification.message;
-
-      const date = document.createElement('small');
-      date.textContent =
-        new Date(notification.created_at).toLocaleString();
-
-      card.append(title, message, date);
-
-      if (!notification.is_read) {
-        const button = document.createElement('button');
-
-        button.className = 'btn';
-        button.textContent = 'MARK AS READ';
-
-        button.addEventListener('click', async () => {
-          button.disabled = true;
-
-          try {
-            await api(
-              `/api/student/notifications/${encodeURIComponent(notification.id)}/read`,
-              { method: 'PATCH' }
-            );
-
-            await loadStudentMeetingNotifications();
-
-          } catch (error) {
-            alert(error.message);
-            button.disabled = false;
+    function finishQuiz() {
+      const pct = Math.round((correctCount / quiz.questions.length) * 100);
+      if (currentUser.role === 'student') {
+        const stu = db.users.find((u) => u.id === currentUser.id);
+        if (stu) {
+          if (!stu.completedQuizzes.includes(quiz.id)) {
+            stu.completedQuizzes.push(quiz.id);
+            stu.xp += quiz.xp;
           }
-        });
-
-        card.appendChild(button);
-      } else {
-        const readStatus = document.createElement('span');
-        readStatus.textContent = 'READ';
-        readStatus.className = 'status';
-        card.appendChild(readStatus);
-      }
-
-      studentNotificationsList.appendChild(card);
-    });
-
-  } catch (error) {
-    studentNotificationsMessage.textContent = error.message;
-  }
-}
-
-
-// Refresh controls and navigation
-document
-  .querySelector('[data-view="meetings"]')
-  ?.addEventListener('click', () => {
-    loadStudentMeetings();
-    loadStudentMeetingNotifications();
-  });
-
-document
-  .getElementById('refreshStudentMeetings')
-  ?.addEventListener('click', () => {
-    loadStudentMeetings();
-    loadStudentMeetingNotifications();
-  });
-
-// =================================
-// CYBER//QUEST ANIMATED MESH CANVAS
-// =================================
-(function initCyberBackground() {
-  const canvas = document.getElementById('cyberBgCanvas');
-  if (!canvas) return;
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-  const ctx = canvas.getContext('2d');
-  let width = 0;
-  let height = 0;
-  let dpr = Math.min(window.devicePixelRatio || 1, 2);
-  let nodes = [];
-  let pulses = [];
-  let animId = null;
-  const mouse = { x: -9999, y: -9999 };
-
-  function resize() {
-    width = window.innerWidth;
-    height = window.innerHeight;
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    const targetCount = Math.min(75, Math.max(28, Math.floor((width * height) / 22000)));
-    nodes = Array.from({ length: targetCount }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.42,
-      vy: (Math.random() - 0.5) * 0.42,
-      r: Math.random() * 1.6 + 1.2,
-      hub: Math.random() < 0.16
-    }));
-    pulses = [];
-  }
-
-  window.addEventListener('resize', resize);
-  window.addEventListener('mousemove', e => {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
-  }, { passive: true });
-  window.addEventListener('mouseleave', () => {
-    mouse.x = -9999;
-    mouse.y = -9999;
-  });
-
-  function step() {
-    ctx.clearRect(0, 0, width, height);
-
-    // Subtle tactical grid overlay
-    ctx.strokeStyle = 'rgba(54, 242, 178, 0.032)';
-    ctx.lineWidth = 1;
-    const grid = 64;
-    for (let x = 0; x < width; x += grid) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
-      ctx.stroke();
-    }
-    for (let y = 0; y < height; y += grid) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
-    }
-
-    const maxDist = 145;
-
-    // Update & draw nodes
-    for (let i = 0; i < nodes.length; i++) {
-      const a = nodes[i];
-      a.x += a.vx;
-      a.y += a.vy;
-
-      if (a.x < 0 || a.x > width) a.vx *= -1;
-      if (a.y < 0 || a.y > height) a.vy *= -1;
-
-      // Gentle cursor repulsion
-      const mdx = a.x - mouse.x;
-      const mdy = a.y - mouse.y;
-      const mDist = Math.hypot(mdx, mdy);
-      if (mDist < 120 && mDist > 0) {
-        a.x += (mdx / mDist) * 0.6;
-        a.y += (mdy / mDist) * 0.6;
-      }
-
-      // Connect nearby nodes
-      for (let j = i + 1; j < nodes.length; j++) {
-        const b = nodes[j];
-        const dist = Math.hypot(a.x - b.x, a.y - b.y);
-        if (dist < maxDist) {
-          const alpha = (1 - dist / maxDist) * 0.22;
-          ctx.strokeStyle = `rgba(54, 242, 178, ${alpha.toFixed(3)})`;
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.stroke();
-
-          // Occasionally spawn a data packet pulse along an active link
-          if (pulses.length < 18 && Math.random() < 0.0006) {
-            pulses.push({ from: a, to: b, t: 0, speed: 0.015 + Math.random() * 0.015 });
-          }
+          const prev = stu.domainScores[quiz.domain] || 50;
+          stu.domainScores[quiz.domain] = Math.min(100, Math.round((prev + pct) / 2));
+          saveState();
         }
       }
 
-      // Draw node
-      ctx.beginPath();
-      ctx.arc(a.x, a.y, a.hub ? a.r + 1.1 : a.r, 0, Math.PI * 2);
-      ctx.fillStyle = a.hub ? 'rgba(54, 242, 178, 0.75)' : 'rgba(108, 124, 255, 0.55)';
-      ctx.fill();
+      activeBox.innerHTML = `
+        <h3>Assessment Complete: ${escapeHtml(quiz.title)}</h3>
+        <p style="font-size:1.2rem;margin:0.75rem 0;">Score: <strong class="accent">${correctCount}/${quiz.questions.length} (${pct}%)</strong></p>
+        <p class="muted" style="margin-bottom:1.25rem;">Your ${escapeHtml(quiz.domain)} ability telemetry and XP have been updated.</p>
+        <button type="button" id="doneQuizBtn" class="btn btn-primary">RETURN TO QUIZZES</button>`;
 
-      if (a.hub) {
-        ctx.beginPath();
-        ctx.arc(a.x, a.y, a.r + 5, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(54, 242, 178, 0.16)';
-        ctx.stroke();
-      }
+      document.getElementById('doneQuizBtn').addEventListener('click', refreshAllUI);
     }
 
-    // Draw traveling packet pulses
-    for (let i = pulses.length - 1; i >= 0; i--) {
-      const p = pulses[i];
-      p.t += p.speed;
-      if (p.t >= 1) {
-        pulses.splice(i, 1);
-        continue;
-      }
-      const px = p.from.x + (p.to.x - p.from.x) * p.t;
-      const py = p.from.y + (p.to.y - p.from.y) * p.t;
-      ctx.beginPath();
-      ctx.arc(px, py, 2.2, 0, Math.PI * 2);
-      ctx.fillStyle = '#36f2b2';
-      ctx.fill();
-    }
-
-    animId = requestAnimationFrame(step);
+    renderQuestion();
   }
 
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden && animId) {
-      cancelAnimationFrame(animId);
-      animId = null;
-    } else if (!document.hidden && !animId) {
-      animId = requestAnimationFrame(step);
-    }
-  });
+  /* ============================================================================
+     8. STUDENT ABILITY RADAR & LEADERBOARD
+     ============================================================================ */
+  function renderAbilitiesAndLeaderboard() {
+    const scores = currentUser.domainScores || {};
+    const labels = Object.keys(scores);
+    const values = Object.values(scores);
 
-  resize();
-  step();
-})();
+    // Draw Radar Chart
+    const canvas = document.getElementById('abilityRadarCanvas');
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+    const cx = w / 2;
+    const cy = h / 2;
+    const radius = 105;
 
-// =================================
-// CYBER//QUEST ANIMATED BACKGROUND & SETTINGS CONTROL
-// =================================
-(function initCyberBackground() {
-  const canvas = document.getElementById('cyberBgCanvas');
-  if (!canvas) return;
+    ctx.clearRect(0, 0, w, h);
 
-  const ctx = canvas.getContext('2d');
-  const toggleBtn = document.getElementById('bgToggleBtn');
-  const styleBtn = document.getElementById('bgStyleBtn');
-
-  const STYLES = ['MESH', 'MATRIX', 'RADAR'];
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  let enabled = localStorage.getItem('cq_bg_enabled') !== null
-    ? localStorage.getItem('cq_bg_enabled') === 'true'
-    : !prefersReduced;
-  let currentStyle = STYLES.includes(localStorage.getItem('cq_bg_style'))
-    ? localStorage.getItem('cq_bg_style')
-    : 'MESH';
-
-  let width = 0;
-  let height = 0;
-  let dpr = Math.min(window.devicePixelRatio || 1, 2);
-  let animId = null;
-
-  // State for MESH
-  let nodes = [];
-  let pulses = [];
-  const mouse = { x: -9999, y: -9999 };
-
-  // State for MATRIX
-  let drops = [];
-  const glyphs = '0123456789ABCDEF⌬◈⌁';
-
-  // State for RADAR
-  let radarAngle = 0;
-
-  function syncControls() {
-    document.body.classList.toggle('bg-off', !enabled);
-    if (toggleBtn) toggleBtn.textContent = enabled ? 'PAUSE MOTION' : 'ENABLE MOTION';
-    if (styleBtn) styleBtn.textContent = `STYLE: ${currentStyle}`;
-  }
-
-  function resize() {
-    width = window.innerWidth;
-    height = window.innerHeight;
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    // Init MESH
-    const targetCount = Math.min(75, Math.max(28, Math.floor((width * height) / 22000)));
-    nodes = Array.from({ length: targetCount }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.42,
-      vy: (Math.random() - 0.5) * 0.42,
-      r: Math.random() * 1.6 + 1.2,
-      hub: Math.random() < 0.16
-    }));
-    pulses = [];
-
-    // Init MATRIX
-    const colWidth = 22;
-    const cols = Math.ceil(width / colWidth);
-    drops = Array.from({ length: cols }, () => Math.random() * -40);
-  }
-
-  function drawGrid() {
-    ctx.strokeStyle = 'rgba(54, 242, 178, 0.032)';
-    ctx.lineWidth = 1;
-    const grid = 64;
-    for (let x = 0; x < width; x += grid) {
+    // Web rings
+    for (let ring = 1; ring <= 4; ring++) {
       ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
-      ctx.stroke();
-    }
-    for (let y = 0; y < height; y += grid) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
-    }
-  }
-
-  function renderMesh() {
-    drawGrid();
-    const maxDist = 145;
-
-    for (let i = 0; i < nodes.length; i++) {
-      const a = nodes[i];
-      a.x += a.vx;
-      a.y += a.vy;
-
-      if (a.x < 0 || a.x > width) a.vx *= -1;
-      if (a.y < 0 || a.y > height) a.vy *= -1;
-
-      const mdx = a.x - mouse.x;
-      const mdy = a.y - mouse.y;
-      const mDist = Math.hypot(mdx, mdy);
-      if (mDist < 120 && mDist > 0) {
-        a.x += (mdx / mDist) * 0.6;
-        a.y += (mdy / mDist) * 0.6;
-      }
-
-      for (let j = i + 1; j < nodes.length; j++) {
-        const b = nodes[j];
-        const dist = Math.hypot(a.x - b.x, a.y - b.y);
-        if (dist < maxDist) {
-          const alpha = (1 - dist / maxDist) * 0.22;
-          ctx.strokeStyle = `rgba(54, 242, 178, ${alpha.toFixed(3)})`;
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.stroke();
-
-          if (pulses.length < 18 && Math.random() < 0.0006) {
-            pulses.push({ from: a, to: b, t: 0, speed: 0.015 + Math.random() * 0.015 });
-          }
-        }
-      }
-
-      ctx.beginPath();
-      ctx.arc(a.x, a.y, a.hub ? a.r + 1.1 : a.r, 0, Math.PI * 2);
-      ctx.fillStyle = a.hub ? 'rgba(54, 242, 178, 0.75)' : 'rgba(108, 124, 255, 0.55)';
-      ctx.fill();
-
-      if (a.hub) {
-        ctx.beginPath();
-        ctx.arc(a.x, a.y, a.r + 5, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(54, 242, 178, 0.16)';
-        ctx.stroke();
-      }
-    }
-
-    for (let i = pulses.length - 1; i >= 0; i--) {
-      const p = pulses[i];
-      p.t += p.speed;
-      if (p.t >= 1) {
-        pulses.splice(i, 1);
-        continue;
-      }
-      const px = p.from.x + (p.to.x - p.from.x) * p.t;
-      const py = p.from.y + (p.to.y - p.from.y) * p.t;
-      ctx.beginPath();
-      ctx.arc(px, py, 2.2, 0, Math.PI * 2);
-      ctx.fillStyle = '#36f2b2';
-      ctx.fill();
-    }
-  }
-
-  function renderMatrix() {
-    ctx.font = '12px monospace';
-    const colWidth = 22;
-    for (let i = 0; i < drops.length; i++) {
-      const x = i * colWidth + 6;
-      const y = drops[i] * 18;
-      const ch = glyphs[Math.floor(Math.random() * glyphs.length)];
-
-      ctx.fillStyle = 'rgba(54, 242, 178, 0.34)';
-      ctx.fillText(ch, x, y);
-
-      ctx.fillStyle = 'rgba(54, 242, 178, 0.12)';
-      ctx.fillText(glyphs[Math.floor(Math.random() * glyphs.length)], x, y - 18);
-
-      if (y > height && Math.random() > 0.975) {
-        drops[i] = 0;
-      } else {
-        drops[i] += 0.35;
-      }
-    }
-  }
-
-  function renderRadar() {
-    drawGrid();
-    const cx = width * 0.74;
-    const cy = height * 0.45;
-    const maxR = Math.min(width, height) * 0.42;
-
-    for (let r = 80; r <= maxR; r += 85) {
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(54, 242, 178, 0.11)';
-      ctx.lineWidth = 1;
+      labels.forEach((_, i) => {
+        const angle = (Math.PI * 2 * i) / labels.length - Math.PI / 2;
+        const r = (radius * ring) / 4;
+        const x = cx + Math.cos(angle) * r;
+        const y = cy + Math.sin(angle) * r;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.closePath();
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.18)';
       ctx.stroke();
     }
 
-    // Sweep line
-    const sx = cx + Math.cos(radarAngle) * maxR;
-    const sy = cy + Math.sin(radarAngle) * maxR;
+    // Data polygon
     ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(sx, sy);
-    ctx.strokeStyle = 'rgba(54, 242, 178, 0.42)';
-    ctx.lineWidth = 1.5;
+    values.forEach((val, i) => {
+      const angle = (Math.PI * 2 * i) / labels.length - Math.PI / 2;
+      const r = (radius * val) / 100;
+      const x = cx + Math.cos(angle) * r;
+      const y = cy + Math.sin(angle) * r;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(0, 240, 255, 0.24)';
+    ctx.fill();
+    ctx.strokeStyle = '#00f0ff';
+    ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Soft sweep sector
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, maxR, radarAngle - 0.35, radarAngle);
-    ctx.closePath();
-    ctx.fillStyle = 'rgba(54, 242, 178, 0.05)';
-    ctx.fill();
+    // Axis labels
+    ctx.fillStyle = '#e6f1ff';
+    ctx.font = '11px JetBrains Mono, monospace';
+    labels.forEach((lbl, i) => {
+      const angle = (Math.PI * 2 * i) / labels.length - Math.PI / 2;
+      const x = cx + Math.cos(angle) * (radius + 26);
+      const y = cy + Math.sin(angle) * (radius + 18);
+      ctx.textAlign = 'center';
+      ctx.fillText(lbl.split(' ')[0], x, y);
+    });
 
-    radarAngle = (radarAngle + 0.012) % (Math.PI * 2);
+    // Bars
+    document.getElementById('abilityBars').innerHTML = labels
+      .map(
+        (lbl) => `
+      <div>
+        <div class="ability-row-top">
+          <span>${escapeHtml(lbl)}</span>
+          <span class="mono accent">${scores[lbl]}%</span>
+        </div>
+        <div class="ability-track"><div class="ability-fill" style="width:${scores[lbl]}%"></div></div>
+      </div>`
+      )
+      .join('');
+
+    // Leaderboard
+    const students = db.users
+      .filter((u) => u.role === 'student')
+      .sort((a, b) => (b.xp || 0) - (a.xp || 0));
+
+    document.getElementById('leaderboardBody').innerHTML = students
+      .map((s, idx) => {
+        const sVals = Object.values(s.domainScores || {});
+        const avg = sVals.length ? Math.round(sVals.reduce((a, b) => a + b, 0) / sVals.length) : 0;
+        return `
+        <tr>
+          <td class="mono">#${idx + 1}</td>
+          <td><strong>${escapeHtml(s.name)}</strong> <span class="muted mono">(${escapeHtml(s.id)})</span></td>
+          <td>${s.completedQuizzes.length}</td>
+          <td class="accent mono">${avg}%</td>
+          <td class="mono">${s.xp} XP</td>
+        </tr>`;
+      })
+      .join('');
   }
 
-  function step() {
-    if (!enabled) {
-      animId = null;
-      return;
-    }
-    ctx.clearRect(0, 0, width, height);
-
-    if (currentStyle === 'MATRIX') renderMatrix();
-    else if (currentStyle === 'RADAR') renderRadar();
-    else renderMesh();
-
-    animId = requestAnimationFrame(step);
+  /* ============================================================================
+     9. MEETINGS, TEAM REPORT UPLOAD & ADMIN/PROFESSOR CONSOLE
+     ============================================================================ */
+  function renderMeetings() {
+    document.getElementById('meetingsGrid').innerHTML = db.meetings
+      .map(
+        (m) => `
+      <article class="card">
+        <span class="pill pill-green">SCHEDULED SESSION</span>
+        <h3 style="margin:0.6rem 0 0.35rem;">${escapeHtml(m.title)}</h3>
+        <div class="mono accent" style="font-size:0.8rem;margin-bottom:0.5rem;">${m.date.replace('T', ' @ ')}</div>
+        <p class="muted" style="margin-bottom:0.85rem;">${escapeHtml(m.agenda)}</p>
+        <div class="mono muted" style="font-size:0.75rem;margin-bottom:0.85rem;">Host: ${escapeHtml(m.host)}</div>
+        <a href="${escapeAttr(m.link)}" target="_blank" rel="noopener" class="btn btn-primary full-width">LAUNCH MEETING ROOM</a>
+      </article>`
+      )
+      .join('');
   }
 
-  function start() {
-    if (!animId && enabled && !document.hidden) {
-      animId = requestAnimationFrame(step);
-    }
+  document.getElementById('reportUploadForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const category = document.getElementById('repCategory').value;
+    const domain = document.getElementById('repDomain').value;
+    const title = document.getElementById('repTitle').value.trim();
+    const summary = document.getElementById('repSummary').value.trim();
+    const content = document.getElementById('repContent').value.trim();
+    const refLink = document.getElementById('repRefLink').value.trim();
+
+    db.reports.unshift({
+      id: `rep-${Date.now()}`,
+      category,
+      domain,
+      title,
+      summary,
+      content,
+      author: `${currentUser.name} (${currentUser.role.toUpperCase()})`,
+      role: currentUser.role,
+      refLink,
+      createdAt: new Date().toISOString().slice(0, 10),
+    });
+    saveState();
+    e.target.reset();
+    if (currentUser.role === 'news') document.getElementById('repCategory').value = 'NEWS';
+    if (currentUser.role === 'research') document.getElementById('repCategory').value = 'RESEARCH';
+    refreshAllUI();
+    switchView('intel');
+  });
+
+  function renderTeamStudioReports() {
+    const container = document.getElementById('teamManageReportsList');
+    if (!container) return;
+
+    container.innerHTML = db.reports
+      .map(
+        (r) => `
+      <div class="list-item" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
+        <div>
+          <span class="pill ${r.category === 'NEWS' ? 'pill-cyan' : 'pill-purple'}">${r.category}</span>
+          <strong style="margin-left:0.5rem;">${escapeHtml(r.title)}</strong>
+          <div class="muted" style="font-size:0.78rem;margin-top:0.25rem;">By ${escapeHtml(r.author)} • ${r.createdAt}</div>
+        </div>
+        ${
+          currentUser.role === 'admin' || currentUser.role === 'professor' || r.role === currentUser.role
+            ? `<button type="button" class="btn btn-danger btn-sm" data-del-rep="${r.id}">DELETE</button>`
+            : ''
+        }
+      </div>`
+      )
+      .join('');
+
+    container.querySelectorAll('[data-del-rep]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        db.reports = db.reports.filter((r) => r.id !== btn.dataset.delRep);
+        saveState();
+        refreshAllUI();
+      });
+    });
   }
 
-  function stop() {
-    if (animId) {
-      cancelAnimationFrame(animId);
-      animId = null;
-    }
-    ctx.clearRect(0, 0, width, height);
+  function renderAdminConsole() {
+    if (currentUser.role !== 'admin' && currentUser.role !== 'professor') return;
+
+    document.getElementById('cfgNewsKey').value = db.accessKeys.news;
+    document.getElementById('cfgResearchKey').value = db.accessKeys.research;
+    document.getElementById('cfgProfKey').value = db.accessKeys.professor;
+    document.getElementById('cfgAdminKey').value = db.accessKeys.admin;
+
+    const roster = document.getElementById('adminStudentRoster');
+    const students = db.users.filter((u) => u.role === 'student');
+    roster.innerHTML = students
+      .map(
+        (s) => `
+      <div class="list-item" style="display:flex;justify-content:space-between;align-items:center;gap:0.75rem;">
+        <div>
+          <strong>${escapeHtml(s.name)}</strong> <span class="mono muted">(${escapeHtml(s.id)})</span>
+          <div class="mono" style="font-size:0.75rem;color:var(--cyan);">XP: ${s.xp} • Quizzes: ${s.completedQuizzes.length}</div>
+        </div>
+        <button type="button" class="btn btn-danger btn-sm" data-del-stu="${escapeAttr(s.id)}">REMOVE</button>
+      </div>`
+      )
+      .join('');
+
+    roster.querySelectorAll('[data-del-stu]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        db.users = db.users.filter((u) => u.id !== btn.dataset.delStu);
+        saveState();
+        refreshAllUI();
+      });
+    });
   }
 
-  toggleBtn?.addEventListener('click', () => {
-    enabled = !enabled;
-    localStorage.setItem('cq_bg_enabled', String(enabled));
-    syncControls();
-    if (enabled) start();
-    else stop();
+  document.getElementById('addLessonForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    db.lessons.unshift({
+      id: `les-${Date.now()}`,
+      title: document.getElementById('lesTitle').value.trim(),
+      type: document.getElementById('lesType').value,
+      domain: document.getElementById('lesDomain').value,
+      instructor: document.getElementById('lesInstructor').value.trim(),
+      url: document.getElementById('lesUrl').value.trim(),
+      desc: document.getElementById('lesDesc').value.trim(),
+    });
+    saveState();
+    e.target.reset();
+    refreshAllUI();
+    switchView('lessons');
   });
 
-  styleBtn?.addEventListener('click', () => {
-    const nextIdx = (STYLES.indexOf(currentStyle) + 1) % STYLES.length;
-    currentStyle = STYLES[nextIdx];
-    localStorage.setItem('cq_bg_style', currentStyle);
-    syncControls();
-    if (!enabled) {
-      enabled = true;
-      localStorage.setItem('cq_bg_enabled', 'true');
-      syncControls();
-      start();
-    }
+  document.getElementById('addMeetingForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    db.meetings.unshift({
+      id: `mtg-${Date.now()}`,
+      title: document.getElementById('mtgTitle').value.trim(),
+      date: document.getElementById('mtgDate').value,
+      host: document.getElementById('mtgHost').value.trim(),
+      link: document.getElementById('mtgLink').value.trim(),
+      agenda: document.getElementById('mtgAgenda').value.trim(),
+    });
+    saveState();
+    e.target.reset();
+    refreshAllUI();
+    switchView('meetings');
   });
 
-  window.addEventListener('resize', resize);
-  window.addEventListener('mousemove', e => {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
-  }, { passive: true });
-  window.addEventListener('mouseleave', () => {
-    mouse.x = -9999;
-    mouse.y = -9999;
+  document.getElementById('addQuizForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    db.quizzes.unshift({
+      id: `qz-${Date.now()}`,
+      title: document.getElementById('qzTitle').value.trim(),
+      domain: document.getElementById('qzDomain').value,
+      xp: Number(document.getElementById('qzXp').value) || 100,
+      questions: [
+        {
+          q: document.getElementById('qzQuestion').value.trim(),
+          options: [
+            document.getElementById('qzOpt0').value.trim(),
+            document.getElementById('qzOpt1').value.trim(),
+            document.getElementById('qzOpt2').value.trim(),
+            document.getElementById('qzOpt3').value.trim(),
+          ],
+          correct: Number(document.getElementById('qzCorrect').value),
+        },
+      ],
+    });
+    saveState();
+    e.target.reset();
+    refreshAllUI();
+    switchView('quizzes');
   });
 
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      if (animId) {
-        cancelAnimationFrame(animId);
-        animId = null;
-      }
-    } else {
-      start();
-    }
+  document.getElementById('updateKeysForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    db.accessKeys.news = document.getElementById('cfgNewsKey').value.trim();
+    db.accessKeys.research = document.getElementById('cfgResearchKey').value.trim();
+    db.accessKeys.professor = document.getElementById('cfgProfKey').value.trim();
+    db.accessKeys.admin = document.getElementById('cfgAdminKey').value.trim();
+    saveState();
+    alert('Club access keys updated successfully.');
   });
 
-  resize();
-  syncControls();
-  start();
+  /* ============================================================================
+     10. XSS SANITIZATION HELPERS & BOOTSTRAP
+     ============================================================================ */
+  function escapeHtml(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function escapeAttr(str) {
+    return escapeHtml(str).replace(/'/g, '&#39;');
+  }
+
+  bgEngine.setMode(bgEngine.getMode());
+  updateAuthFormUI();
+  runIntroSequence();
 })();

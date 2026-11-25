@@ -1,335 +1,472 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CYBER//QUEST</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="/style.css"></head><body>
-<canvas id="cyberBgCanvas" aria-hidden="true"></canvas>
-<div id="cyberIntro" class="cyberIntro" aria-hidden="true">
-  <div class="introGrid"></div><div class="introScan"></div>
-  <div class="introHud">
-    <span>SECURE BOOT // CYBER//QUEST</span><span id="introClock">00:00:00</span>
-  </div>
-  <div class="introCore">
-    <div class="introOrb"><div class="introRing ringA"></div><div class="introRing ringB"></div><div class="introShield">⌁</div></div>
-    <div class="introStatus" id="introStatus">INITIALIZING SECURE CONNECTION...</div>
-    <h1>CYBER<span>//</span>QUEST</h1>
-    <p>LEARN · PRACTICE · DEFEND</p>
-    <div class="introProgress"><span id="introProgressBar"></span></div>
-    <small id="introHint">SCANNING CYBER CITY...</small>
-    <button id="introEnter" class="introEnter">PRESS ENTER TO ENTER <b>CYBER//QUEST</b></button>
-  </div>
-  <div class="introLog" id="introLog"><div>&gt; Initializing learning environment...</div></div>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CYBER//QUEST — Private Cybersecurity Club Command Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="dark-theme">
+  <!-- Ambient Animated Background Canvas -->
+  <canvas id="cyberBgCanvas" aria-hidden="true"></canvas>
 
-<div id="auth" class="auth"><div class="authHero"><div class="brand">CYBER<span>//</span>QUEST</div><div class="orb"></div><span class="kicker">STUDENT CYBER ACADEMY</span><h1>ENTER THE<br><span>CYBER CITY.</span></h1><p>Learn cybersecurity through missions, animated examples and safe simulations.</p></div><div class="authBox"><div class="tabs"><button class="tab active" data-mode="login">SIGN IN</button><button class="tab" data-mode="register">CREATE ACCOUNT</button></div><form id="authForm"><label>EMAIL<input id="email" type="email" required placeholder="student@example.com"></label><label id="nameRow" class="hide">NAME<input id="name" placeholder="Your name"></label><label>PASSWORD<input id="password" type="password" required minlength="6" placeholder="••••••••"></label><button class="btn primary full" id="authSubmit">ENTER CYBER//QUEST →</button></form><div class="demo"><b>DEMO ACCOUNT</b><span>student@cyberquest.demo</span><span>Password: CyberQuest123</span><button id="demoBtn">USE DEMO</button></div><small>Passwords are hashed on the server. Never use a real password in a demo.</small></div></div>
-<div id="app" class="hide appShell">
-<aside class="sidebar">
-  <div class="sideBrand"><div class="sideLogo">⌁</div><div><b>CYBER<span>//</span>QUEST</b><small>STUDENT CYBER ACADEMY</small></div></div>
-  <div class="sideLabel">COMMAND CENTER</div>
-  <nav class="sideNav">
-    <button data-view="dashboard" class="active"><span>⌂</span> Dashboard</button>
-    <button data-view="youtube-hub"><span>▶</span> YouTube Classes</button>
-    <button data-view="city"><span>◈</span> Cyber City</button>
-    <button data-view="courses"><span>▤</span> Courses</button>
-    <button data-view="videos"><span>🎥</span> Video Lessons</button>
-    <button data-view="meetings"><span>📅</span> Meeting Center</button>
-    <button data-view="sessions"><span>◫</span> Cyber Sessions</button>
-    <button data-view="intelligence"><span>◉</span> Cyber Intelligence</button><button data-view="radar"><span>◎</span> Skill Radar</button><button data-view="recommendations"><span>🎯</span> Next Best Action</button><button data-view="analytics"><span>▥</span> Student Analytics</button><button data-view="missions"><span>⚔</span> Cyber Missions</button>
-    <button data-view="labs"><span>⌬</span> Cyber Labs</button>
-    <button data-view="puzzles"><span>🧩</span> Cyber Puzzles</button>
-    <button data-view="challenges"><span>⚡</span> Challenges</button>
-    <button data-view="achievements"><span>★</span> Achievements</button>
-    <button data-view="leaderboard"><span>♜</span> Leaderboard</button>
-    <button data-view="profile"><span>◉</span> My Profile</button>
-    <button data-view="certificate"><span>◇</span> Certificate</button>
-  </nav>
-  <div class="sideBottom"><button data-view="settings"><span>⚙</span> Settings</button><div class="sideStatus"><i></i><span>ACADEMY ONLINE</span></div></div>
-</aside>
-<header class="topbar">
-  <button id="sidebarToggle" class="sidebarToggle" type="button" aria-label="Open sidebar">☰</button>
-  <div class="mobileBrand"><span>CYBER<span>//</span>QUEST</span></div><div class="commandSearch"><span>⌕</span><input id="globalSearch" placeholder="Search cybersecurity topics, labs, sessions..."></div><div class="topActions"><div class="xpMini">⚡ <b id="xpTop">0</b> XP</div><button id="theme" title="Toggle theme">☼</button><button class="iconBtn" title="Notifications">♢</button><button class="avatarBtn" id="profileQuick">C</button><button id="logout" class="logoutBtn">LOG OUT ↗</button></div></header>
-<div class="viewIntro" id="viewIntro"><div><span class="kicker">SECURITY OPERATIONS // STUDENT MODE</span><h1 id="viewHeading">Dashboard</h1><p id="viewSubheading">Your command center for learning, practice and cyber defense.</p></div><div class="statusChip"><i></i> SECURE SESSION</div></div><main id="top">
-<section class="hero view dashboardView" data-view-section="dashboard"><div><span class="kicker">SECURITY OPERATIONS // STUDENT MODE</span><h1>LEARN.<br><span>THINK.</span><br>DEFEND.</h1><p>Welcome, <b id="welcome"></b>. Every mission earns XP and every concept unlocks another part of your cyber skill tree.</p><button class="btn primary" onclick="go('#missions')">START MISSION →</button></div><div class="terminal"><div class="termHead">SOC_TERMINAL <b>LIVE</b></div><div id="term"></div></div></section>
-<section class="profile view dashboardView profileView" data-view-section="dashboard profile"><div class="identity"><div id="avatar">C</div><div><span class="kicker">CYBER IDENTITY</span><h2 id="pname"></h2><small id="pemail"></small></div></div><div><small>RANK</small><b id="rank"></b></div><div><small>XP</small><b id="xp"></b></div><div><small>STREAK</small><b>🔥 <span id="streak"></span></b></div></section>
-<section id="missions" class="view dashboardView challengeView" data-view-section="dashboard challenges"><div class="head"><div><span class="kicker">TODAY'S OBJECTIVE</span><h2>DAILY MISSION</h2></div><span id="today"></span></div><div class="mission"><strong>01</strong><div><span id="mtype"></span><h3 id="mtitle"></h3><p id="mdesc"></p></div><button class="btn primary" id="startM">ACCEPT</button></div><div id="mchallenge" class="challenge"><h3 id="mq"></h3><div id="mc" class="choices"></div><div id="mf"></div></div></section>
-
-<!-- YOUTUBE CHANNEL & CLASS PORTAL (@CyberPunk-g5y) -->
-<section id="youtubeHub" class="view youtubeHubView" data-view-section="youtube-hub">
-  <div class="head">
-    <div>
-      <span class="kicker">OFFICIAL CLUB BROADCASTS // @CYBERPUNK-G5Y</span>
-      <h2>YOUTUBE CLASSES</h2>
-      <p>Watch live &amp; recorded cybersecurity sessions on our official YouTube channel, then test your knowledge in the assessment portal.</p>
-    </div>
-    <span class="progressPill">@CYBERPUNK-G5Y • LIVE</span>
-  </div>
-
-  <div class="videoStudentToolbar">
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-      <a href="https://www.youtube.com/@CyberPunk-g5y" target="_blank" rel="noopener noreferrer" class="btn primary" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;">
-        ▶ OPEN @CYBERPUNK-G5Y CHANNEL
-      </a>
-      <a href="https://www.youtube.com/@CyberPunk-g5y?sub_confirmation=1" target="_blank" rel="noopener noreferrer" class="btn" style="background:#0b171d;border:1px solid #23483d;color:#36f2b2;text-decoration:none;display:inline-flex;align-items:center;gap:8px;">
-        + SUBSCRIBE
-      </a>
-    </div>
-    <button id="ytQuizPortalBtn" type="button" class="btn" disabled style="background:#0a1117;border:1px dashed #293840;color:#71808a;cursor:not-allowed;" title="Quiz web portal will be linked soon">
-      🔒 ATTEMPT QUIZ (PORTAL COMING SOON)
-    </button>
-  </div>
-
-  <div class="studentVideoPlayer">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-      <div>
-        <span class="kicker">CHANNEL BROADCAST DECK</span>
-        <h3 id="ytActiveClassTitle" style="font-family:Orbitron,sans-serif;margin:6px 0 0;">@CyberPunk-g5y — Cybersecurity Club Sessions</h3>
+  <!-- Cinematic Secure-Boot Intro Overlay -->
+  <div id="introOverlay" class="intro-overlay" role="dialog" aria-label="Cyber Quest Boot Sequence">
+    <div class="intro-grid"></div>
+    <div class="intro-card">
+      <div class="intro-badge">PRIVATE CYBERSECURITY COLLECTIVE // SECURE NODE</div>
+      <div class="intro-logo">
+        <span class="logo-bracket">[</span>CYBER<span class="accent">//</span>QUEST<span class="logo-bracket">]</span>
       </div>
-      <a href="https://www.youtube.com/@CyberPunk-g5y/videos" target="_blank" rel="noopener noreferrer" style="color:#36f2b2;font:700 10px Orbitron;text-decoration:none;">
-        VIEW ALL UPLOADS ↗
-      </a>
-    </div>
-
-    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;border:1px solid #23483d;background:#000;margin-top:16px;">
-      <iframe
-        id="ytClassFrame"
-        src="https://www.youtube-nocookie.com/embed?listType=user_uploads&list=CyberPunk-g5y"
-        title="CyberPunk-g5y YouTube Channel"
-        style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen>
-      </iframe>
-    </div>
-
-    <p style="color:#71808a;font-size:11px;margin:12px 0 0;">
-      Note: Watch the class lecture first. Once the external Quiz Web Portal is published, the <strong>Attempt Quiz</strong> button will unlock automatically.
-    </p>
-  </div>
-
-  <div id="ytClassGrid" class="studentVideosGrid"></div>
-</section>
-
-<section id="simulations" class="view labsView" data-view-section="labs">
-<div class="head"><div><span class="kicker">CYBER//QUEST LAB NETWORK</span><h2>CYBER LABS</h2><p>Practice safe security decisions in simulations, then step into evidence-based incident investigations.</p></div><span class="progressPill">PHASE 2 // ACTIVE</span></div>
-<div class="labSectionLabel"><span>SIMULATION DECK</span><small>FAST PRACTICE</small></div>
-<div class="sims">
-<article onclick="sim('phish')"><div class="art mail">✉<i>!</i></div><b>SPOT THE PHISH</b><p>Inspect an animated suspicious email.</p><span class="labXP">+60 XP</span></article>
-<article onclick="sim('network')"><div class="art net"><i></i><i></i><i></i><span>FIREWALL</span></div><b>NETWORK DEFENSE</b><p>Watch packets cross a firewall.</p><span class="labXP">+70 XP</span></article>
-<article onclick="sim('crypto')"><div class="art crypto">⌬<small>0101 1010</small></div><b>ENCRYPTION VISION</b><p>See plaintext become ciphertext.</p><span class="labXP">+50 XP</span></article>
-<article onclick="sim('soc')"><div class="art radar"></div><b>SOC ALERT</b><p>Follow detection to response.</p><span class="labXP">+80 XP</span></article>
-</div>
-<div class="labSectionLabel advancedLabel"><span>ADVANCED INCIDENT LABS</span><small>PHASE 2 // INVESTIGATE • DECIDE • DEFEND</small></div>
-<div class="advancedLabs">
-<article class="advancedLabCard featured" onclick="advancedLab('phishing')"><div class="labIcon">🎣</div><div class="labCardTop"><span class="labTag">LAB 01</span><span class="labDifficulty">BEGINNER+</span></div><h3>PHISHING INVESTIGATION</h3><p>Investigate a reported email using sender, domain, URL and social-engineering evidence.</p><div class="labMeta"><span>5 EVIDENCE FILES</span><span>+100 XP</span></div><button class="labLaunch">OPEN INVESTIGATION →</button></article>
-<article class="advancedLabCard socLabCard" onclick="advancedLab('soc')"><div class="labIcon">🚨</div><div class="labCardTop"><span class="labTag">LAB 02</span><span class="labDifficulty">INTERMEDIATE</span></div><h3>SOC INCIDENT RESPONSE</h3><p>Correlate alerts, triage indicators and choose a defensible containment sequence.</p><div class="labMeta"><span>6 EVIDENCE ITEMS</span><span>+120 XP</span></div><button class="labLaunch">OPEN INVESTIGATION →</button></article>
-<article class="advancedLabCard ransomwareLabCard" onclick="advancedLab('ransomware')"><div class="labIcon">🦠</div><div class="labCardTop"><span class="labTag">LAB 03</span><span class="labDifficulty">INTERMEDIATE</span></div><h3>RANSOMWARE RESPONSE</h3><p>Prioritize containment, evidence preservation and recovery during a simulated ransomware event.</p><div class="labMeta"><span>6 EVIDENCE ITEMS</span><span>+150 XP</span></div><button class="labLaunch">OPEN INCIDENT →</button></article>
-<article class="advancedLabCard networkLabCard" onclick="advancedLab('network')"><div class="labIcon">🌐</div><div class="labCardTop"><span class="labTag">LAB 04</span><span class="labDifficulty">INTERMEDIATE</span></div><h3>NETWORK ATTACK INVESTIGATION</h3><p>Analyze simulated traffic clues, correlate ports and connections, and identify the most likely attack path.</p><div class="labMeta"><span>6 EVIDENCE ITEMS</span><span>+120 XP</span></div><button class="labLaunch">OPEN INVESTIGATION →</button></article>
-<article class="advancedLabCard forensicsLabCard" onclick="openForensicsLab()"><div class="labIcon">🔍</div><div class="labCardTop"><span class="labTag">LAB 05</span><span class="labDifficulty">ADVANCED</span></div><h3>DIGITAL FORENSICS CASE</h3><p>Reconstruct a safe fictional incident from timestamps, artifacts and evidence.</p><div class="labMeta"><span>7 EVIDENCE ITEMS</span><span>+150 XP</span></div><button class="labLaunch">OPEN CASE →</button></article>
-<article class="advancedLabCard webSecurityLabCard" onclick="openWebSecurityLab()"><div class="labIcon">🛡️</div><div class="labCardTop"><span class="labTag">LAB 06</span><span class="labDifficulty">ADVANCED</span></div><h3>WEB SECURITY LAB</h3><p>Investigate a fictional web application, identify security weaknesses, and select the safest remediation.</p><div class="labMeta"><span>6 EVIDENCE ITEMS</span><span>+130 XP</span></div><button class="labLaunch">OPEN LAB →</button></article>
-</div>
-<div class="labEngineNote"><b>LAB ENGINE ONLINE</b><span>Every advanced lab records your completion as a unique learning event, so earned XP cannot be accidentally duplicated on refresh.</span></div>
-</section>
-<section id="progress" class="view cityView" data-view-section="city"><div class="head"><div><span class="kicker">CYBER CITY // PROGRESSION</span><h2>SKILL TREE</h2><p>Complete each zone to unlock the next district and build your cyber mastery.</p></div><span class="progressPill" id="masteryText">0/12 ZONES</span></div><div class="mastery"><div class="masteryTop"><div><b id="masteryPct">0%</b><small>LEARNING MASTERY</small></div><div><b id="nextZone">ZONE 01</b><small>NEXT OBJECTIVE</small></div><div><b id="certStatus">LOCKED</b><small>CERTIFICATE</small></div></div><div class="progressTrack"><span id="masteryBar"></span></div></div><div class="districts" id="districts"></div></section>
-<section id="learn" class="view coursesView cityView" data-view-section="courses city"><div class="head"><div><span class="kicker">CYBER CITY MAP</span><h2>LEARNING ZONES</h2><p>12 areas covering the cybersecurity journey.</p></div><input id="search" placeholder="Search concepts..."></div><div id="zones" class="zones"></div></section>
-<section id="sessions" class="view sessionsView" data-view-section="sessions"><div class="head"><div><span class="kicker">CYBER//QUEST CLASSROOM</span><h2>CYBER SESSIONS</h2><p>Clear definitions, informative paragraphs, slide-based learning, real-life threats and practical defender checks for every topic.</p></div><span class="progressPill">12 TOPICS • 5 SLIDES EACH</span></div><div id="sessionCards" class="sessionsGrid"></div></section><section class="twocol view dashboardView challengeView" data-view-section="dashboard challenges"><article><span class="kicker">🧠 FACT OF THE DAY</span><h2 id="factTitle"></h2><p id="fact"></p></article><article><span class="kicker">🎯 DAILY QUIZ</span><h2 id="quizQ"></h2><div id="quizChoices" class="choices"></div><div id="quizF"></div></article></section>
-<section id="intelligence" class="view intelligenceView" data-view-section="intelligence dashboard profile"><div class="head"><div><span class="kicker">PHASE 3 // STUDENT INTELLIGENCE ENGINE</span><h2>CYBER INTELLIGENCE</h2><p>Turn your learning activity into a live skill profile and a clear next-best action.</p></div><span class="progressPill">ADAPTIVE ENGINE • ONLINE</span></div><div id="intelligencePanel" class="intelligencePanel"><div class="intelLoading">ANALYZING YOUR LEARNING SIGNALS...</div></div></section><section id="radar" class="view radarView" data-view-section="radar dashboard intelligence"><div class="head"><div><span class="kicker">PHASE 3 // SKILL VISUALIZATION</span><h2>CYBER SKILL RADAR</h2><p>See your cybersecurity strengths and development areas at a glance.</p></div><span class="progressPill">LIVE PROFILE • SYNCED</span></div><div id="radarPanel" class="radarPanel"><div class="intelLoading">BUILDING YOUR SKILL RADAR...</div></div></section><section id="recommendations" class="view recommendationsView" data-view-section="recommendations dashboard intelligence radar"><div class="head"><div><span class="kicker">PHASE 3 // ADAPTIVE LEARNING</span><h2>NEXT BEST ACTION</h2><p>CYBER//QUEST turns your performance into a prioritized learning path.</p></div><span class="progressPill">PERSONALIZED • LIVE</span></div><div id="recommendationPanel" class="recommendationPanel"><div class="intelLoading">CALCULATING YOUR NEXT BEST ACTION...</div></div></section><section id="certificate" class="view certificateView" data-view-section="certificate profile"><div class="head"><div><span class="kicker">ACADEMY CREDENTIAL</span><h2>CYBER//QUEST CERTIFICATE</h2><p>Master all 12 learning zones to earn your verified student certificate.</p></div></div><div class="certificateCard" id="certificateCard"></div></section>
-<section id="leaderboard" class="view leaderboardView" data-view-section="leaderboard"><div class="head"><div><span class="kicker">CLASSROOM MODE</span><h2>LEADERBOARD</h2></div></div><div id="board" class="board"></div></section>
-<section id="analytics" class="view analyticsView" data-view-section="analytics"><div class="head"><div><span class="kicker">PERFORMANCE TELEMETRY</span><h2>STUDENT ANALYTICS</h2><p>Understand your learning momentum, activity patterns and cybersecurity development.</p></div><span class="progressPill">PHASE 3 // ANALYTICS</span></div><div id="analyticsPanel" class="analyticsPanel"></div></section><section id="missionsHub" class="view missionsHubView" data-view-section="missions">
-  <div class="head"><div><span class="kicker">PHASE 4 // IMMERSIVE TRAINING</span><h2>CYBER MISSIONS</h2><p>Enter story-driven security incidents. Investigate the signal, make the right decisions and earn mission XP.</p></div><span class="progressPill">MISSION NETWORK • ONLINE</span></div>
-  <div class="missionCommand"><div><span class="kicker">FIELD OPERATIONS</span><h3>YOUR NEXT DEPLOYMENT</h3><p>Every mission is a safe fictional scenario built around defensive decision-making. No real systems are targeted.</p></div><div class="missionCounter"><strong id="missionCompletedCount">0/4</strong><span>MISSIONS CLEARED</span></div></div>
-  <div id="missionCards" class="missionGrid"></div>
-  <div class="missionFooter"><span>⚡ XP is awarded once per mission.</span><span>🛡️ AUTHORIZED TRAINING ONLY</span></div>
-</section>
-
-<section id="puzzlesHub" class="view puzzlesView" data-view-section="puzzles">
-  <div class="head">
-    <div>
-      <span class="kicker">PHASE 4.2 // PUZZLE LAB</span>
-      <h2>CYBER PUZZLES</h2>
-      <p>Crack the clues. Test your skills. Defend the system.</p>
+      <p class="intro-tagline">"To those who let FEAR bury their POTENTIAL. To those who do not protect their own data."</p>
+      <div id="bootTerminal" class="boot-terminal" aria-live="polite"></div>
+      <div class="boot-progress-wrap">
+        <div id="bootProgressBar" class="boot-progress-bar"></div>
+      </div>
+      <div class="intro-actions">
+        <button id="enterPortalBtn" class="btn btn-primary" disabled>INITIALIZING NODE...</button>
+        <button id="skipIntroBtn" class="btn btn-ghost">SKIP BOOT &gt;&gt;</button>
+      </div>
     </div>
   </div>
 
-  
-<div class="puzzleGrid">
-  <article class="puzzleCard">
-    <span class="kicker">PUZZLE 01</span>
-    <h3>CRACK THE CIPHER</h3>
-    <p>Decode an intercepted encrypted message.</p>
-    <button class="btn primary" onclick="startPuzzle('cipher')">START PUZZLE →</button>
-  </article>
+  <!-- Role-Based Authentication Modal / Gate -->
+  <div id="authGate" class="auth-gate hidden">
+    <div class="auth-panel">
+      <div class="auth-header">
+        <div class="brand-mark">CYBER<span class="accent">//</span>QUEST</div>
+        <span class="pill pill-cyan">PRIVATE CLUB PORTAL</span>
+      </div>
+      <h2>Authenticate Identity</h2>
+      <p class="muted">Select your assigned club clearance tier to enter the command center.</p>
 
-  <article class="puzzleCard">
-    <span class="kicker">PUZZLE 02</span>
-    <h3>DIGITAL EVIDENCE</h3>
-    <p>Identify the suspicious login in a security log.</p>
-    <button class="btn primary" onclick="startPuzzle('evidence')">START PUZZLE →</button>
-  </article>
+      <!-- Role Selector Tabs -->
+      <div class="role-tabs" id="roleTabs">
+        <button type="button" class="role-tab active" data-role="student">Student</button>
+        <button type="button" class="role-tab" data-role="news">News Team</button>
+        <button type="button" class="role-tab" data-role="research">Research Team</button>
+        <button type="button" class="role-tab" data-role="professor">Professor</button>
+        <button type="button" class="role-tab" data-role="admin">Admin</button>
+      </div>
 
-  <article class="puzzleCard">
-    <span class="kicker">PUZZLE 03</span>
-    <h3>TRACE THE ATTACK</h3>
-    <p>Find the source IP address responsible for suspicious traffic.</p>
-    <button class="btn primary" onclick="startPuzzle('network')">START PUZZLE →</button>
-  </article>
+      <!-- Student Auth Mode Toggle (Sign In / Register) -->
+      <div id="studentSubToggle" class="sub-toggle">
+        <button type="button" class="sub-btn active" data-auth-mode="login">Student Login</button>
+        <button type="button" class="sub-btn" data-auth-mode="register">New Student Enrollment</button>
+      </div>
 
-  <article class="puzzleCard">
-    <span class="kicker">PUZZLE 04</span>
-    <h3>SECURITY LOGIC</h3>
-    <p>Apply access-control rules to protect a secure system.</p>
-    <button class="btn primary" onclick="startPuzzle('logic')">START PUZZLE →</button>
-  </article>
-</div>
-
-
-  <div id="puzzleWorkspace" class="puzzleWorkspace" hidden></div>
-</section>
-
-
-<!-- STUDENT VIDEO LESSONS -->
-<section
-  id="videosHub"
-  class="view videosView"
-  data-view-section="videos"
->
-  <div class="head">
-    <div>
-      <span class="kicker">CYBER//QUEST CLASSROOM</span>
-      <h2>VIDEO LESSONS</h2>
-      <p>
-        Learn cybersecurity through lessons published
-        by your professor.
-      </p>
-    </div>
-  </div>
-
-  <div class="videoStudentToolbar">
-    <span class="progressPill">FACULTY PUBLISHED CONTENT</span>
-    <button class="btn" id="refreshStudentVideos">
-      REFRESH LESSONS
-    </button>
-  </div>
-
-  <p id="studentVideosMessage">
-    Loading available lessons...
-  </p>
-
-  <div id="studentVideosList" class="studentVideosGrid"></div>
-
-  <div id="studentVideoPlayer" class="studentVideoPlayer">
-    <p>Select a lesson to start watching.</p>
-  </div>
-</section>
-
-<!-- STUDENT MEETING CENTER -->
-<section
-  id="meetingsHub"
-  class="view meetingsView"
-  data-view-section="meetings"
->
-  <div class="head">
-    <div>
-      <span class="kicker">CYBER//QUEST CLASSROOM</span>
-      <h2>MEETING CENTER</h2>
-      <p>
-        View academy meeting invitations and manage your participation.
-      </p>
-    </div>
-  </div>
-
-  <div class="videoStudentToolbar">
-    <span class="progressPill">ACADEMY MEETINGS</span>
-    <button class="btn" id="refreshStudentMeetings">
-      REFRESH MEETINGS
-    </button>
-  </div>
-
-  <p id="studentMeetingsMessage">
-    Loading your meeting invitations...
-  </p>
-
-  <div id="studentMeetingsList"></div>
-
-  <div class="studentMeetingNotifications">
-    <h3>🔔 Meeting Notifications</h3>
-    <p id="studentNotificationsMessage">
-      Loading notifications...
-    </p>
-    <div id="studentNotificationsList"></div>
-  </div>
-</section>
-
-<section id="achievements" class="view achievementsView" data-view-section="achievements"><div class="head"><div><span class="kicker">COLLECT THEM</span><h2>ACHIEVEMENTS</h2><p>Unlock milestones as you learn, practice and defend.</p></div></div><div id="badges" class="badges"></div></section>
-<section id="settingsView" class="view settingsView" data-view-section="settings"><div class="head"><div><span class="kicker">SYSTEM PREFERENCES</span><h2>SETTINGS</h2><p>Manage your CYBER//QUEST learning environment.</p></div></div><div class="settingsGrid"><article><b>Appearance</b><p>Switch between the dark command-center theme and light mode.</p><button class="btn" onclick="document.getElementById('theme').click()">TOGGLE THEME</button></article><article><b>Animated Background</b><p>Control the live command-center canvas or switch visual styles.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="bgToggleBtn" type="button">PAUSE MOTION</button><button class="btn" id="bgStyleBtn" type="button">STYLE: MESH</button></div></article><article><b>Security</b><p>Your password is hashed on the server and your learning progress is stored securely.</p><span class="settingBadge">● ACCOUNT PROTECTED</span></article><article><b>Learning Mode</b><p>Interactive simulations are educational and must only be used on authorized systems.</p><span class="settingBadge">AUTHORIZED TRAINING ONLY</span></article></div></section></main><footer>CYBER//QUEST • Educational simulations only • Test systems only when authorized.</footer></div>
-<div id="modal" class="modal"><div class="modalBox"><button class="close" onclick="closeModal()">×</button><div id="modalBody"></div></div></div><script src="/app.js"></script>
-<script>
-(function () {
-  const YOUTUBE_CHANNEL_URL = "https://www.youtube.com/@CyberPunk-g5y";
-  const QUIZ_PORTAL_URL = ""; // Paste your quiz web URL here once deployed
-
-  const YT_CLASSES = [
-    {
-      code: "BROADCAST // 01",
-      title: "Cybersecurity Foundations & Threat Landscape",
-      desc: "Watch the session on @CyberPunk-g5y to understand core security concepts and attack vectors.",
-      videoId: ""
-    },
-    {
-      code: "BROADCAST // 02",
-      title: "Phishing, Social Engineering & OSINT",
-      desc: "Learn how attackers craft lures and how defenders verify links, headers, and domains.",
-      videoId: ""
-    },
-    {
-      code: "BROADCAST // 03",
-      title: "Network Defense & SOC Incident Triage",
-      desc: "Explore firewall rules, traffic anomalies, and step-by-step incident containment.",
-      videoId: ""
-    }
-  ];
-
-  function renderYtHub() {
-    const grid = document.getElementById("ytClassGrid");
-    const topQuizBtn = document.getElementById("ytQuizPortalBtn");
-    if (topQuizBtn && QUIZ_PORTAL_URL) {
-      topQuizBtn.disabled = false;
-      topQuizBtn.style.cssText = "background:#10251f;border:1px solid #36f2b2;color:#36f2b2;cursor:pointer;";
-      topQuizBtn.textContent = "📝 ATTEMPT QUIZ PORTAL ↗";
-      topQuizBtn.onclick = () => window.open(QUIZ_PORTAL_URL, "_blank", "noopener,noreferrer");
-    }
-    if (!grid) return;
-    grid.innerHTML = YT_CLASSES.map((c, idx) => `
-      <article class="studentVideoCard">
-        <span class="kicker">${c.code}</span>
-        <h3 style="margin-top:8px;">${c.title}</h3>
-        <p>${c.desc}</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
-          <button type="button" class="btn primary" onclick="watchYtClass(${idx})">▶ WATCH CLASS</button>
-          ${QUIZ_PORTAL_URL
-            ? `<a href="${QUIZ_PORTAL_URL}" target="_blank" rel="noopener noreferrer" class="btn" style="background:#10251f;border:1px solid #36f2b2;color:#36f2b2;text-decoration:none;">📝 ATTEMPT QUIZ</a>`
-            : `<button type="button" class="btn" disabled style="background:#0a1117;border:1px solid #293840;color:#71808a;cursor:not-allowed;">🔒 QUIZ SOON</button>`
-          }
+      <form id="authForm" class="auth-form">
+        <div id="nameFieldWrap" class="form-group hidden">
+          <label for="authFullName">Full Name</label>
+          <input type="text" id="authFullName" placeholder="e.g., Kavali Sai Ruthvik" />
         </div>
-      </article>
-    `).join("");
-  }
 
-  window.watchYtClass = function (idx) {
-    const item = YT_CLASSES[idx];
-    if (!item || !item.videoId) {
-      window.open(YOUTUBE_CHANNEL_URL, "_blank", "noopener,noreferrer");
-      return;
-    }
-    const frame = document.getElementById("ytClassFrame");
-    const title = document.getElementById("ytActiveClassTitle");
-    if (title) title.textContent = item.title;
-    if (frame) {
-      frame.src = "https://www.youtube-nocookie.com/embed/" + item.videoId + "?rel=0&autoplay=1";
-      frame.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  };
+        <div class="form-group">
+          <label id="idLabel" for="authUserId">Student ID / Handle</label>
+          <input type="text" id="authUserId" required placeholder="e.g., CQ-STU-101" />
+        </div>
 
-  window.openYoutubeHub = function () {
-    const btn = document.querySelector('.sideNav button[data-view="youtube-hub"]');
-    if (btn) btn.click();
-  };
+        <div id="passwordFieldWrap" class="form-group">
+          <label id="passLabel" for="authPassword">Password</label>
+          <input type="password" id="authPassword" required placeholder="Enter password" />
+        </div>
 
-  document.addEventListener("DOMContentLoaded", renderYtHub);
-})();
-</script>
-</body></html>
+        <div id="accessKeyWrap" class="form-group hidden">
+          <label id="keyLabel" for="authAccessKey">Clearance Access Key</label>
+          <input type="password" id="authAccessKey" placeholder="Enter assigned team or master key" />
+          <small id="keyHint" class="field-hint"></small>
+        </div>
+
+        <div id="authError" class="error-banner hidden"></div>
+
+        <button type="submit" id="authSubmitBtn" class="btn btn-primary full-width">
+          AUTHENTICATE &amp; ENTER
+        </button>
+      </form>
+
+      <div class="auth-footer-note">
+        <span>Organized privately by Club Admin &amp; Faculty Mentor</span>
+        <button type="button" id="replayIntroBtn" class="link-btn">Replay Intro</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Application Shell -->
+  <div id="appShell" class="app-shell hidden">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="brand">
+          <span class="brand-dot"></span>
+          <span>CYBER<span class="accent">//</span>QUEST</span>
+        </div>
+        <div id="userBadgeCard" class="user-badge-card">
+          <div class="user-role-tag" id="sidebarRoleTag">STUDENT</div>
+          <div class="user-name" id="sidebarUserName">Operator</div>
+          <div class="user-id mono" id="sidebarUserId">ID: ---</div>
+        </div>
+      </div>
+
+      <nav class="nav-menu" id="navMenu">
+        <button class="nav-item active" data-view="dashboard">
+          <span>01 // Command Hub</span>
+        </button>
+        <button class="nav-item" data-view="lessons">
+          <span>02 // Video Lessons &amp; Classes</span>
+        </button>
+        <button class="nav-item" data-view="intel">
+          <span>03 // News &amp; Research Reports</span>
+        </button>
+        <button class="nav-item" data-view="quizzes">
+          <span>04 // Assessments &amp; Quizzes</span>
+        </button>
+        <button class="nav-item" data-view="abilities">
+          <span>05 // Student Abilities &amp; Scores</span>
+        </button>
+        <button class="nav-item" data-view="meetings">
+          <span>06 // Live Lectures &amp; Meetings</span>
+        </button>
+        <!-- Team Upload Workspace (News & Research Teams + Admin/Prof) -->
+        <button class="nav-item role-restricted hidden" data-roles="news,research,professor,admin" data-view="team-studio">
+          <span>07 // Team Report Upload</span>
+        </button>
+        <!-- Full Access Control Center (Admin & Professor Only) -->
+        <button class="nav-item role-restricted hidden" data-roles="professor,admin" data-view="admin-panel">
+          <span>08 // Admin &amp; Prof Console</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="bg-switcher">
+          <span class="mono label-xs">BG ENGINE:</span>
+          <button type="button" class="bg-mode-btn active" data-bg="MESH">MESH</button>
+          <button type="button" class="bg-mode-btn" data-bg="MATRIX">MATRIX</button>
+          <button type="button" class="bg-mode-btn" data-bg="RADAR">RADAR</button>
+        </div>
+        <button id="logoutBtn" class="btn btn-danger full-width">TERMINATE SESSION</button>
+      </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <h1 id="viewHeading">Command Hub</h1>
+          <p id="viewSubheading" class="muted">Live club telemetry, awareness broadcasts, and skill progression.</p>
+        </div>
+        <div class="topbar-stats">
+          <div class="stat-chip">
+            <span class="stat-label">CLEARANCE</span>
+            <span id="topClearance" class="stat-val accent">LEVEL 1</span>
+          </div>
+          <div class="stat-chip">
+            <span class="stat-label">CLUB XP</span>
+            <span id="topXp" class="stat-val">0 XP</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Live News Ticker -->
+      <div class="news-ticker">
+        <span class="ticker-tag">CYBER FLASH</span>
+        <div id="tickerText" class="ticker-text">Loading latest intelligence broadcasts...</div>
+      </div>
+
+      <!-- VIEW 1: COMMAND HUB (DASHBOARD) -->
+      <section id="view-dashboard" class="view-section active">
+        <div class="kpi-grid">
+          <div class="card kpi-card">
+            <span class="kpi-label">QUIZZES COMPLETED</span>
+            <span id="kpiQuizzes" class="kpi-value">0</span>
+            <span class="kpi-sub">Verified assessments</span>
+          </div>
+          <div class="card kpi-card">
+            <span class="kpi-label">AVERAGE ACCURACY</span>
+            <span id="kpiAvgScore" class="kpi-value accent">0%</span>
+            <span class="kpi-sub">Across all modules</span>
+          </div>
+          <div class="card kpi-card">
+            <span class="kpi-label">INTEL REPORTS</span>
+            <span id="kpiReports" class="kpi-value">0</span>
+            <span class="kpi-sub">News &amp; Research briefs</span>
+          </div>
+          <div class="card kpi-card">
+            <span class="kpi-label">UPCOMING SESSIONS</span>
+            <span id="kpiMeetings" class="kpi-value">0</span>
+            <span class="kpi-sub">Lectures &amp; briefings</span>
+          </div>
+        </div>
+
+        <div class="two-col-grid">
+          <div class="card">
+            <div class="card-header">
+              <h3>Latest News &amp; Research Feed</h3>
+              <button class="link-btn" data-jump="intel">View All &rarr;</button>
+            </div>
+            <div id="dashIntelList" class="stack-list"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>Next Scheduled Lectures &amp; Meetings</h3>
+              <button class="link-btn" data-jump="meetings">Full Schedule &rarr;</button>
+            </div>
+            <div id="dashMeetingsList" class="stack-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: VIDEO LESSONS & AWARENESS CLASSES -->
+      <section id="view-lessons" class="view-section">
+        <div class="filter-bar">
+          <button class="chip-btn active" data-lesson-filter="ALL">All Videos</button>
+          <button class="chip-btn" data-lesson-filter="Lecture">Core Lectures</button>
+          <button class="chip-btn" data-lesson-filter="Awareness">Awareness Broadcasts</button>
+          <button class="chip-btn" data-lesson-filter="Lab">Hands-On Labs</button>
+        </div>
+        <div id="lessonsGrid" class="cards-grid"></div>
+      </section>
+
+      <!-- VIEW 3: NEWS & RESEARCH REPORTS -->
+      <section id="view-intel" class="view-section">
+        <div class="filter-bar">
+          <button class="chip-btn active" data-intel-filter="ALL">All Reports</button>
+          <button class="chip-btn" data-intel-filter="NEWS">News Team Bulletins</button>
+          <button class="chip-btn" data-intel-filter="RESEARCH">Research Team Papers</button>
+        </div>
+        <div id="intelGrid" class="stack-list"></div>
+      </section>
+
+      <!-- VIEW 4: QUIZZES & ASSESSMENTS -->
+      <section id="view-quizzes" class="view-section">
+        <div id="quizCatalog" class="cards-grid"></div>
+        <div id="activeQuizBox" class="card hidden"></div>
+      </section>
+
+      <!-- VIEW 5: STUDENT ABILITIES & SCORES -->
+      <section id="view-abilities" class="view-section">
+        <div class="two-col-grid">
+          <div class="card">
+            <h3>Operator Ability Matrix</h3>
+            <p class="muted">Skill ratings dynamically computed from your quiz performance across domains.</p>
+            <canvas id="abilityRadarCanvas" width="380" height="320"></canvas>
+            <div id="abilityBars" class="ability-bars"></div>
+          </div>
+
+          <div class="card">
+            <h3>Club Leaderboard &amp; Verified Scores</h3>
+            <p class="muted">Live ranking of active student operators.</p>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Student</th>
+                    <th>Quizzes</th>
+                    <th>Avg Score</th>
+                    <th>XP</th>
+                  </tr>
+                </thead>
+                <tbody id="leaderboardBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 6: LIVE LECTURES & MEETINGS -->
+      <section id="view-meetings" class="view-section">
+        <div id="meetingsGrid" class="cards-grid"></div>
+      </section>
+
+      <!-- VIEW 7: TEAM REPORT UPLOAD STUDIO (NEWS TEAM, RESEARCH TEAM, ADMIN, PROFESSOR) -->
+      <section id="view-team-studio" class="view-section">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3 id="studioTitle">Team Intelligence Upload Portal</h3>
+              <p class="muted" id="studioSub">Submit verified reports for students to study and test against.</p>
+            </div>
+            <span id="studioRolePill" class="pill pill-cyan">TEAM CLEARANCE</span>
+          </div>
+
+          <form id="reportUploadForm" class="grid-form">
+            <div class="form-group">
+              <label for="repCategory">Report Division</label>
+              <select id="repCategory" required>
+                <option value="NEWS">News Team — Cyber Flash / Awareness Bulletin</option>
+                <option value="RESEARCH">Research Team — Technical Threat &amp; Vulnerability Report</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="repDomain">Cybersecurity Domain</label>
+              <select id="repDomain" required>
+                <option value="Network Security">Network Security</option>
+                <option value="Web & AppSec">Web &amp; AppSec</option>
+                <option value="Threat Intelligence">Threat Intelligence</option>
+                <option value="Cryptography">Cryptography</option>
+                <option value="Social Engineering">Social Engineering &amp; Awareness</option>
+              </select>
+            </div>
+
+            <div class="form-group span-2">
+              <label for="repTitle">Report Headline / Title</label>
+              <input type="text" id="repTitle" required placeholder="e.g., Zero-Day RCE Analysis in Enterprise VPN Gateways" />
+            </div>
+
+            <div class="form-group span-2">
+              <label for="repSummary">Executive Summary (Shown on Student Cards)</label>
+              <input type="text" id="repSummary" required placeholder="Brief 1-2 sentence overview for students..." />
+            </div>
+
+            <div class="form-group span-2">
+              <label for="repContent">Full Report / Research Findings</label>
+              <textarea id="repContent" rows="6" required placeholder="Write detailed findings, indicators of compromise (IoCs), mitigation steps, and key takeaways..."></textarea>
+            </div>
+
+            <div class="form-group span-2">
+              <label for="repRefLink">Reference / Briefing Video URL (Optional)</label>
+              <input type="url" id="repRefLink" placeholder="https://youtube.com/... or advisory link" />
+            </div>
+
+            <div class="span-2">
+              <button type="submit" class="btn btn-primary">PUBLISH TO STUDENT PORTAL</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card" style="margin-top: 1.5rem;">
+          <h3>Published Reports by Teams</h3>
+          <div id="teamManageReportsList" class="stack-list"></div>
+        </div>
+      </section>
+
+      <!-- VIEW 8: ADMIN & PROFESSOR FULL ACCESS CONSOLE -->
+      <section id="view-admin-panel" class="view-section">
+        <div class="two-col-grid">
+          <!-- Publish Video Lesson / Awareness Class -->
+          <div class="card">
+            <h3>Publish Video Lesson / Lecture</h3>
+            <form id="addLessonForm" class="stack-form">
+              <input type="text" id="lesTitle" required placeholder="Lesson Title (e.g., Packet Sniffing with Wireshark)" />
+              <select id="lesType">
+                <option value="Lecture">Core Lecture</option>
+                <option value="Awareness">Awareness Video</option>
+                <option value="Lab">Hands-On Lab Walkthrough</option>
+              </select>
+              <select id="lesDomain">
+                <option value="Network Security">Network Security</option>
+                <option value="Web & AppSec">Web &amp; AppSec</option>
+                <option value="Threat Intelligence">Threat Intelligence</option>
+                <option value="Cryptography">Cryptography</option>
+                <option value="Social Engineering">Social Engineering</option>
+              </select>
+              <input type="text" id="lesInstructor" required placeholder="Speaker (e.g., Prof. Mentor / Club Lead)" />
+              <input type="url" id="lesUrl" required placeholder="YouTube / Video Embed URL" />
+              <textarea id="lesDesc" rows="2" required placeholder="Lesson objectives and key topics..."></textarea>
+              <button type="submit" class="btn btn-primary">ADD VIDEO LESSON</button>
+            </form>
+          </div>
+
+          <!-- Schedule Live Meeting / Lecture -->
+          <div class="card">
+            <h3>Schedule Club Meeting / Live Lecture</h3>
+            <form id="addMeetingForm" class="stack-form">
+              <input type="text" id="mtgTitle" required placeholder="Session Title (e.g., Weekly Threat Briefing #12)" />
+              <input type="datetime-local" id="mtgDate" required />
+              <input type="text" id="mtgHost" required placeholder="Host (e.g., Professor & Admin)" />
+              <input type="url" id="mtgLink" required placeholder="Meeting Link (Google Meet / Zoom / Discord)" />
+              <textarea id="mtgAgenda" rows="2" required placeholder="Session agenda & prerequisites..."></textarea>
+              <button type="submit" class="btn btn-primary">SCHEDULE SESSION</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Create New Quiz -->
+        <div class="card" style="margin-top: 1.5rem;">
+          <h3>Create Student Assessment Quiz</h3>
+          <form id="addQuizForm" class="grid-form">
+            <div class="form-group">
+              <label for="qzTitle">Quiz Title</label>
+              <input type="text" id="qzTitle" required placeholder="e.g., Phishing & Social Engineering Defense" />
+            </div>
+            <div class="form-group">
+              <label for="qzDomain">Skill Ability Domain</label>
+              <select id="qzDomain">
+                <option value="Network Security">Network Security</option>
+                <option value="Web & AppSec">Web &amp; AppSec</option>
+                <option value="Threat Intelligence">Threat Intelligence</option>
+                <option value="Cryptography">Cryptography</option>
+                <option value="Social Engineering">Social Engineering</option>
+              </select>
+            </div>
+            <div class="form-group span-2">
+              <label for="qzQuestion">Question 1 Prompt</label>
+              <input type="text" id="qzQuestion" required placeholder="Enter quiz question..." />
+            </div>
+            <div class="form-group">
+              <input type="text" id="qzOpt0" required placeholder="Option A" />
+            </div>
+            <div class="form-group">
+              <input type="text" id="qzOpt1" required placeholder="Option B" />
+            </div>
+            <div class="form-group">
+              <input type="text" id="qzOpt2" required placeholder="Option C" />
+            </div>
+            <div class="form-group">
+              <input type="text" id="qzOpt3" required placeholder="Option D" />
+            </div>
+            <div class="form-group">
+              <label for="qzCorrect">Correct Option</label>
+              <select id="qzCorrect">
+                <option value="0">Option A</option>
+                <option value="1">Option B</option>
+                <option value="2">Option C</option>
+                <option value="3">Option D</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="qzXp">XP Reward</label>
+              <input type="number" id="qzXp" value="100" min="25" max="500" />
+            </div>
+            <div class="span-2">
+              <button type="submit" class="btn btn-primary">DEPLOY QUIZ TO STUDENTS</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Access Keys & Student Roster Management -->
+        <div class="two-col-grid" style="margin-top: 1.5rem;">
+          <div class="card">
+            <h3>Access Keys &amp; Team Credentials</h3>
+            <p class="muted">Update private club access keys for teams and faculty.</p>
+            <form id="updateKeysForm" class="stack-form">
+              <label class="label-xs">NEWS TEAM KEY</label>
+              <input type="text" id="cfgNewsKey" required />
+              <label class="label-xs">RESEARCH TEAM KEY</label>
+              <input type="text" id="cfgResearchKey" required />
+              <label class="label-xs">PROFESSOR MASTER KEY</label>
+              <input type="text" id="cfgProfKey" required />
+              <label class="label-xs">ADMIN MASTER KEY</label>
+              <input type="text" id="cfgAdminKey" required />
+              <button type="submit" class="btn btn-primary">SAVE ACCESS KEYS</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <h3>Student Score &amp; Roster Audit</h3>
+            <p class="muted">Monitor all enrolled students, quiz attempts, and reset or remove accounts.</p>
+            <div id="adminStudentRoster" class="stack-list"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
